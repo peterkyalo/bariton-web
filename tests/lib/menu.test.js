@@ -21,6 +21,20 @@ describe('Menu Builder', () => {
     expect(menu[0].items[0].label).toBe('Finance overview')
   })
 
+  it('builds instructor menu with courses item when having courses.teach', () => {
+    const menu = buildMenu(['dashboard.instructor', 'courses.teach'])
+    expect(menu.length).toBe(1)
+    expect(menu[0].title).toBe('Teach')
+    expect(menu[0].items.map(i => i.label)).toEqual(['Instructor hub', 'My Courses'])
+  })
+
+  it('builds admin menu with courses & curriculum when having courses.manage-all', () => {
+    const menu = buildMenu(['dashboard.admin', 'courses.manage-all'])
+    expect(menu.length).toBe(1)
+    expect(menu[0].title).toBe('Administration')
+    expect(menu[0].items.map(i => i.label)).toContain('Courses & Curriculum')
+  })
+
   it('resolves home landing route in proper role precedence order', () => {
     expect(homeRouteFor(['dashboard.admin'])).toEqual({ name: 'dashboard.admin' })
     expect(homeRouteFor(['dashboard.finance'])).toEqual({ name: 'dashboard.finance' })
