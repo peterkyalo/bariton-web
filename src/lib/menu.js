@@ -5,10 +5,12 @@
 export const MENU = [
   { section: 'Learn', label: 'My dashboard', to: { name: 'dashboard.student' }, icon: 'home', permission: 'dashboard.student' },
   { section: 'Learn', label: 'My Orders & Receipts', to: { name: 'student.orders' }, icon: 'receipt', permission: 'courses.enroll' },
+  { section: 'Learn', label: 'My Certificates', to: { name: 'student.certificates' }, icon: 'shield', permission: 'courses.enroll' },
 
   { section: 'Teach', label: 'Instructor hub', to: { name: 'dashboard.instructor' }, icon: 'music', permission: 'dashboard.instructor' },
   { section: 'Teach', label: 'My Courses', to: { name: 'instructor.courses' }, icon: 'music', permission: 'courses.teach' },
   { section: 'Teach', label: 'Grading Studio', to: { name: 'instructor.grading' }, icon: 'layers', permission: 'courses.teach' },
+  { section: 'Teach', label: 'Exam Grading Studio', to: { name: 'instructor.exam-grading' }, icon: 'layers', permission: 'courses.teach' },
 
   { section: 'Finance', label: 'Finance overview', to: { name: 'dashboard.finance' }, icon: 'wallet', permission: 'dashboard.finance' },
   { section: 'Finance', label: 'Cash Reception', to: { name: 'finance.cash' }, icon: 'cash', permission: 'dashboard.finance' },
@@ -20,6 +22,7 @@ export const MENU = [
 
   { section: 'Administration', label: 'Admin overview', to: { name: 'dashboard.admin' }, icon: 'shield', permission: 'dashboard.admin' },
   { section: 'Administration', label: 'Courses & Curriculum', to: { name: 'admin.courses' }, icon: 'layers', permission: 'courses.manage-all' },
+  { section: 'Administration', label: 'Certificates Registry', to: { name: 'admin.certificates' }, icon: 'shield', permission: 'courses.manage-all' },
   { section: 'Administration', label: 'Users', to: { name: 'admin.users' }, icon: 'users', permission: 'users.view' },
   { section: 'Administration', label: 'Settings', to: { name: 'admin.settings' }, icon: 'sliders', permission: 'settings.view' },
   { section: 'Administration', label: 'Activity log', to: { name: 'admin.activity' }, icon: 'list', permission: 'activity-log.view' },

@@ -1,6 +1,6 @@
 # Bariton Web Frontend State & Architecture
 
-**Current Phase Completed**: Phase 3b (M-Pesa STK push, Card Stripe in KES, PayPal in USD, Receipts, and Refunds Lifecycle with Credit Notes).
+**Current Phase Completed**: Phase 4b (Exams, debounced autosave, performance recording grace period, attempts, retake packages, verifiable digital certificates with QR codes, and faculty grading studio).
 **Last Updated**: October 2026
 
 ---
@@ -8,10 +8,17 @@
 ## 1. Stack & Architecture
 - **Framework**: Vue 3 (Composition API `<script setup>`), Vite 6
 - **Routing**: Vue Router 4 with navigation guards checking authentication, permissions, and 2FA compliance.
-- **State Management**: Pinia (`useAuthStore`, `useCoursesStore`, `useOrdersStore`, `useUsersStore`, `useSettingsStore`, `useAuditStore`, `useUiStore`).
+- **State Management**: Pinia (`useAuthStore`, `useCoursesStore`, `useOrdersStore`, `useAssignmentsStore`, `useExamsStore`, `useUsersStore`, `useSettingsStore`, `useAuditStore`, `useUiStore`).
 - **Styling**: Tailwind CSS v4 via `@tailwindcss/vite` with Bariton bespoke luxury brand system.
 - **HTTP Client**: Axios with `withCredentials: true`, CSRF bootstrap, 419 session refresh, 423 2FA interceptor, and global error toasts.
 - **Pricing & Currency**: `src/lib/pricing.js` supporting dual currency display (KES & USD with rounding up to the next cent) and bundle upgrade calculation.
+- **Assessment, Exams & Certificates (Phases 4a & 4b)**:
+  - `src/stores/exams.js`: Full examination lifecycle, server-enforced countdown timer, debounced answer auto-saving, performance recording timer pause with 15-minute grace period, attempt limit tracking, retake package checkout, and credential verification.
+  - `src/views/student/StudentExamView.vue`: Interactive conservatory examination suite with question navigators, multiple choice, theory analysis, performance recorder uploader, and instant results view.
+  - `src/views/student/StudentCertificatesView.vue`: Student certificates showcase with direct PDF downloads and public verification links.
+  - `src/views/public/CertificateVerificationView.vue`: Public digital credential verification page at `/verify/:code` displaying verified status, holder name, course title, and dynamic revocation/replaced alerts with zero private data exposure.
+  - `src/views/instructor/InstructorExamGradingQueueView.vue` & `InstructorExamGradingView.vue`: Faculty exam evaluation studio with audio/video recital media streaming, interactive rubric criteria levels, and live grade calculators.
+  - `src/views/admin/AdminCertificatesView.vue`: Conservatory credential registry with search, status filters, revocation modals, and reissue workflows.
 
 ---
 
