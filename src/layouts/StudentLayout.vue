@@ -52,15 +52,29 @@ async function handleResendVerification() {
     <!-- Student Navigation Header -->
     <header class="border-b border-white/[0.08] bg-ink-900/80 backdrop-blur-md sticky top-0 z-30">
       <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-        <RouterLink to="/student" class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brass-300 to-brass-600 flex items-center justify-center font-bold text-ink-950">
-            ♬
-          </div>
-          <div>
-            <span class="font-display font-bold text-base tracking-tight text-white block leading-none">Bariton</span>
-            <span class="text-[10px] tracking-widest text-brass-300 uppercase font-semibold block mt-0.5">Student Portal</span>
-          </div>
-        </RouterLink>
+        <div class="flex items-center gap-6">
+          <RouterLink to="/student" class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brass-300 to-brass-600 flex items-center justify-center font-bold text-ink-950">
+              ♬
+            </div>
+            <div>
+              <span class="font-display font-bold text-base tracking-tight text-white block leading-none">Bariton</span>
+              <span class="text-[10px] tracking-widest text-brass-300 uppercase font-semibold block mt-0.5">Student Portal</span>
+            </div>
+          </RouterLink>
+
+          <nav class="hidden md:flex items-center gap-1 pl-4 border-l border-white/10 text-xs font-medium">
+            <RouterLink to="/student" class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition" active-class="text-gold-400 font-bold bg-gold-500/10">
+              Dashboard
+            </RouterLink>
+            <RouterLink to="/student/courses" class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition" active-class="text-gold-400 font-bold bg-gold-500/10">
+              My Courses
+            </RouterLink>
+            <RouterLink to="/courses" class="px-3 py-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/5 transition" active-class="text-gold-400 font-bold bg-gold-500/10">
+              Catalog
+            </RouterLink>
+          </nav>
+        </div>
 
         <!-- Right navigation -->
         <div class="flex items-center gap-3">

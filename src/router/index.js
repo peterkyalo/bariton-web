@@ -26,6 +26,14 @@ import SettingsView from '@/views/admin/SettingsView.vue'
 import ActivityLogView from '@/views/admin/ActivityLogView.vue'
 import NotificationLogView from '@/views/admin/NotificationLogView.vue'
 
+import CourseCatalogView from '@/views/catalog/CourseCatalogView.vue'
+import CourseDetailView from '@/views/catalog/CourseDetailView.vue'
+import StudentCoursesView from '@/views/student/StudentCoursesView.vue'
+import LessonPlayerView from '@/views/student/LessonPlayerView.vue'
+import InstructorCoursesView from '@/views/instructor/InstructorCoursesView.vue'
+import CourseListView from '@/views/admin/courses/CourseListView.vue'
+import CourseEditorView from '@/views/admin/courses/CourseEditorView.vue'
+
 import ForbiddenView from '@/views/errors/ForbiddenView.vue'
 import NotFoundView from '@/views/errors/NotFoundView.vue'
 
@@ -133,6 +141,24 @@ const routes = [
 
   // Admin Management Views
   {
+    path: '/admin/courses',
+    name: 'admin.courses',
+    component: CourseListView,
+    meta: { layout: StaffLayout, auth: true, permission: 'courses.manage-all' },
+  },
+  {
+    path: '/admin/courses/create',
+    name: 'admin.courses.create',
+    component: CourseEditorView,
+    meta: { layout: StaffLayout, auth: true, permission: 'courses.manage-all' },
+  },
+  {
+    path: '/admin/courses/:id/edit',
+    name: 'admin.courses.edit',
+    component: CourseEditorView,
+    meta: { layout: StaffLayout, auth: true, permission: 'courses.manage-all' },
+  },
+  {
     path: '/admin/users',
     name: 'admin.users',
     component: UsersView,
@@ -155,6 +181,46 @@ const routes = [
     name: 'admin.notifications',
     component: NotificationLogView,
     meta: { layout: StaffLayout, auth: true, permission: 'notifications.view' },
+  },
+
+  // Instructor Courses
+  {
+    path: '/instructor/courses',
+    name: 'instructor.courses',
+    component: InstructorCoursesView,
+    meta: { layout: StaffLayout, auth: true, permission: 'courses.teach' },
+  },
+
+  // Student Enrolled Courses & Player
+  {
+    path: '/student/courses',
+    name: 'student.courses',
+    component: StudentCoursesView,
+    meta: { layout: StudentLayout, auth: true, permission: 'courses.enroll' },
+  },
+  {
+    path: '/student/courses/:uuid/player',
+    name: 'student.player',
+    component: LessonPlayerView,
+    meta: { layout: GuestLayout, auth: true, permission: 'courses.enroll' },
+  },
+
+  // Public Course Catalog
+  {
+    path: '/courses',
+    name: 'courses.catalog',
+    component: CourseCatalogView,
+    meta: {
+      layout: (auth) => (auth.isAuthenticated ? (auth.isStaff ? StaffLayout : StudentLayout) : GuestLayout),
+    },
+  },
+  {
+    path: '/courses/:slug',
+    name: 'courses.detail',
+    component: CourseDetailView,
+    meta: {
+      layout: (auth) => (auth.isAuthenticated ? (auth.isStaff ? StaffLayout : StudentLayout) : GuestLayout),
+    },
   },
 
   // Error States
