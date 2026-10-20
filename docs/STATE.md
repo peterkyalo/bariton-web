@@ -1,6 +1,6 @@
 # Bariton Web Frontend State & Architecture
 
-**Current Phase Completed**: Phase 4b (Exams, debounced autosave, performance recording grace period, attempts, retake packages, verifiable digital certificates with QR codes, and faculty grading studio).
+**Current Phase Completed**: Phase 5 (Professional validation path, assessment package checkout, lessons exclusion, assessment-only eligibility for Certificate of Skills Validation, and full course upgrade pricing difference).  
 **Last Updated**: October 2026
 
 ---
@@ -12,6 +12,12 @@
 - **Styling**: Tailwind CSS v4 via `@tailwindcss/vite` with Bariton bespoke luxury brand system.
 - **HTTP Client**: Axios with `withCredentials: true`, CSRF bootstrap, 419 session refresh, 423 2FA interceptor, and global error toasts.
 - **Pricing & Currency**: `src/lib/pricing.js` supporting dual currency display (KES & USD with rounding up to the next cent) and bundle upgrade calculation.
+- **Professional Validation Path (Phase 5)**:
+  - `src/views/catalog/CourseDetailView.vue`: Displays "Professional Skills Validation" option card when course is marked open for validation, allowing students/professionals to buy the assessment package directly. For enrolled validation students, displays the "Upgrade to Full Course" credit card calculating the exact price difference (`bundle_price - validation_price`).
+  - `src/views/student/LessonPlayerView.vue`: Contextual "Skills Assessment Studio" view when student is enrolled via the validation path (`path_type === 'validation'`). Highlights direct assessment progress, explains that lessons are excluded, provides an upgrade banner, and exposes assignments and final certification exam navigation.
+  - `src/views/student/StudentCoursesView.vue`: Contextual track badge ("Skills Validation Track" vs "Conservatory Track") and dedicated "Go to Assessment Studio" button.
+  - `src/views/public/CertificateVerificationView.vue`: Displays credential track badge ("Skills Validation Track (Assessment Only)") and formal statement that the holder completed assessment examination only without instructional coursework.
+  - `tests/stores/validation_path.test.js`: Comprehensive Pinia store unit test suite covering validation pricing, assessment package orders, curriculum access controls, and certificate verification.
 - **Assessment, Exams & Certificates (Phases 4a & 4b)**:
   - `src/stores/exams.js`: Full examination lifecycle, server-enforced countdown timer, debounced answer auto-saving, performance recording timer pause with 15-minute grace period, attempt limit tracking, retake package checkout, and credential verification.
   - `src/views/student/StudentExamView.vue`: Interactive conservatory examination suite with question navigators, multiple choice, theory analysis, performance recorder uploader, and instant results view.
