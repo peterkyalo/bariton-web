@@ -77,9 +77,10 @@ describe('Phase 5 Professional Validation Path Unit Tests', () => {
     })
 
     const res = await ordersStore.createOrder('assessment_package', 5)
-    expect(http.post).toHaveBeenCalledWith('/api/v1/orders', {
+    expect(http.post).toHaveBeenCalledWith('/orders', {
       item_type: 'assessment_package',
       item_id: 5,
+      currency: 'KES',
     })
     expect(res.uuid).toBe('ord-val-88')
     expect(ordersStore.activeOrder.items[0].item_type).toBe('assessment_package')
@@ -112,7 +113,7 @@ describe('Phase 5 Professional Validation Path Unit Tests', () => {
       data: { enrollment: mockEnrollment },
     })
 
-    const res = await coursesStore.fetchEnrollmentDetail('enr-val-12')
+    const res = await coursesStore.fetchEnrollment('enr-val-12')
     expect(res.path_type).toBe('validation')
     expect(res.is_validation_path).toBe(true)
     expect(res.modules[0].lessons).toHaveLength(0)
@@ -137,7 +138,7 @@ describe('Phase 5 Professional Validation Path Unit Tests', () => {
     })
 
     const res = await examsStore.verifyCertificate('BMAS-CERT-VAL9988')
-    expect(http.get).toHaveBeenCalledWith('/api/v1/certificates/verify/BMAS-CERT-VAL9988')
+    expect(http.get).toHaveBeenCalledWith('/certificates/verify/BMAS-CERT-VAL9988')
     expect(res.path_type).toBe('validation')
     expect(res.certificate_type_title).toBe('Certificate of Skills Validation')
     expect(res.assessment_note).toBe('The holder completed assessment examination only.')
