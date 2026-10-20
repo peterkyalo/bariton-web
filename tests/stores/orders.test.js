@@ -248,7 +248,7 @@ describe('Orders Store', () => {
     })
 
     const listRes = await store.fetchStudentRefunds()
-    expect(http.get).toHaveBeenCalledWith('/student/refund-requests')
+    expect(http.get).toHaveBeenCalledWith('/student/refund-requests', { params: { page: 1 } })
     expect(store.studentRefunds).toEqual([mockRefund])
     expect(listRes).toEqual([mockRefund])
   })
@@ -296,7 +296,7 @@ describe('Orders Store', () => {
     })
 
     const creditNotesRes = await store.fetchFinanceCreditNotes()
-    expect(http.get).toHaveBeenCalledWith('/finance/credit-notes')
+    expect(http.get).toHaveBeenCalledWith('/finance/credit-notes', { params: {} })
     expect(store.financeCreditNotes).toEqual(mockCreditNotes)
     expect(creditNotesRes).toEqual(mockCreditNotes)
   })
