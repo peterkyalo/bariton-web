@@ -56,6 +56,10 @@ import EventDetailView from '@/views/events/EventDetailView.vue'
 import StudentEventBookingsView from '@/views/student/StudentEventBookingsView.vue'
 import CoordinatorEventAttendeesView from '@/views/coordinator/CoordinatorEventAttendeesView.vue'
 
+import TutoringPackagesView from '@/views/tutoring/TutoringPackagesView.vue'
+import StudentTutoringView from '@/views/student/StudentTutoringView.vue'
+import InstructorTutoringScheduleView from '@/views/instructor/InstructorTutoringScheduleView.vue'
+
 import ForbiddenView from '@/views/errors/ForbiddenView.vue'
 import NotFoundView from '@/views/errors/NotFoundView.vue'
 
