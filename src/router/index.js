@@ -36,6 +36,9 @@ import CourseEditorView from '@/views/admin/courses/CourseEditorView.vue'
 
 import CheckoutView from '@/views/checkout/CheckoutView.vue'
 import StudentOrdersView from '@/views/student/StudentOrdersView.vue'
+import StudentAssignmentView from '@/views/student/StudentAssignmentView.vue'
+import InstructorGradingQueueView from '@/views/instructor/InstructorGradingQueueView.vue'
+import InstructorGradingView from '@/views/instructor/InstructorGradingView.vue'
 import FinanceCashEntryView from '@/views/finance/FinanceCashEntryView.vue'
 import FinancePaymentsView from '@/views/finance/FinancePaymentsView.vue'
 import FinanceRefundsView from '@/views/finance/FinanceRefundsView.vue'
@@ -197,6 +200,18 @@ const routes = [
     component: InstructorCoursesView,
     meta: { layout: StaffLayout, auth: true, permission: 'courses.teach' },
   },
+  {
+    path: '/instructor/grading',
+    name: 'instructor.grading',
+    component: InstructorGradingQueueView,
+    meta: { layout: StaffLayout, auth: true, permission: 'courses.teach' },
+  },
+  {
+    path: '/instructor/grading/:uuid',
+    name: 'instructor.grading.detail',
+    component: InstructorGradingView,
+    meta: { layout: StaffLayout, auth: true, permission: 'courses.teach' },
+  },
 
   // Student Enrolled Courses & Player
   {
@@ -215,6 +230,12 @@ const routes = [
     path: '/student/orders',
     name: 'student.orders',
     component: StudentOrdersView,
+    meta: { layout: StudentLayout, auth: true, permission: 'courses.enroll' },
+  },
+  {
+    path: '/student/assignments/:uuid',
+    name: 'student.assignment',
+    component: StudentAssignmentView,
     meta: { layout: StudentLayout, auth: true, permission: 'courses.enroll' },
   },
 

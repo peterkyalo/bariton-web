@@ -244,6 +244,23 @@
               </span>
             </button>
           </div>
+          <!-- Module Assignment Assessment -->
+          <div v-if="module.is_unlocked && module.assignments?.length" class="p-1 pt-0">
+            <router-link
+              v-for="asgn in module.assignments"
+              :key="asgn.id"
+              :to="`/student/assignments/${asgn.uuid}`"
+              class="w-full flex items-center justify-between p-2 rounded-lg bg-brass-500/10 hover:bg-brass-500/20 text-brass-300 border border-brass-500/20 text-xs transition-all"
+            >
+              <div class="flex items-center gap-2 truncate">
+                <svg class="w-3.5 h-3.5 text-brass-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <span class="truncate font-medium">{{ asgn.title }}</span>
+              </div>
+              <span class="text-[9px] uppercase font-bold text-brass-400 bg-brass-500/20 px-1.5 py-0.5 rounded">Assignment</span>
+            </router-link>
+          </div>
         </div>
       </div>
     </div>

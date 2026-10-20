@@ -25,7 +25,7 @@ describe('Menu Builder', () => {
     const menu = buildMenu(['dashboard.instructor', 'courses.teach'])
     expect(menu.length).toBe(1)
     expect(menu[0].title).toBe('Teach')
-    expect(menu[0].items.map(i => i.label)).toEqual(['Instructor hub', 'My Courses'])
+    expect(menu[0].items.map(i => i.label)).toEqual(['Instructor hub', 'My Courses', 'Grading Studio'])
   })
 
   it('builds admin menu with courses & curriculum when having courses.manage-all', () => {

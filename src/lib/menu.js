@@ -8,6 +8,7 @@ export const MENU = [
 
   { section: 'Teach', label: 'Instructor hub', to: { name: 'dashboard.instructor' }, icon: 'music', permission: 'dashboard.instructor' },
   { section: 'Teach', label: 'My Courses', to: { name: 'instructor.courses' }, icon: 'music', permission: 'courses.teach' },
+  { section: 'Teach', label: 'Grading Studio', to: { name: 'instructor.grading' }, icon: 'layers', permission: 'courses.teach' },
 
   { section: 'Finance', label: 'Finance overview', to: { name: 'dashboard.finance' }, icon: 'wallet', permission: 'dashboard.finance' },
   { section: 'Finance', label: 'Cash Reception', to: { name: 'finance.cash' }, icon: 'cash', permission: 'dashboard.finance' },
