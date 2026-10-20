@@ -72,8 +72,9 @@ const payments = computed(() => ordersStore.financePayments)
         >
           <option value="">All Gateways</option>
           <option value="mpesa">Safaricom M-Pesa</option>
-          <option value="cash">Office Cash</option>
           <option value="stripe">Stripe (Card)</option>
+          <option value="paypal">PayPal (USD)</option>
+          <option value="cash">Office Cash</option>
         </select>
       </div>
 

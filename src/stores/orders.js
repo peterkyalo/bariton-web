@@ -224,12 +224,27 @@ export const useOrdersStore = defineStore('orders', {
     },
 
     // Student Refund Operations
-    async requestRefund({ orderUuid, orderItemId, reason }) {
+    async requestRefund(orderUuidOrPayload, payload = {}) {
       this.loading = true
       this.error = null
+
+      let uuid
+      let orderItemId
+      let reason
+
+      if (typeof orderUuidOrPayload === 'string') {
+        uuid = orderUuidOrPayload
+        orderItemId = payload.order_item_id ?? payload.orderItemId ?? null
+        reason = payload.reason
+      } else {
+        uuid = orderUuidOrPayload?.orderUuid || orderUuidOrPayload?.uuid
+        orderItemId = orderUuidOrPayload?.orderItemId ?? orderUuidOrPayload?.order_item_id ?? null
+        reason = orderUuidOrPayload?.reason
+      }
+
       try {
-        const res = await http.post(`/student/orders/${orderUuid}/refund-requests`, {
-          order_item_id: orderItemId || null,
+        const res = await http.post(`/student/orders/${uuid}/refund-requests`, {
+          order_item_id: orderItemId,
           reason,
         })
         return res.data
@@ -353,9 +368,29 @@ export const useOrdersStore = defineStore('orders', {
       }
     },
 
-    async reviewRefundRequest({ uuid, action, notes, manualReference }) {
+    async reviewRefundRequest(uuidOrPayload, payload = {}) {
       this.loading = true
       this.error = null
+
+      let uuid
+      let action
+      let notes
+      let manualReference
+
+      if (typeof uuidOrPayload === 'string') {
+        uuid = uuidOrPayload
+        const rawAction = payload.action || payload.decision || 'approve'
+        action = rawAction === 'approved' ? 'approve' : (rawAction === 'rejected' ? 'reject' : rawAction)
+        notes = payload.notes ?? payload.review_notes ?? ''
+        manualReference = payload.manual_reference ?? payload.manualReference ?? payload.refund_reference ?? null
+      } else {
+        uuid = uuidOrPayload?.uuid
+        const rawAction = uuidOrPayload?.action || uuidOrPayload?.decision || 'approve'
+        action = rawAction === 'approved' ? 'approve' : (rawAction === 'rejected' ? 'reject' : rawAction)
+        notes = uuidOrPayload?.notes ?? uuidOrPayload?.review_notes ?? ''
+        manualReference = uuidOrPayload?.manualReference ?? uuidOrPayload?.manual_reference ?? uuidOrPayload?.refund_reference ?? null
+      }
+
       try {
         const res = await http.post(`/finance/refund-requests/${uuid}/review`, {
           action,
