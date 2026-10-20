@@ -263,6 +263,22 @@
           </div>
         </div>
       </div>
+
+      <!-- Final Examination Access -->
+      <div v-if="enrollment?.course" class="p-3 border-t border-slate-800 bg-slate-950/80">
+        <router-link
+          :to="{ name: 'student.exam', params: { slug: enrollment.course.slug } }"
+          class="w-full flex items-center justify-between p-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 text-xs font-bold transition shadow-sm"
+        >
+          <div class="flex items-center gap-2">
+            <span>🎓</span>
+            <span>Final Certification Exam</span>
+          </div>
+          <span class="text-[10px] uppercase font-mono tracking-wider bg-amber-500 text-slate-950 px-2 py-0.5 rounded font-black">
+            Take Exam
+          </span>
+        </router-link>
+      </div>
     </div>
   </div>
 </template>

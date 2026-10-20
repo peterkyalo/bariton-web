@@ -44,6 +44,13 @@ import FinancePaymentsView from '@/views/finance/FinancePaymentsView.vue'
 import FinanceRefundsView from '@/views/finance/FinanceRefundsView.vue'
 import FinanceCreditNotesView from '@/views/finance/FinanceCreditNotesView.vue'
 
+import StudentExamView from '@/views/student/StudentExamView.vue'
+import StudentCertificatesView from '@/views/student/StudentCertificatesView.vue'
+import CertificateVerificationView from '@/views/public/CertificateVerificationView.vue'
+import InstructorExamGradingQueueView from '@/views/instructor/InstructorExamGradingQueueView.vue'
+import InstructorExamGradingView from '@/views/instructor/InstructorExamGradingView.vue'
+import AdminCertificatesView from '@/views/admin/AdminCertificatesView.vue'
+
 import ForbiddenView from '@/views/errors/ForbiddenView.vue'
 import NotFoundView from '@/views/errors/NotFoundView.vue'
 
@@ -192,6 +199,12 @@ const routes = [
     component: NotificationLogView,
     meta: { layout: StaffLayout, auth: true, permission: 'notifications.view' },
   },
+  {
+    path: '/admin/certificates',
+    name: 'admin.certificates',
+    component: AdminCertificatesView,
+    meta: { layout: StaffLayout, auth: true, permission: 'courses.manage-all' },
+  },
 
   // Instructor Courses
   {
@@ -210,6 +223,18 @@ const routes = [
     path: '/instructor/grading/:uuid',
     name: 'instructor.grading.detail',
     component: InstructorGradingView,
+    meta: { layout: StaffLayout, auth: true, permission: 'courses.teach' },
+  },
+  {
+    path: '/instructor/exam-grading',
+    name: 'instructor.exam-grading',
+    component: InstructorExamGradingQueueView,
+    meta: { layout: StaffLayout, auth: true, permission: 'courses.teach' },
+  },
+  {
+    path: '/instructor/exam-grading/:uuid',
+    name: 'instructor.exam-grading.detail',
+    component: InstructorExamGradingView,
     meta: { layout: StaffLayout, auth: true, permission: 'courses.teach' },
   },
 
@@ -236,6 +261,18 @@ const routes = [
     path: '/student/assignments/:uuid',
     name: 'student.assignment',
     component: StudentAssignmentView,
+    meta: { layout: StudentLayout, auth: true, permission: 'courses.enroll' },
+  },
+  {
+    path: '/student/courses/:slug/exam',
+    name: 'student.exam',
+    component: StudentExamView,
+    meta: { layout: StudentLayout, auth: true, permission: 'courses.enroll' },
+  },
+  {
+    path: '/student/certificates',
+    name: 'student.certificates',
+    component: StudentCertificatesView,
     meta: { layout: StudentLayout, auth: true, permission: 'courses.enroll' },
   },
 
@@ -289,6 +326,14 @@ const routes = [
     meta: {
       layout: (auth) => (auth.isAuthenticated ? (auth.isStaff ? StaffLayout : StudentLayout) : GuestLayout),
     },
+  },
+
+  // Public Certificate Verification
+  {
+    path: '/verify/:code',
+    name: 'certificate.verify',
+    component: CertificateVerificationView,
+    meta: { layout: GuestLayout },
   },
 
   // Error States
