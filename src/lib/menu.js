@@ -4,6 +4,7 @@
  */
 export const MENU = [
   { section: 'Learn', label: 'My dashboard', to: { name: 'dashboard.student' }, icon: 'home', permission: 'dashboard.student' },
+  { section: 'Learn', label: 'My Bootcamps & Workshops', to: { name: 'student-event-bookings' }, icon: 'calendar', permission: 'events.book' },
   { section: 'Learn', label: 'My Orders & Receipts', to: { name: 'student.orders' }, icon: 'receipt', permission: 'courses.enroll' },
   { section: 'Learn', label: 'My Certificates', to: { name: 'student.certificates' }, icon: 'shield', permission: 'courses.enroll' },
 
@@ -19,6 +20,8 @@ export const MENU = [
   { section: 'Finance', label: 'Credit Notes', to: { name: 'finance.credit-notes' }, icon: 'receipt', permission: 'dashboard.finance' },
 
   { section: 'Events', label: 'Events overview', to: { name: 'dashboard.coordinator' }, icon: 'calendar', permission: 'dashboard.coordinator' },
+  { section: 'Events', label: 'Attendee Check-In Roster', to: { name: 'coordinator-events' }, icon: 'users', permission: 'events.manage' },
+  { section: 'Events', label: 'Public Events Schedule', to: { name: 'events-catalog' }, icon: 'calendar', permission: 'events.view' },
 
   { section: 'Administration', label: 'Admin overview', to: { name: 'dashboard.admin' }, icon: 'shield', permission: 'dashboard.admin' },
   { section: 'Administration', label: 'Courses & Curriculum', to: { name: 'admin.courses' }, icon: 'layers', permission: 'courses.manage-all' },

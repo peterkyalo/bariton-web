@@ -51,6 +51,11 @@ import InstructorExamGradingQueueView from '@/views/instructor/InstructorExamGra
 import InstructorExamGradingView from '@/views/instructor/InstructorExamGradingView.vue'
 import AdminCertificatesView from '@/views/admin/AdminCertificatesView.vue'
 
+import EventsCatalogView from '@/views/events/EventsCatalogView.vue'
+import EventDetailView from '@/views/events/EventDetailView.vue'
+import StudentEventBookingsView from '@/views/student/StudentEventBookingsView.vue'
+import CoordinatorEventAttendeesView from '@/views/coordinator/CoordinatorEventAttendeesView.vue'
+
 import ForbiddenView from '@/views/errors/ForbiddenView.vue'
 import NotFoundView from '@/views/errors/NotFoundView.vue'
 
@@ -275,6 +280,20 @@ const routes = [
     component: StudentCertificatesView,
     meta: { layout: StudentLayout, auth: true, permission: 'courses.enroll' },
   },
+  {
+    path: '/student/events',
+    name: 'student-event-bookings',
+    component: StudentEventBookingsView,
+    meta: { layout: StudentLayout, auth: true, permission: 'events.book' },
+  },
+
+  // Coordinator Event Attendance Management (Phase 6)
+  {
+    path: '/coordinator/events',
+    name: 'coordinator-events',
+    component: CoordinatorEventAttendeesView,
+    meta: { layout: StaffLayout, auth: true, permission: 'events.manage' },
+  },
 
   // Checkout View
   {
@@ -323,6 +342,24 @@ const routes = [
     path: '/courses/:slug',
     name: 'courses.detail',
     component: CourseDetailView,
+    meta: {
+      layout: (auth) => (auth.isAuthenticated ? (auth.isStaff ? StaffLayout : StudentLayout) : GuestLayout),
+    },
+  },
+
+  // Public Physical Events & Bootcamps (Phase 6)
+  {
+    path: '/events',
+    name: 'events-catalog',
+    component: EventsCatalogView,
+    meta: {
+      layout: (auth) => (auth.isAuthenticated ? (auth.isStaff ? StaffLayout : StudentLayout) : GuestLayout),
+    },
+  },
+  {
+    path: '/events/:slug',
+    name: 'event-detail',
+    component: EventDetailView,
     meta: {
       layout: (auth) => (auth.isAuthenticated ? (auth.isStaff ? StaffLayout : StudentLayout) : GuestLayout),
     },
