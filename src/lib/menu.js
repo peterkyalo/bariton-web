@@ -4,11 +4,13 @@
  */
 export const MENU = [
   { section: 'Learn', label: 'My dashboard', to: { name: 'dashboard.student' }, icon: 'home', permission: 'dashboard.student' },
+  { section: 'Learn', label: '1-on-1 Tutoring Sessions', to: { name: 'student-tutoring' }, icon: 'music', permission: 'tutoring.book' },
   { section: 'Learn', label: 'My Bootcamps & Workshops', to: { name: 'student-event-bookings' }, icon: 'calendar', permission: 'events.book' },
   { section: 'Learn', label: 'My Orders & Receipts', to: { name: 'student.orders' }, icon: 'receipt', permission: 'courses.enroll' },
   { section: 'Learn', label: 'My Certificates', to: { name: 'student.certificates' }, icon: 'shield', permission: 'courses.enroll' },
 
   { section: 'Teach', label: 'Instructor hub', to: { name: 'dashboard.instructor' }, icon: 'music', permission: 'dashboard.instructor' },
+  { section: 'Teach', label: 'Tutoring Studio & Hours', to: { name: 'instructor-tutoring-schedule' }, icon: 'calendar', permission: 'tutoring.manage-availability' },
   { section: 'Teach', label: 'My Courses', to: { name: 'instructor.courses' }, icon: 'music', permission: 'courses.teach' },
   { section: 'Teach', label: 'Grading Studio', to: { name: 'instructor.grading' }, icon: 'layers', permission: 'courses.teach' },
   { section: 'Teach', label: 'Exam Grading Studio', to: { name: 'instructor.exam-grading' }, icon: 'layers', permission: 'courses.teach' },
@@ -22,6 +24,7 @@ export const MENU = [
   { section: 'Events', label: 'Events overview', to: { name: 'dashboard.coordinator' }, icon: 'calendar', permission: 'dashboard.coordinator' },
   { section: 'Events', label: 'Attendee Check-In Roster', to: { name: 'coordinator-events' }, icon: 'users', permission: 'events.manage' },
   { section: 'Events', label: 'Public Events Schedule', to: { name: 'events-catalog' }, icon: 'calendar', permission: 'events.view' },
+  { section: 'Events', label: '1-on-1 Mentorship Packs', to: { name: 'tutoring-packages' }, icon: 'music', permission: 'tutoring.view' },
 
   { section: 'Administration', label: 'Admin overview', to: { name: 'dashboard.admin' }, icon: 'shield', permission: 'dashboard.admin' },
   { section: 'Administration', label: 'Courses & Curriculum', to: { name: 'admin.courses' }, icon: 'layers', permission: 'courses.manage-all' },

@@ -246,6 +246,12 @@ const routes = [
     component: InstructorExamGradingView,
     meta: { layout: StaffLayout, auth: true, permission: 'courses.teach' },
   },
+  {
+    path: '/instructor/tutoring',
+    name: 'instructor-tutoring-schedule',
+    component: InstructorTutoringScheduleView,
+    meta: { layout: StaffLayout, auth: true, permission: 'tutoring.manage-availability' },
+  },
 
   // Student Enrolled Courses & Player
   {
@@ -289,6 +295,12 @@ const routes = [
     name: 'student-event-bookings',
     component: StudentEventBookingsView,
     meta: { layout: StudentLayout, auth: true, permission: 'events.book' },
+  },
+  {
+    path: '/student/tutoring',
+    name: 'student-tutoring',
+    component: StudentTutoringView,
+    meta: { layout: StudentLayout, auth: true, permission: 'tutoring.book' },
   },
 
   // Coordinator Event Attendance Management (Phase 6)
@@ -364,6 +376,16 @@ const routes = [
     path: '/events/:slug',
     name: 'event-detail',
     component: EventDetailView,
+    meta: {
+      layout: (auth) => (auth.isAuthenticated ? (auth.isStaff ? StaffLayout : StudentLayout) : GuestLayout),
+    },
+  },
+
+  // Public 1-on-1 Tutoring Packages (Phase 7)
+  {
+    path: '/tutoring',
+    name: 'tutoring-packages',
+    component: TutoringPackagesView,
     meta: {
       layout: (auth) => (auth.isAuthenticated ? (auth.isStaff ? StaffLayout : StudentLayout) : GuestLayout),
     },
