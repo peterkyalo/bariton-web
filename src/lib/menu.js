@@ -4,11 +4,14 @@
  */
 export const MENU = [
   { section: 'Learn', label: 'My dashboard', to: { name: 'dashboard.student' }, icon: 'home', permission: 'dashboard.student' },
+  { section: 'Learn', label: 'My Orders & Receipts', to: { name: 'student.orders' }, icon: 'receipt', permission: 'courses.enroll' },
 
   { section: 'Teach', label: 'Instructor hub', to: { name: 'dashboard.instructor' }, icon: 'music', permission: 'dashboard.instructor' },
   { section: 'Teach', label: 'My Courses', to: { name: 'instructor.courses' }, icon: 'music', permission: 'courses.teach' },
 
   { section: 'Finance', label: 'Finance overview', to: { name: 'dashboard.finance' }, icon: 'wallet', permission: 'dashboard.finance' },
+  { section: 'Finance', label: 'Cash Reception', to: { name: 'finance.cash' }, icon: 'cash', permission: 'dashboard.finance' },
+  { section: 'Finance', label: 'Payment Ledger', to: { name: 'finance.payments' }, icon: 'list', permission: 'dashboard.finance' },
 
   { section: 'Events', label: 'Events overview', to: { name: 'dashboard.coordinator' }, icon: 'calendar', permission: 'dashboard.coordinator' },
 

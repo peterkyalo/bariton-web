@@ -34,6 +34,11 @@ import InstructorCoursesView from '@/views/instructor/InstructorCoursesView.vue'
 import CourseListView from '@/views/admin/courses/CourseListView.vue'
 import CourseEditorView from '@/views/admin/courses/CourseEditorView.vue'
 
+import CheckoutView from '@/views/checkout/CheckoutView.vue'
+import StudentOrdersView from '@/views/student/StudentOrdersView.vue'
+import FinanceCashEntryView from '@/views/finance/FinanceCashEntryView.vue'
+import FinancePaymentsView from '@/views/finance/FinancePaymentsView.vue'
+
 import ForbiddenView from '@/views/errors/ForbiddenView.vue'
 import NotFoundView from '@/views/errors/NotFoundView.vue'
 
@@ -203,6 +208,34 @@ const routes = [
     name: 'student.player',
     component: LessonPlayerView,
     meta: { layout: GuestLayout, auth: true, permission: 'courses.enroll' },
+  },
+  {
+    path: '/student/orders',
+    name: 'student.orders',
+    component: StudentOrdersView,
+    meta: { layout: StudentLayout, auth: true, permission: 'courses.enroll' },
+  },
+
+  // Checkout View
+  {
+    path: '/checkout',
+    name: 'checkout',
+    component: CheckoutView,
+    meta: { layout: StudentLayout, auth: true },
+  },
+
+  // Finance Staff Operations
+  {
+    path: '/finance/cash-entry',
+    name: 'finance.cash',
+    component: FinanceCashEntryView,
+    meta: { layout: StaffLayout, auth: true, permission: 'dashboard.finance' },
+  },
+  {
+    path: '/finance/payments',
+    name: 'finance.payments',
+    component: FinancePaymentsView,
+    meta: { layout: StaffLayout, auth: true, permission: 'dashboard.finance' },
   },
 
   // Public Course Catalog

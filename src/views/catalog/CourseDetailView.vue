@@ -192,6 +192,12 @@
                 <div class="text-xs font-medium text-slate-400">
                   ${{ module.price_usd_formatted }} USD
                 </div>
+                <button
+                  @click="enrollInModule(module)"
+                  class="btn btn-secondary text-xs mt-2 w-full py-1.5"
+                >
+                  Enroll in Level
+                </button>
               </div>
             </div>
 
@@ -294,7 +300,7 @@
 
 <script setup>
 import { computed, ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { useCoursesStore } from '../../stores/courses';
 import { useAuthStore } from '../../stores/auth';
 import { useUiStore } from '../../stores/ui';
@@ -303,6 +309,7 @@ import EmptyState from '../../components/ui/EmptyState.vue';
 import Modal from '../../components/ui/Modal.vue';
 
 const route = useRoute();
+const router = useRouter();
 const coursesStore = useCoursesStore();
 const authStore = useAuthStore();
 const uiStore = useUiStore();
@@ -345,11 +352,25 @@ function closePreviewModal() {
 }
 
 function openPurchaseModal() {
-  uiStore.notify({
-    type: 'info',
-    title: 'Checkout Starting (Phase 3)',
-    message: 'Payment gateways (M-Pesa, Cash, Stripe Card) are being integrated in Phase 3.',
-  });
+  if (!authStore.isAuthenticated) {
+    router.push({ name: 'login', query: { redirect: route.fullPath } });
+    return;
+  }
+
+  if (course.value?.upgrade_pricing?.has_owned_modules) {
+    router.push({ path: '/checkout', query: { type: 'bundle_upgrade', id: course.value.id } });
+  } else {
+    router.push({ path: '/checkout', query: { type: 'course_bundle', id: course.value.id } });
+  }
+}
+
+function enrollInModule(module) {
+  if (!authStore.isAuthenticated) {
+    router.push({ name: 'login', query: { redirect: route.fullPath } });
+    return;
+  }
+
+  router.push({ path: '/checkout', query: { type: 'module', id: module.id } });
 }
 
 onMounted(async () => {
