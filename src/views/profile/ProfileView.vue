@@ -38,11 +38,49 @@ const exportLoading = ref(false)
 const deletionReason = ref('')
 const deletionLoading = ref(false)
 
+// Notification Preferences
+import { useNotificationTemplateStore } from '@/stores/notificationTemplates'
+const notifStore = useNotificationTemplateStore()
+const notifPreferences = ref({
+  event_reminders: true,
+  session_reminders: true,
+  assignment_graded: true,
+  marketing: false,
+})
+const notifLoading = ref(false)
+
 onMounted(async () => {
   if (auth.isAuthenticated) {
     loadExports()
+    loadPreferences()
   }
 })
+
+async function loadPreferences() {
+  try {
+    const data = await notifStore.fetchPreferences()
+    if (data?.preferences) {
+      notifPreferences.value = {
+        event_reminders: Boolean(data.preferences.event_reminders ?? true),
+        session_reminders: Boolean(data.preferences.session_reminders ?? true),
+        assignment_graded: Boolean(data.preferences.assignment_graded ?? true),
+        marketing: Boolean(data.preferences.marketing ?? false),
+      }
+    }
+  } catch (e) {}
+}
+
+async function savePreferences() {
+  notifLoading.value = true
+  try {
+    await notifStore.updatePreferences(notifPreferences.value)
+    ui.toast('Notification preferences saved.', 'success')
+  } catch (err) {
+    ui.toast('Failed to save preferences.', 'error')
+  } finally {
+    notifLoading.value = false
+  }
+}
 
 async function saveProfile() {
   profileLoading.value = true
@@ -388,6 +426,84 @@ async function cancelDeletion() {
             </button>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- Notification Preferences Card (Phase 8) -->
+    <div class="glass p-6 sm:p-8 space-y-6 rounded-2xl">
+      <div class="border-b border-white/[0.06] pb-4">
+        <h2 class="text-lg font-bold text-white">Notification Preferences</h2>
+        <p class="text-xs text-ink-300 mt-1">
+          Customize which automated notifications you receive via Email and SMS. Security verifications and payment receipts are mandatory.
+        </p>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between">
+          <div>
+            <span class="font-bold text-white block">Bootcamp & Workshop Reminders</span>
+            <span class="text-ink-400">Receive calendar reminders 24 hours prior to physical event check-in.</span>
+          </div>
+          <input
+            type="checkbox"
+            v-model="notifPreferences.event_reminders"
+            class="rounded border-slate-700 text-brass-500 focus:ring-brass-500"
+          />
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between">
+          <div>
+            <span class="font-bold text-white block">1-on-1 Tutoring Session Reminders</span>
+            <span class="text-ink-400">Receive alerts with video meeting links and studio room numbers before your session.</span>
+          </div>
+          <input
+            type="checkbox"
+            v-model="notifPreferences.session_reminders"
+            class="rounded border-slate-700 text-brass-500 focus:ring-brass-500"
+          />
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between">
+          <div>
+            <span class="font-bold text-white block">Grading & Evaluation Feedback</span>
+            <span class="text-ink-400">Instant notifications when instructors finish rubric evaluations or release exam grades.</span>
+          </div>
+          <input
+            type="checkbox"
+            v-model="notifPreferences.assignment_graded"
+            class="rounded border-slate-700 text-brass-500 focus:ring-brass-500"
+          />
+        </div>
+
+        <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 flex items-center justify-between">
+          <div>
+            <span class="font-bold text-white block">Masterclasses & Academy Announcements</span>
+            <span class="text-ink-400">Special invitations to guest maestro masterclasses and academy concert tickets.</span>
+          </div>
+          <input
+            type="checkbox"
+            v-model="notifPreferences.marketing"
+            class="rounded border-slate-700 text-brass-500 focus:ring-brass-500"
+          />
+        </div>
+
+        <div class="p-3 rounded-xl bg-white/[0.04] border border-white/10 text-ink-400 flex items-start gap-2">
+          <span class="text-brass-300">ℹ</span>
+          <span>
+            <strong>Mandatory Notifications:</strong> Two-factor login challenges, password resets, payment confirmations, and official sequential tax receipts are always sent and cannot be disabled.
+          </span>
+        </div>
+      </div>
+
+      <div class="flex justify-end pt-2">
+        <button
+          type="button"
+          class="btn-primary text-xs !py-2.5 !px-5"
+          :disabled="notifLoading"
+          @click="savePreferences"
+        >
+          {{ notifLoading ? 'Saving Preferences...' : 'Save Notification Preferences' }}
+        </button>
       </div>
     </div>
 

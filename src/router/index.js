@@ -25,6 +25,7 @@ import UsersView from '@/views/admin/UsersView.vue'
 import SettingsView from '@/views/admin/SettingsView.vue'
 import ActivityLogView from '@/views/admin/ActivityLogView.vue'
 import NotificationLogView from '@/views/admin/NotificationLogView.vue'
+import NotificationTemplatesView from '@/views/admin/NotificationTemplatesView.vue'
 
 import CourseCatalogView from '@/views/catalog/CourseCatalogView.vue'
 import CourseDetailView from '@/views/catalog/CourseDetailView.vue'
@@ -206,6 +207,12 @@ const routes = [
     path: '/admin/notifications',
     name: 'admin.notifications',
     component: NotificationLogView,
+    meta: { layout: StaffLayout, auth: true, permission: 'notifications.view' },
+  },
+  {
+    path: '/admin/notification-templates',
+    name: 'admin.notification-templates',
+    component: NotificationTemplatesView,
     meta: { layout: StaffLayout, auth: true, permission: 'notifications.view' },
   },
   {
