@@ -5,8 +5,11 @@ export const useOrdersStore = defineStore('orders', {
   state: () => ({
     activeOrder: null,
     studentOrders: [],
+    studentRefunds: [],
     financeOrders: [],
     financePayments: [],
+    financeRefunds: [],
+    financeCreditNotes: [],
     pagination: {
       currentPage: 1,
       lastPage: 1,
@@ -68,6 +71,80 @@ export const useOrdersStore = defineStore('orders', {
       } catch (err) {
         this.paymentStatus = 'failed'
         this.error = err.response?.data?.message || 'Failed to dispatch M-Pesa prompt.'
+        throw err
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async initiateStripe(uuid) {
+      this.loading = true
+      this.error = null
+      this.paymentStatus = 'initiating'
+      this.paymentMessage = 'Initializing secure card payment session...'
+
+      try {
+        const res = await http.post(`/orders/${uuid}/pay/stripe`)
+        return res.data
+      } catch (err) {
+        this.paymentStatus = 'failed'
+        this.error = err.response?.data?.message || 'Failed to initialize card payment.'
+        throw err
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async confirmStripe(uuid, payload = {}) {
+      this.loading = true
+      this.error = null
+      try {
+        const res = await http.post(`/orders/${uuid}/pay/stripe/confirm`, payload)
+        this.paymentStatus = 'successful'
+        this.paymentMessage = 'Card payment confirmed successfully!'
+        if (this.activeOrder) {
+          this.activeOrder.status = 'paid'
+        }
+        return res.data
+      } catch (err) {
+        this.error = err.response?.data?.message || 'Failed to confirm card payment.'
+        throw err
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async initiatePaypal(uuid) {
+      this.loading = true
+      this.error = null
+      this.paymentStatus = 'initiating'
+      this.paymentMessage = 'Connecting to PayPal...'
+
+      try {
+        const res = await http.post(`/orders/${uuid}/pay/paypal`)
+        return res.data
+      } catch (err) {
+        this.paymentStatus = 'failed'
+        this.error = err.response?.data?.message || 'Failed to initialize PayPal.'
+        throw err
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async capturePaypal(uuid, payload = {}) {
+      this.loading = true
+      this.error = null
+      try {
+        const res = await http.post(`/orders/${uuid}/pay/paypal/capture`, payload)
+        this.paymentStatus = 'successful'
+        this.paymentMessage = 'PayPal payment confirmed successfully!'
+        if (this.activeOrder) {
+          this.activeOrder.status = 'paid'
+        }
+        return res.data
+      } catch (err) {
+        this.error = err.response?.data?.message || 'Failed to capture PayPal payment.'
         throw err
       } finally {
         this.loading = false
@@ -146,6 +223,58 @@ export const useOrdersStore = defineStore('orders', {
       }
     },
 
+    // Student Refund Operations
+    async requestRefund({ orderUuid, orderItemId, reason }) {
+      this.loading = true
+      this.error = null
+      try {
+        const res = await http.post(`/student/orders/${orderUuid}/refund-requests`, {
+          order_item_id: orderItemId || null,
+          reason,
+        })
+        return res.data
+      } catch (err) {
+        this.error = err.response?.data?.message || 'Failed to submit refund request.'
+        throw err
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async fetchStudentRefunds(page = 1) {
+      this.loading = true
+      try {
+        const res = await http.get('/student/refund-requests', { params: { page } })
+        this.studentRefunds = res.data.data || []
+        return this.studentRefunds
+      } catch (err) {
+        this.error = err.response?.data?.message || 'Failed to load refund requests.'
+        throw err
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async downloadCreditNotePdf(creditNoteUuid, creditNoteNumber = 'BMAS-CreditNote') {
+      try {
+        const res = await http.get(`/student/credit-notes/${creditNoteUuid}/download`, {
+          responseType: 'blob',
+        })
+        const blob = new Blob([res.data], { type: 'application/pdf' })
+        const url = window.URL.createObjectURL(blob)
+        const link = document.createElement('a')
+        link.href = url
+        link.setAttribute('download', `${creditNoteNumber}.pdf`)
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
+        window.URL.revokeObjectURL(url)
+      } catch (err) {
+        this.error = 'Unable to download credit note PDF.'
+        throw err
+      }
+    },
+
     // Finance Operations
     async fetchFinanceOrders(params = {}) {
       this.loading = true
@@ -199,6 +328,62 @@ export const useOrdersStore = defineStore('orders', {
         return this.financePayments
       } catch (err) {
         this.error = err.response?.data?.message || 'Failed to fetch payments.'
+        throw err
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async fetchFinanceRefunds(params = {}) {
+      this.loading = true
+      try {
+        const res = await http.get('/finance/refund-requests', { params })
+        this.financeRefunds = res.data.data || []
+        this.pagination = {
+          currentPage: res.data.meta?.current_page || 1,
+          lastPage: res.data.meta?.last_page || 1,
+          total: res.data.meta?.total || this.financeRefunds.length,
+        }
+        return this.financeRefunds
+      } catch (err) {
+        this.error = err.response?.data?.message || 'Failed to load refund requests.'
+        throw err
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async reviewRefundRequest({ uuid, action, notes, manualReference }) {
+      this.loading = true
+      this.error = null
+      try {
+        const res = await http.post(`/finance/refund-requests/${uuid}/review`, {
+          action,
+          notes,
+          manual_reference: manualReference,
+        })
+        return res.data
+      } catch (err) {
+        this.error = err.response?.data?.message || 'Failed to process refund review.'
+        throw err
+      } finally {
+        this.loading = false
+      }
+    },
+
+    async fetchFinanceCreditNotes(params = {}) {
+      this.loading = true
+      try {
+        const res = await http.get('/finance/credit-notes', { params })
+        this.financeCreditNotes = res.data.data || []
+        this.pagination = {
+          currentPage: res.data.meta?.current_page || 1,
+          lastPage: res.data.meta?.last_page || 1,
+          total: res.data.meta?.total || this.financeCreditNotes.length,
+        }
+        return this.financeCreditNotes
+      } catch (err) {
+        this.error = err.response?.data?.message || 'Failed to load credit notes.'
         throw err
       } finally {
         this.loading = false

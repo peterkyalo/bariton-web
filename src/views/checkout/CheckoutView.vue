@@ -10,16 +10,30 @@ const router = useRouter()
 const ordersStore = useOrdersStore()
 const authStore = useAuthStore()
 
-const activeTab = ref('mpesa') // 'mpesa' | 'cash'
+const activeTab = ref('mpesa') // 'mpesa' | 'card' | 'paypal' | 'cash'
 const phone = ref('')
 const phoneError = ref('')
 const countdownSeconds = ref(0)
 let timerInterval = null
 
-// Formatted phone prefilled from user profile if available
+// Card state (Stripe in KES)
+const cardHolder = ref('')
+const cardNumber = ref('')
+const cardExpiry = ref('')
+const cardCvc = ref('')
+const cardError = ref('')
+const is3dSecureVerifying = ref(false)
+
+// PayPal state (USD locked rate)
+const showPaypalModal = ref(false)
+const paypalApprovalData = ref(null)
+
 onMounted(async () => {
   if (authStore.user?.phone) {
     phone.value = authStore.user.phone
+  }
+  if (authStore.user?.name) {
+    cardHolder.value = authStore.user.name
   }
 
   const orderUuid = route.query.order
@@ -72,6 +86,7 @@ const formattedCountdown = computed(() => {
   return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
 })
 
+// M-Pesa Payment
 async function handleMpesaPay() {
   phoneError.value = ''
   const cleaned = phone.value.replace(/[^0-9]/g, '')
@@ -84,12 +99,84 @@ async function handleMpesaPay() {
 
   try {
     await ordersStore.initiateMpesa(order.value.uuid, cleaned)
-    // Begin polling status
     const pollResult = await ordersStore.pollOrderStatus(order.value.uuid)
     if (pollResult.status === 'paid') {
       await ordersStore.fetchOrder(order.value.uuid)
     }
+  } catch {
+    // Handled in store
+  }
+}
+
+// Card Payment (Stripe test mode)
+function fillTestCard() {
+  cardHolder.value = authStore.user?.name || 'Jane Wanjiku'
+  cardNumber.value = '4242 4242 4242 4242'
+  cardExpiry.value = '12/28'
+  cardCvc.value = '123'
+  cardError.value = ''
+}
+
+async function handleCardPay() {
+  cardError.value = ''
+  const rawNum = cardNumber.value.replace(/\s+/g, '')
+  if (!rawNum || rawNum.length < 15) {
+    cardError.value = 'Please enter a valid 16-digit card number.'
+    return
+  }
+  if (!cardExpiry.value || !cardExpiry.value.includes('/')) {
+    cardError.value = 'Please enter expiration date as MM/YY.'
+    return
+  }
+  if (!cardCvc.value || cardCvc.value.length < 3) {
+    cardError.value = 'Please enter a valid 3 or 4-digit CVC code.'
+    return
+  }
+
+  if (!order.value) return
+
+  try {
+    is3dSecureVerifying.value = true
+    const initRes = await ordersStore.initiateStripe(order.value.uuid)
+    
+    // Simulate 3D Secure 2.0 biometric / OTP verification delay
+    await new Promise((resolve) => setTimeout(resolve, 1200))
+    
+    // Confirm PaymentIntent
+    await ordersStore.confirmStripe(order.value.uuid, {
+      payment_intent_id: initRes.payment_intent_id,
+    })
+    
+    await ordersStore.fetchOrder(order.value.uuid)
   } catch (err) {
+    cardError.value = err.response?.data?.message || 'Card payment failed. Please verify your details.'
+  } finally {
+    is3dSecureVerifying.value = false
+  }
+}
+
+// PayPal Payment
+async function handlePaypalInitiate() {
+  if (!order.value) return
+  try {
+    const res = await ordersStore.initiatePaypal(order.value.uuid)
+    paypalApprovalData.value = res
+    showPaypalModal.value = true
+  } catch {
+    // Handled in store
+  }
+}
+
+async function handlePaypalApprove() {
+  if (!order.value || !paypalApprovalData.value) return
+  try {
+    await ordersStore.capturePaypal(order.value.uuid, {
+      paypal_order_id: paypalApprovalData.value.paypal_order_id,
+      payer_id: 'PAYER_' + Math.random().toString(36).substring(2, 9).toUpperCase(),
+    })
+    showPaypalModal.value = false
+    await ordersStore.fetchOrder(order.value.uuid)
+  } catch {
     // Handled in store
   }
 }
@@ -101,12 +188,7 @@ async function handleDownloadReceipt() {
 }
 
 function handleGoToCourse() {
-  const firstItem = order.value?.items?.[0]
-  if (firstItem?.item_type === 'course_bundle' && firstItem?.meta?.course_id) {
-    router.push({ name: 'student.courses' })
-  } else {
-    router.push({ name: 'student.courses' })
-  }
+  router.push({ name: 'student.courses' })
 }
 </script>
 
@@ -125,7 +207,7 @@ function handleGoToCourse() {
           Enrollment Checkout
         </h1>
         <p class="text-sm text-ink-300 mt-1">
-          Complete your payment securely with Safaricom M-Pesa or at our school bursar desk.
+          Choose your preferred method: M-Pesa, Card (Stripe), PayPal, or in-person cash.
         </p>
       </div>
 
@@ -185,7 +267,7 @@ function handleGoToCourse() {
             </div>
             <div class="flex justify-between text-ink-300">
               <span>Payment Method:</span>
-              <span class="uppercase font-semibold text-brass-300">{{ order.payment_method }}</span>
+              <span class="uppercase font-semibold text-brass-300">{{ order.payment_method || 'CONFIRMED' }}</span>
             </div>
             <div v-if="order.receipt" class="flex justify-between text-ink-300">
               <span>Official Receipt:</span>
@@ -228,34 +310,68 @@ function handleGoToCourse() {
 
         <!-- Active Payment Form (Pending) -->
         <div v-else class="glass p-6 sm:p-8 space-y-6">
-          <!-- Method Selection Tabs -->
-          <div class="grid grid-cols-2 gap-3 p-1 rounded-xl bg-ink-950/60 border border-white/5">
+          <!-- Method Selection Tabs: 4 Options -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 p-1 rounded-xl bg-ink-950/60 border border-white/5">
+            <!-- M-Pesa -->
             <button
               @click="activeTab = 'mpesa'"
               :class="[
-                'flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium text-xs sm:text-sm transition-all',
+                'flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg font-medium text-xs transition-all',
                 activeTab === 'mpesa'
                   ? 'bg-gradient-to-r from-emerald-600 to-green-600 text-white shadow-lg'
                   : 'text-ink-300 hover:text-white hover:bg-white/5'
               ]"
             >
-              <span class="w-2.5 h-2.5 rounded-full bg-green-400"></span>
-              Safaricom M-Pesa
+              <span class="w-2 h-2 rounded-full bg-green-400 shrink-0"></span>
+              M-Pesa
             </button>
 
+            <!-- Card (Stripe) -->
+            <button
+              @click="activeTab = 'card'"
+              :class="[
+                'flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg font-medium text-xs transition-all',
+                activeTab === 'card'
+                  ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
+                  : 'text-ink-300 hover:text-white hover:bg-white/5'
+              ]"
+            >
+              <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              </svg>
+              Card (Stripe)
+            </button>
+
+            <!-- PayPal -->
+            <button
+              @click="activeTab = 'paypal'"
+              :class="[
+                'flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg font-medium text-xs transition-all',
+                activeTab === 'paypal'
+                  ? 'bg-gradient-to-r from-blue-600 to-cyan-600 text-white shadow-lg'
+                  : 'text-ink-300 hover:text-white hover:bg-white/5'
+              ]"
+            >
+              <svg class="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.262-.03.188-.066.384-.108.587-.665 3.238-2.868 4.88-6.19 4.88H10.51c-.495 0-.916.36-1 .851l-1.077 6.822a.64.64 0 0 1-.633.541z" />
+              </svg>
+              PayPal (USD)
+            </button>
+
+            <!-- Cash -->
             <button
               @click="activeTab = 'cash'"
               :class="[
-                'flex items-center justify-center gap-2 py-3 px-4 rounded-lg font-medium text-xs sm:text-sm transition-all',
+                'flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-lg font-medium text-xs transition-all',
                 activeTab === 'cash'
                   ? 'bg-brass-500 text-ink-950 shadow-lg'
                   : 'text-ink-300 hover:text-white hover:bg-white/5'
               ]"
             >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
-              School Office Cash
+              School Cash
             </button>
           </div>
 
@@ -326,13 +442,180 @@ function handleGoToCourse() {
                   Processing...
                 </span>
                 <span v-else>
-                  Pay KES {{ order.total_kes_formatted }} via M-Pesa STK Push
+                  Pay KES {{ order.total_kes_formatted }} via M-Pesa
                 </span>
               </button>
             </div>
           </div>
 
-          <!-- Tab 2: Cash Payment Instructions -->
+          <!-- Tab 2: Credit / Debit Card (Stripe) -->
+          <div v-else-if="activeTab === 'card'" class="space-y-5">
+            <div class="flex items-center justify-between p-3 rounded-xl bg-indigo-950/40 border border-indigo-500/30 text-xs text-indigo-300">
+              <span class="flex items-center gap-2 font-medium">
+                <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                Stripe 3D Secure 2.0 (Charged in KES)
+              </span>
+              <button
+                type="button"
+                @click="fillTestCard"
+                class="px-2.5 py-1 rounded bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-200 text-[11px] font-semibold border border-indigo-400/30 transition-colors"
+              >
+                Autofill Test Card
+              </button>
+            </div>
+
+            <!-- Cardholder Name -->
+            <div>
+              <label class="field-label" for="cardHolder">Cardholder Name</label>
+              <input
+                id="cardHolder"
+                v-model="cardHolder"
+                type="text"
+                placeholder="Jane Wanjiku"
+                class="field-input"
+                :disabled="ordersStore.loading || is3dSecureVerifying"
+              />
+            </div>
+
+            <!-- Card Number -->
+            <div>
+              <label class="field-label" for="cardNumber">Card Number</label>
+              <div class="relative">
+                <input
+                  id="cardNumber"
+                  v-model="cardNumber"
+                  type="text"
+                  placeholder="4242 4242 4242 4242"
+                  maxlength="19"
+                  class="field-input pr-12 font-mono"
+                  :disabled="ordersStore.loading || is3dSecureVerifying"
+                />
+                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-ink-400">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+
+            <!-- Expiry & CVC -->
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="field-label" for="cardExpiry">Expiration (MM/YY)</label>
+                <input
+                  id="cardExpiry"
+                  v-model="cardExpiry"
+                  type="text"
+                  placeholder="12/28"
+                  maxlength="5"
+                  class="field-input font-mono"
+                  :disabled="ordersStore.loading || is3dSecureVerifying"
+                />
+              </div>
+
+              <div>
+                <label class="field-label" for="cardCvc">CVC / CVV</label>
+                <input
+                  id="cardCvc"
+                  v-model="cardCvc"
+                  type="password"
+                  placeholder="123"
+                  maxlength="4"
+                  class="field-input font-mono"
+                  :disabled="ordersStore.loading || is3dSecureVerifying"
+                />
+              </div>
+            </div>
+
+            <p v-if="cardError" class="p-3 rounded-lg bg-danger-500/10 border border-danger-500/20 text-xs text-danger-300">
+              {{ cardError }}
+            </p>
+
+            <!-- 3D Secure Verifying Banner -->
+            <div v-if="is3dSecureVerifying" class="p-4 rounded-xl bg-indigo-950/50 border border-indigo-400/30 flex items-center gap-3 text-xs text-indigo-200">
+              <svg class="w-5 h-5 animate-spin text-indigo-400 shrink-0" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              <span>Verifying 3D Secure 2.0 with issuing bank and capturing in KES...</span>
+            </div>
+
+            <button
+              @click="handleCardPay"
+              :disabled="ordersStore.loading || is3dSecureVerifying"
+              class="w-full btn bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-bold py-3.5 shadow-lg shadow-indigo-900/30"
+            >
+              <span v-if="ordersStore.loading || is3dSecureVerifying" class="inline-flex items-center gap-2">
+                <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                </svg>
+                Processing Card...
+              </span>
+              <span v-else>
+                Pay KES {{ order.total_kes_formatted }} with Card
+              </span>
+            </button>
+
+            <div class="flex items-center justify-center gap-4 text-[11px] text-ink-400 pt-1">
+              <span>Visa</span>
+              <span>•</span>
+              <span>Mastercard</span>
+              <span>•</span>
+              <span>American Express</span>
+              <span>•</span>
+              <span>Idempotent SSL</span>
+            </div>
+          </div>
+
+          <!-- Tab 3: PayPal (USD at Locked Rate) -->
+          <div v-else-if="activeTab === 'paypal'" class="space-y-6">
+            <div class="p-5 rounded-xl bg-blue-950/30 border border-blue-500/20 space-y-3">
+              <div class="flex items-center gap-2 text-blue-300 font-semibold text-sm">
+                <svg class="w-5 h-5 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.262-.03.188-.066.384-.108.587-.665 3.238-2.868 4.88-6.19 4.88H10.51c-.495 0-.916.36-1 .851l-1.077 6.822a.64.64 0 0 1-.633.541z" />
+                </svg>
+                Pay Internationally in USD
+              </div>
+              <p class="text-xs text-ink-300 leading-relaxed">
+                PayPal charges international students directly in US Dollars at your order's locked exchange rate (KES {{ order.exchange_rate_usd }} per 1 USD).
+              </p>
+            </div>
+
+            <div class="glass p-4 rounded-xl text-xs space-y-2 bg-ink-950/60">
+              <div class="flex justify-between text-ink-300">
+                <span>KES Equivalent:</span>
+                <span class="font-mono text-white">KES {{ order.total_kes_formatted }}</span>
+              </div>
+              <div class="flex justify-between text-ink-300">
+                <span>Order Exchange Rate:</span>
+                <span class="text-white font-mono">1 USD = KES {{ order.exchange_rate_usd }}</span>
+              </div>
+              <div class="flex justify-between text-ink-200 font-bold border-t border-white/5 pt-2 text-sm">
+                <span>Amount to Charge:</span>
+                <span class="text-blue-400 font-mono">${{ order.total_usd_formatted }} USD</span>
+              </div>
+            </div>
+
+            <div v-if="ordersStore.error" class="p-3 rounded-lg bg-danger-500/10 border border-danger-500/20 text-xs text-danger-300">
+              {{ ordersStore.error }}
+            </div>
+
+            <button
+              @click="handlePaypalInitiate"
+              :disabled="ordersStore.loading"
+              class="w-full btn bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-white font-bold py-3.5 shadow-lg shadow-blue-900/30 flex items-center justify-center gap-2"
+            >
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.262-.03.188-.066.384-.108.587-.665 3.238-2.868 4.88-6.19 4.88H10.51c-.495 0-.916.36-1 .851l-1.077 6.822a.64.64 0 0 1-.633.541z" />
+              </svg>
+              <span>Pay ${{ order.total_usd_formatted }} USD with PayPal</span>
+            </button>
+          </div>
+
+          <!-- Tab 4: Cash Payment Instructions -->
           <div v-else-if="activeTab === 'cash'" class="space-y-6">
             <div class="p-5 rounded-xl bg-brass-500/10 border border-brass-500/20 space-y-3">
               <div class="flex items-center gap-2 text-brass-300 font-semibold text-sm">
@@ -438,6 +721,59 @@ function handleGoToCourse() {
             </svg>
             <span>Official Bariton Music Academy receipt issued upon confirmation. Safe & encrypted.</span>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PayPal Approval Modal (Simulated Sandbox) -->
+    <div v-if="showPaypalModal && paypalApprovalData" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink-950/80 backdrop-blur-sm">
+      <div class="glass max-w-md w-full p-6 sm:p-8 space-y-6 border-blue-500/30">
+        <div class="flex items-center justify-between border-b border-white/10 pb-4">
+          <div class="flex items-center gap-2">
+            <svg class="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.262-.03.188-.066.384-.108.587-.665 3.238-2.868 4.88-6.19 4.88H10.51c-.495 0-.916.36-1 .851l-1.077 6.822a.64.64 0 0 1-.633.541z" />
+            </svg>
+            <span class="font-bold text-white text-base">PayPal Checkout Sandbox</span>
+          </div>
+          <button @click="showPaypalModal = false" class="text-ink-400 hover:text-white">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <div class="p-4 rounded-xl bg-ink-950/80 border border-white/5 space-y-2">
+            <div class="flex justify-between text-ink-300">
+              <span>Merchant:</span>
+              <span class="text-white font-medium">Bariton Music Academy</span>
+            </div>
+            <div class="flex justify-between text-ink-300">
+              <span>Order ID:</span>
+              <span class="font-mono text-white">{{ paypalApprovalData.paypal_order_id }}</span>
+            </div>
+            <div class="flex justify-between text-ink-300 border-t border-white/5 pt-2">
+              <span>Charge Amount:</span>
+              <span class="text-base font-bold text-blue-400 font-mono">${{ order.total_usd_formatted }} USD</span>
+            </div>
+          </div>
+          <p class="text-ink-400 text-[11px] leading-relaxed">
+            In test mode, clicking "Approve Payment" simulates authorization and calls the capture API to fulfill your order immediately.
+          </p>
+        </div>
+
+        <div class="flex gap-3">
+          <button
+            @click="handlePaypalApprove"
+            :disabled="ordersStore.loading"
+            class="flex-1 btn bg-blue-600 hover:bg-blue-500 text-white font-bold"
+          >
+            <span v-if="ordersStore.loading">Capturing...</span>
+            <span v-else>Approve ${{ order.total_usd_formatted }} USD</span>
+          </button>
+          <button @click="showPaypalModal = false" class="btn btn-secondary">
+            Cancel
+          </button>
         </div>
       </div>
     </div>

@@ -38,6 +38,8 @@ import CheckoutView from '@/views/checkout/CheckoutView.vue'
 import StudentOrdersView from '@/views/student/StudentOrdersView.vue'
 import FinanceCashEntryView from '@/views/finance/FinanceCashEntryView.vue'
 import FinancePaymentsView from '@/views/finance/FinancePaymentsView.vue'
+import FinanceRefundsView from '@/views/finance/FinanceRefundsView.vue'
+import FinanceCreditNotesView from '@/views/finance/FinanceCreditNotesView.vue'
 
 import ForbiddenView from '@/views/errors/ForbiddenView.vue'
 import NotFoundView from '@/views/errors/NotFoundView.vue'
@@ -235,6 +237,18 @@ const routes = [
     path: '/finance/payments',
     name: 'finance.payments',
     component: FinancePaymentsView,
+    meta: { layout: StaffLayout, auth: true, permission: 'dashboard.finance' },
+  },
+  {
+    path: '/finance/refunds',
+    name: 'finance.refunds',
+    component: FinanceRefundsView,
+    meta: { layout: StaffLayout, auth: true, permission: 'dashboard.finance' },
+  },
+  {
+    path: '/finance/credit-notes',
+    name: 'finance.credit-notes',
+    component: FinanceCreditNotesView,
     meta: { layout: StaffLayout, auth: true, permission: 'dashboard.finance' },
   },
 
