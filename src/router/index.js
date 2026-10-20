@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 import GuestLayout from '@/layouts/GuestLayout.vue'
+import AuthLayout from '@/layouts/AuthLayout.vue'
 import StudentLayout from '@/layouts/StudentLayout.vue'
 import StaffLayout from '@/layouts/StaffLayout.vue'
 
@@ -61,66 +62,112 @@ import TutoringPackagesView from '@/views/tutoring/TutoringPackagesView.vue'
 import StudentTutoringView from '@/views/student/StudentTutoringView.vue'
 import InstructorTutoringScheduleView from '@/views/instructor/InstructorTutoringScheduleView.vue'
 
+import HomeLandingView from '@/views/public/HomeLandingView.vue'
+import AboutView from '@/views/public/AboutView.vue'
+import ContactView from '@/views/public/ContactView.vue'
+import TeamView from '@/views/public/TeamView.vue'
+import TestimonialView from '@/views/public/TestimonialView.vue'
+import CmsPageView from '@/views/public/CmsPageView.vue'
+import CmsPagesListView from '@/views/admin/CmsPagesListView.vue'
+import CmsPageEditorView from '@/views/admin/CmsPageEditorView.vue'
+import ContactInquiriesView from '@/views/admin/ContactInquiriesView.vue'
+
 import ForbiddenView from '@/views/errors/ForbiddenView.vue'
 import NotFoundView from '@/views/errors/NotFoundView.vue'
 
 const routes = [
-  // Landing / Home
+  // Landing / Home (matches index.html template)
   {
     path: '/',
     name: 'home',
-    beforeEnter: (to, from, next) => {
-      const auth = useAuthStore()
-      if (auth.isAuthenticated) {
-        next(auth.homeRoute)
-      } else {
-        next({ name: 'login' })
-      }
-    },
+    component: HomeLandingView,
+    meta: { layout: GuestLayout },
+  },
+  {
+    path: '/about',
+    name: 'about',
+    component: AboutView,
+    meta: { layout: GuestLayout },
+  },
+  {
+    path: '/contact',
+    name: 'contact',
+    component: ContactView,
+    meta: { layout: GuestLayout },
+  },
+  {
+    path: '/team',
+    name: 'team',
+    component: TeamView,
+    meta: { layout: GuestLayout },
+  },
+  {
+    path: '/testimonials',
+    name: 'testimonials',
+    component: TestimonialView,
+    meta: { layout: GuestLayout },
+  },
+  {
+    path: '/terms',
+    name: 'terms',
+    component: CmsPageView,
+    meta: { layout: GuestLayout, slug: 'terms' },
+  },
+  {
+    path: '/privacy',
+    name: 'privacy',
+    component: CmsPageView,
+    meta: { layout: GuestLayout, slug: 'privacy' },
+  },
+  {
+    path: '/p/:slug',
+    name: 'cms.page',
+    component: CmsPageView,
+    meta: { layout: GuestLayout },
   },
 
-  // Auth Routes (Guest)
+  // Auth Routes (AuthLayout)
   {
     path: '/login',
     name: 'login',
     component: LoginView,
-    meta: { layout: GuestLayout, guest: true },
+    meta: { layout: AuthLayout, guest: true },
   },
   {
     path: '/register',
     name: 'register',
     component: RegisterView,
-    meta: { layout: GuestLayout, guest: true },
+    meta: { layout: AuthLayout, guest: true },
   },
   {
     path: '/two-factor-challenge',
     name: 'auth.two-factor-challenge',
     component: TwoFactorChallengeView,
-    meta: { layout: GuestLayout },
+    meta: { layout: AuthLayout },
   },
   {
     path: '/forgot-password',
     name: 'forgot-password',
     component: ForgotPasswordView,
-    meta: { layout: GuestLayout, guest: true },
+    meta: { layout: AuthLayout, guest: true },
   },
   {
     path: '/reset-password',
     name: 'reset-password',
     component: ResetPasswordView,
-    meta: { layout: GuestLayout, guest: true },
+    meta: { layout: AuthLayout, guest: true },
   },
   {
     path: '/verify-email',
     name: 'verify-email',
     component: VerifyEmailView,
-    meta: { layout: GuestLayout },
+    meta: { layout: AuthLayout },
   },
   {
     path: '/guardian/confirm',
     name: 'guardian.confirm',
     component: GuardianConfirmView,
-    meta: { layout: GuestLayout },
+    meta: { layout: AuthLayout },
   },
 
   // Authenticated User Profile
@@ -220,6 +267,24 @@ const routes = [
     name: 'admin.certificates',
     component: AdminCertificatesView,
     meta: { layout: StaffLayout, auth: true, permission: 'courses.manage-all' },
+  },
+  {
+    path: '/admin/cms/pages',
+    name: 'admin.cms.pages',
+    component: CmsPagesListView,
+    meta: { layout: StaffLayout, auth: true, permission: 'settings.view' },
+  },
+  {
+    path: '/admin/cms/pages/:id',
+    name: 'admin.cms.pages.edit',
+    component: CmsPageEditorView,
+    meta: { layout: StaffLayout, auth: true, permission: 'settings.view' },
+  },
+  {
+    path: '/admin/cms/inquiries',
+    name: 'admin.cms.inquiries',
+    component: ContactInquiriesView,
+    meta: { layout: StaffLayout, auth: true, permission: 'settings.view' },
   },
 
   // Instructor Courses
@@ -323,7 +388,7 @@ const routes = [
     path: '/checkout',
     name: 'checkout',
     component: CheckoutView,
-    meta: { layout: StudentLayout, auth: true },
+    meta: { layout: GuestLayout, auth: true },
   },
 
   // Finance Staff Operations
@@ -400,7 +465,7 @@ const routes = [
 
   // Public Certificate Verification
   {
-    path: '/verify/:code',
+    path: '/verify/:code?',
     name: 'certificate.verify',
     component: CertificateVerificationView,
     meta: { layout: GuestLayout },
@@ -411,6 +476,12 @@ const routes = [
     path: '/403',
     name: 'forbidden',
     component: ForbiddenView,
+    meta: { layout: GuestLayout },
+  },
+  {
+    path: '/404',
+    name: 'not-found.page',
+    component: NotFoundView,
     meta: { layout: GuestLayout },
   },
   {

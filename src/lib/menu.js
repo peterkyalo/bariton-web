@@ -34,6 +34,8 @@ export const MENU = [
   { section: 'Administration', label: 'Activity log', to: { name: 'admin.activity' }, icon: 'list', permission: 'activity-log.view' },
   { section: 'Administration', label: 'Notifications Log', to: { name: 'admin.notifications' }, icon: 'bell', permission: 'notifications.view' },
   { section: 'Administration', label: 'Message Templates', to: { name: 'admin.notification-templates' }, icon: 'layers', permission: 'notifications.view' },
+  { section: 'Administration', label: 'CMS Website Pages', to: { name: 'admin.cms.pages' }, icon: 'layers', permission: 'settings.view' },
+  { section: 'Administration', label: 'Contact Inquiries', to: { name: 'admin.cms.inquiries' }, icon: 'bell', permission: 'settings.view' },
 ]
 
 /** Order used to pick a user's landing dashboard. */

@@ -65,11 +65,25 @@
 - `/admin/notification-templates`: Message templates editor for automated emails and SMS with token pills, character counters, and live test dispatch.
 - `/profile`: Interactive Notification Preferences card allowing students to toggle optional event reminders, tutoring reminders, and grading feedback while protecting mandatory security and payment notices.
 
+### Phase 9: CMS Engine & Public Website Template Integration
+- `/`: Public conservatory landing page matching `index.html` (Hero carousel, 4 Services cards, About section, Category grid, Popular Courses with pricing & enrollment, Faculty team, Testimonials, Footer). Dynamic navbar shows "Sign In / Join Now" for guests, and "My Dashboard" for authenticated users.
+- `/about`: Academy heritage and philosophy page matching `about.html` with statistics and faculty highlights.
+- `/courses`: Courses catalog matching `courses.html` with level filters, curriculum search, and module counts.
+- `/team`: Conservatory faculty directory matching `team.html` with instructor specializations and social handles.
+- `/testimonials`: Student testimonials showcase matching `testimonial.html` with star ratings and reviews.
+- `/contact`: Contact page matching `contact.html` with working interactive contact inquiry form wired to `POST /api/v1/contact` and Google Map embed.
+- `/404`: Branded luxury error page matching `404.html` with direct return home and explore courses buttons.
+- `/terms` & `/privacy`: Statutory legal pages dynamically rendered from the CMS engine.
+- `/p/:slug`: Dynamic public page renderer for any custom page created in the CMS studio.
+- `/admin/cms/pages`: Admin CMS management studio with category filters, search, publication toggles, modal page creation, and page deletion.
+- `/admin/cms/pages/:id`: Rich page editor with live preview, hero banner settings, custom sections JSON editor, and markdown content area.
+- `/admin/cms/inquiries`: Contact inquiries inbox with ticket status workflow (`pending`, `in_progress`, `resolved`, `archived`) and internal admin notes.
+
 ---
 
 ## 3. Automated Tests & Build Verification
 - **Test Runner**: Vitest 5.x
-- **Test Files**: 11 passed (11)
-- **Total Tests**: 66 passed (66)
+- **Test Files**: 12 passed (12)
+- **Total Tests**: 73 passed (73)
 - **Pass Rate**: 100%
-- **Production Build**: Clean bundle in `dist/` built in **1.34s**.
+- **Production Build**: Clean bundle in `dist/` built in **1.75s**.

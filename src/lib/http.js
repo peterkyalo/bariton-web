@@ -47,6 +47,12 @@ export function ensureCsrfCookie(force = false) {
 const MUTATING = ['post', 'put', 'patch', 'delete']
 
 http.interceptors.request.use(async (config) => {
+  if (config.url && config.url.startsWith('/api/v1/')) {
+    config.url = config.url.replace(/^\/api\/v1/, '')
+  } else if (config.url === '/api/v1' || config.url === '/api/v1/') {
+    config.url = '/'
+  }
+
   if (MUTATING.includes((config.method || 'get').toLowerCase())) {
     await ensureCsrfCookie()
   }
