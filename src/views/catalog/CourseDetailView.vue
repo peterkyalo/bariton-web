@@ -97,9 +97,35 @@
               </div>
             </div>
 
-            <!-- Student Upgrade Pricing (When student owns one or more modules) -->
+            <!-- Student Upgrade Pricing (When student owns one or more modules or validation path) -->
             <div
-              v-if="course.upgrade_pricing?.has_owned_modules"
+              v-if="course.upgrade_pricing?.is_validation_path"
+              class="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 space-y-2"
+            >
+              <div class="flex items-center gap-1.5 text-xs font-bold text-amber-400 uppercase tracking-wide">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Professional Track Upgrade Available
+              </div>
+              <p class="text-xs text-slate-300">
+                You are enrolled in the Skills Validation Track with <strong class="text-white">KES {{ (course.upgrade_pricing.total_paid_kes / 100).toLocaleString() }}</strong> credited toward the full bundle.
+              </p>
+              <div class="pt-2 border-t border-amber-500/20 flex items-baseline justify-between">
+                <span class="text-xs text-slate-300 font-medium">Upgrade to Full Lessons:</span>
+                <div class="text-right">
+                  <span class="text-xl font-serif font-bold text-white">
+                    KES {{ course.upgrade_pricing.upgrade_price_formatted }}
+                  </span>
+                  <span class="block text-xs text-amber-400">
+                    ${{ course.upgrade_pricing.upgrade_price_usd_formatted }} USD
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div
+              v-else-if="course.upgrade_pricing?.has_owned_modules"
               class="p-4 rounded-xl bg-gold-500/10 border border-gold-500/30 space-y-2"
             >
               <div class="flex items-center gap-1.5 text-xs font-bold text-gold-400 uppercase tracking-wide">
@@ -131,7 +157,7 @@
                 @click="openPurchaseModal"
                 class="btn btn-primary w-full py-3 text-center font-bold text-sm shadow-lg shadow-gold-500/20"
               >
-                {{ course.upgrade_pricing?.has_owned_modules ? 'Upgrade to Full Course' : 'Enroll in Full Course' }}
+                {{ course.upgrade_pricing?.has_owned_modules || course.upgrade_pricing?.is_validation_path ? 'Upgrade to Full Course' : 'Enroll in Full Course' }}
               </button>
               <router-link
                 v-else
@@ -145,6 +171,50 @@
                 Includes lifetime access to all lessons, downloadable sheet music, audio tracks and certificate upon completion.
               </p>
             </div>
+          </div>
+
+          <!-- Professional Validation Path Option Card -->
+          <div
+            v-if="course.is_open_for_validation && !course.upgrade_pricing?.is_validation_path"
+            class="card p-6 rounded-2xl bg-slate-900/90 border border-amber-500/30 shadow-xl space-y-4"
+          >
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                Direct Validation Track
+              </span>
+              <span class="text-xs text-slate-400">No Prerequisites</span>
+            </div>
+
+            <div>
+              <h3 class="text-lg font-serif font-bold text-white">
+                Professional Skills Validation
+              </h3>
+              <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+                Take practical assessments and the final examination directly to earn an official <strong>Certificate of Skills Validation</strong> without instructional coursework.
+              </p>
+            </div>
+
+            <div class="pt-2 border-t border-slate-800 flex items-baseline justify-between">
+              <div>
+                <span class="text-xs text-slate-400 block">Assessment Package</span>
+                <span class="text-2xl font-serif font-bold text-amber-400">
+                  KES {{ course.validation_pricing?.price_kes_formatted }}
+                </span>
+                <span class="text-xs text-slate-400 ml-1.5">
+                  (${{ course.validation_pricing?.price_usd_formatted }} USD)
+                </span>
+              </div>
+            </div>
+
+            <button
+              @click="enrollInValidationTrack"
+              class="w-full py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition shadow-md cursor-pointer text-center block"
+            >
+              Take Assessments Only
+            </button>
+            <p class="text-[10px] text-slate-400 text-center">
+              Can be upgraded to the full course bundle anytime by paying the price difference.
+            </p>
           </div>
         </div>
       </div>
@@ -357,11 +427,20 @@ function openPurchaseModal() {
     return;
   }
 
-  if (course.value?.upgrade_pricing?.has_owned_modules) {
+  if (course.value?.upgrade_pricing?.has_owned_modules || course.value?.upgrade_pricing?.is_validation_path) {
     router.push({ path: '/checkout', query: { type: 'bundle_upgrade', id: course.value.id } });
   } else {
     router.push({ path: '/checkout', query: { type: 'course_bundle', id: course.value.id } });
   }
+}
+
+function enrollInValidationTrack() {
+  if (!authStore.isAuthenticated) {
+    router.push({ name: 'login', query: { redirect: route.fullPath } });
+    return;
+  }
+
+  router.push({ path: '/checkout', query: { type: 'assessment_package', id: course.value.id } });
 }
 
 function enrollInModule(module) {

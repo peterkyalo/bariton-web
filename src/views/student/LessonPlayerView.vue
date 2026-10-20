@@ -14,11 +14,14 @@
             </svg>
           </router-link>
           <div>
-            <span class="text-xs font-semibold text-gold-400 tracking-wider uppercase block">
-              {{ enrollment?.course?.title }}
+            <span class="text-xs font-semibold text-gold-400 tracking-wider uppercase flex items-center gap-2">
+              <span>{{ enrollment?.course?.title }}</span>
+              <span v-if="enrollment?.path_type === 'validation'" class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30">
+                Skills Validation Track
+              </span>
             </span>
             <h1 class="text-lg font-serif font-bold text-white truncate max-w-xl">
-              {{ currentLesson?.title || 'Select a lesson to begin' }}
+              {{ enrollment?.path_type === 'validation' ? 'Skills Assessment Studio' : (currentLesson?.title || 'Select a lesson to begin') }}
             </h1>
           </div>
         </div>
@@ -42,6 +45,44 @@
       <div class="flex-1 p-6 flex flex-col items-center justify-center bg-navy-950/90 relative">
         <div v-if="loadingLesson" class="py-20 text-center">
           <LoadingSpinner text="Loading lesson material..." />
+        </div>
+
+        <!-- Professional Validation Track Hero Studio -->
+        <div
+          v-else-if="enrollment?.path_type === 'validation'"
+          class="w-full max-w-2xl p-8 rounded-2xl bg-slate-900/90 border border-amber-500/40 shadow-2xl space-y-6 text-center"
+        >
+          <div class="w-16 h-16 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-3xl">
+            🎯
+          </div>
+
+          <div class="space-y-2">
+            <span class="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30 inline-block">
+              Professional Skills Validation Track
+            </span>
+            <h2 class="text-2xl font-serif font-bold text-white">
+              Direct Assessment Path
+            </h2>
+            <p class="text-xs text-slate-300 max-w-lg mx-auto leading-relaxed">
+              You are enrolled in the assessment-only validation track. Instructional lessons are excluded. Complete all module assignments and the final certification exam to earn your official <strong>Certificate of Skills Validation</strong>.
+            </p>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <router-link
+              :to="{ name: 'student.exam', params: { slug: enrollment.course.slug } }"
+              class="w-full sm:w-auto px-6 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs uppercase tracking-wider transition shadow-lg flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>🎓 Take Final Certification Exam</span>
+            </router-link>
+            <router-link
+              :to="`/courses/${enrollment.course.slug}`"
+              class="w-full sm:w-auto px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs uppercase tracking-wider transition border border-slate-700 flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <span>Upgrade to Full Course</span>
+            </router-link>
+          </div>
         </div>
 
         <div v-else-if="!currentLesson" class="py-20 text-center">
@@ -197,12 +238,15 @@
               </span>
             </div>
             <div class="text-right">
-              <span class="text-[11px] font-bold text-slate-400">{{ module.progress_percent }}%</span>
+              <span v-if="enrollment?.path_type === 'validation'" class="text-[9px] font-bold text-amber-400 uppercase tracking-wider bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
+                Assessments
+              </span>
+              <span v-else class="text-[11px] font-bold text-slate-400">{{ module.progress_percent }}%</span>
             </div>
           </div>
 
           <!-- Lessons in Module -->
-          <div class="p-1 space-y-1">
+          <div v-if="module.lessons?.length" class="p-1 space-y-1">
             <button
               v-for="lesson in module.lessons"
               :key="lesson.id"
@@ -243,6 +287,9 @@
                 {{ lesson.type }}
               </span>
             </button>
+          </div>
+          <div v-else-if="enrollment?.path_type === 'validation'" class="p-2 text-[11px] text-slate-500 italic text-center">
+            Lessons excluded (Direct Assessment Track)
           </div>
           <!-- Module Assignment Assessment -->
           <div v-if="module.is_unlocked && module.assignments?.length" class="p-1 pt-0">

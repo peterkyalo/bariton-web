@@ -148,9 +148,17 @@ function formatDate(iso) {
             </div>
 
             <div>
-              <span class="text-xs uppercase tracking-wider text-slate-500 font-semibold block">Certification Path</span>
-              <span class="text-sm font-medium text-slate-200 mt-1 block uppercase">
-                {{ examsStore.verificationResult.path_type }} Track
+              <span class="text-xs uppercase tracking-wider text-slate-500 font-semibold block">Credential Track</span>
+              <div class="mt-1 flex items-center gap-2">
+                <span
+                  class="px-2.5 py-0.5 rounded text-xs font-bold uppercase tracking-wider"
+                  :class="examsStore.verificationResult.path_type === 'validation' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'"
+                >
+                  {{ examsStore.verificationResult.path_type === 'validation' ? 'Skills Validation Track (Assessment Only)' : 'Standard Conservatory Track' }}
+                </span>
+              </div>
+              <span class="text-xs text-slate-400 mt-1.5 block">
+                {{ examsStore.verificationResult.assessment_note || (examsStore.verificationResult.path_type === 'validation' ? 'The holder completed assessment examination only.' : 'The holder fulfilled all instructional curriculum requirements and examinations.') }}
               </span>
             </div>
           </div>

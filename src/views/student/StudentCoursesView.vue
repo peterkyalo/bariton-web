@@ -42,7 +42,7 @@
         <div class="space-y-4">
           <div class="flex items-center justify-between">
             <span class="badge badge-gold text-xs font-bold uppercase tracking-wider">
-              {{ enrollment.path_type }} Path
+              {{ enrollment.path_type === 'validation' ? 'Skills Validation Track' : 'Conservatory Track' }}
             </span>
             <span :class="['text-xs font-semibold px-2 py-0.5 rounded', enrollment.status === 'completed' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-slate-800 text-slate-300']">
               {{ enrollment.status === 'completed' ? 'Completed' : 'In Progress' }}
@@ -77,7 +77,7 @@
           :to="`/student/courses/${enrollment.uuid}/player`"
           class="btn btn-primary w-full text-center py-2.5 font-bold text-xs flex items-center justify-center gap-2"
         >
-          <span>Continue Learning</span>
+          <span>{{ enrollment.path_type === 'validation' ? 'Go to Assessment Studio' : 'Continue Learning' }}</span>
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
