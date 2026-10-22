@@ -46,7 +46,7 @@ onMounted(async () => {
     cardHolder.value = authStore.user.name
   }
 
-  const orderUuid = route.query.order
+  const orderUuid = route.query.order || route.params.uuid
   const itemType = route.query.type
   const itemId = route.query.id
 

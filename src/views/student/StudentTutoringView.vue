@@ -51,24 +51,8 @@ async function loadData() {
 
 async function fetchInstructors() {
   try {
-    // Get instructors from public endpoint or API
-    const res = await http.get('/api/v1/tutoring/packages')
-    const pkgs = res.data.data || []
-    const instrMap = new Map()
-    pkgs.forEach(p => {
-      if (p.instructor) {
-        instrMap.set(p.instructor.id, p.instructor)
-      }
-    })
-    // Fallback if no specific instructors on packages
-    if (instrMap.size === 0) {
-      // Query users with instructor role
-      const usersRes = await http.get('/api/v1/users', { params: { role: 'instructor' } }).catch(() => null)
-      if (usersRes?.data?.data) {
-        usersRes.data.data.forEach(u => instrMap.set(u.id, u))
-      }
-    }
-    instructorsList.value = Array.from(instrMap.values())
+    const res = await http.get('/tutoring/instructors')
+    instructorsList.value = res.data.data || []
   } catch (e) {
     instructorsList.value = []
   }

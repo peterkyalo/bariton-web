@@ -52,7 +52,7 @@
       <div class="flex items-center gap-3">
         <RouterLink
           v-if="booking.order"
-          :to="{ name: 'checkout', params: { uuid: booking.order.uuid } }"
+          :to="{ name: 'checkout', query: { order: booking.order.uuid } }"
           class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-navy-950 font-bold text-xs shadow-lg transition-all"
         >
           Pay KES {{ formatCurrency(booking.total_fee_kes) }} Now

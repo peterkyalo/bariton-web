@@ -417,7 +417,7 @@ async function handleHoldSeat() {
   try {
     const res = await eventsStore.bookSeat(event.value.slug, selectedBookingType.value);
     if (res.order && res.order.uuid) {
-      router.push({ name: 'checkout', params: { uuid: res.order.uuid } });
+      router.push({ name: 'checkout', query: { order: res.order.uuid } });
     }
   } catch (err) {
     actionError.value = err.response?.data?.message || err.message || 'Failed to place seat hold.';
