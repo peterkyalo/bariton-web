@@ -63,16 +63,16 @@ function formatMoney(amount) {
     <!-- AdminLTE 4 Content Header & Breadcrumbs -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-800">
       <div>
-        <div class="flex items-center gap-2">
-          <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+        <div class="flex items-center gap-2.5">
+          <h1 class="text-2xl sm:text-3xl font-serif font-bold text-white tracking-tight flex items-center gap-3">
             <span>Executive Dashboard</span>
-            <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
-              AdminLTE v4
-            </span>
           </h1>
+          <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-gold-500/15 text-gold-400 border border-gold-500/30">
+            Conservatory Governance
+          </span>
         </div>
-        <p class="text-xs text-ink-400 mt-0.5">
-          Welcome back, <span class="text-white font-semibold">{{ auth.user?.name }}</span> · Institutional Intelligence & Governance
+        <p class="text-xs text-slate-400 mt-1">
+          Welcome back, <strong class="text-white">{{ auth.user?.name }}</strong> · Institutional Intelligence & Financial Governance
         </p>
       </div>
 
