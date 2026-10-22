@@ -33,6 +33,7 @@ import CourseDetailView from '@/views/catalog/CourseDetailView.vue'
 import StudentCoursesView from '@/views/student/StudentCoursesView.vue'
 import LessonPlayerView from '@/views/student/LessonPlayerView.vue'
 import InstructorCoursesView from '@/views/instructor/InstructorCoursesView.vue'
+import InstructorCourseCurriculumView from '@/views/instructor/InstructorCourseCurriculumView.vue'
 import CourseListView from '@/views/admin/courses/CourseListView.vue'
 import CourseEditorView from '@/views/admin/courses/CourseEditorView.vue'
 
@@ -45,6 +46,7 @@ import FinanceCashEntryView from '@/views/finance/FinanceCashEntryView.vue'
 import FinancePaymentsView from '@/views/finance/FinancePaymentsView.vue'
 import FinanceRefundsView from '@/views/finance/FinanceRefundsView.vue'
 import FinanceCreditNotesView from '@/views/finance/FinanceCreditNotesView.vue'
+import FinanceEventRefundsView from '@/views/finance/FinanceEventRefundsView.vue'
 
 import StudentExamView from '@/views/student/StudentExamView.vue'
 import StudentCertificatesView from '@/views/student/StudentCertificatesView.vue'
@@ -295,6 +297,12 @@ const routes = [
     meta: { layout: StaffLayout, auth: true, permission: 'courses.teach' },
   },
   {
+    path: '/instructor/courses/:id(\\d+)',
+    name: 'instructor.courses.curriculum',
+    component: InstructorCourseCurriculumView,
+    meta: { layout: StaffLayout, auth: true, permission: 'courses.teach' },
+  },
+  {
     path: '/instructor/grading',
     name: 'instructor.grading',
     component: InstructorGradingQueueView,
@@ -408,6 +416,12 @@ const routes = [
     path: '/finance/refunds',
     name: 'finance.refunds',
     component: FinanceRefundsView,
+    meta: { layout: StaffLayout, auth: true, permission: 'dashboard.finance' },
+  },
+  {
+    path: '/finance/event-refunds',
+    name: 'finance.event-refunds',
+    component: FinanceEventRefundsView,
     meta: { layout: StaffLayout, auth: true, permission: 'dashboard.finance' },
   },
   {

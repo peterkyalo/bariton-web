@@ -19,6 +19,7 @@ export const MENU = [
   { section: 'Finance', label: 'Cash Reception', to: { name: 'finance.cash' }, icon: 'cash', permission: 'dashboard.finance' },
   { section: 'Finance', label: 'Payment Ledger', to: { name: 'finance.payments' }, icon: 'list', permission: 'dashboard.finance' },
   { section: 'Finance', label: 'Refund Requests', to: { name: 'finance.refunds' }, icon: 'layers', permission: 'dashboard.finance' },
+  { section: 'Finance', label: 'Event Refunds', to: { name: 'finance.event-refunds' }, icon: 'calendar', permission: 'dashboard.finance' },
   { section: 'Finance', label: 'Credit Notes', to: { name: 'finance.credit-notes' }, icon: 'receipt', permission: 'dashboard.finance' },
 
   { section: 'Events', label: 'Events overview', to: { name: 'dashboard.coordinator' }, icon: 'calendar', permission: 'dashboard.coordinator' },
