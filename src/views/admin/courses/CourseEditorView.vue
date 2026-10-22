@@ -105,6 +105,19 @@
           </div>
         </div>
 
+        <!-- Instructor Assignment (admins only) -->
+        <div v-if="auth.can('courses.manage-all')" class="p-4 rounded-xl bg-navy-950/70 border border-slate-800 space-y-3">
+          <span class="text-xs font-bold text-gold-400 uppercase tracking-wider">Assigned Instructors</span>
+          <p class="text-[11px] text-slate-400">Assigned instructors can build this course's modules and lessons from their Instructor Studio.</p>
+          <div v-if="instructorOptions.length === 0" class="text-xs text-slate-500">No active instructors found.</div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <label v-for="ins in instructorOptions" :key="ins.id" class="flex items-center gap-2 text-xs text-slate-200 cursor-pointer">
+              <input v-model="form.instructor_ids" type="checkbox" :value="ins.id" class="w-4 h-4 rounded text-gold-500 border-slate-700 bg-navy-950" />
+              {{ ins.name }} <span class="text-slate-500">({{ ins.email }})</span>
+            </label>
+          </div>
+        </div>
+
         <!-- Bundle Discount Configuration & Validation -->
         <div class="p-4 rounded-xl bg-navy-950/70 border border-slate-800 space-y-4">
           <div class="flex items-center justify-between">
@@ -252,7 +265,7 @@
     </div>
 
     <!-- Add Module Modal -->
-    <Modal :show="showModuleModal" @close="showModuleModal = false">
+    <Modal :open="showModuleModal" title="Module" @close="showModuleModal = false">
       <div class="space-y-4">
         <h3 class="text-lg font-serif font-bold text-white">Add Curriculum Module</h3>
         <form @submit.prevent="handleSaveModule" class="space-y-4">
@@ -287,7 +300,7 @@
     </Modal>
 
     <!-- Add Lesson Modal -->
-    <Modal :show="showLessonModal" @close="showLessonModal = false">
+    <Modal :open="showLessonModal" title="Lesson" @close="showLessonModal = false">
       <div class="space-y-4">
         <h3 class="text-lg font-serif font-bold text-white">Add Lesson to Module</h3>
         <form @submit.prevent="handleSaveLesson" class="space-y-4">
@@ -352,6 +365,11 @@ import { useRoute, useRouter } from 'vue-router';
 import { useCoursesStore } from '../../../stores/courses';
 import { useUiStore } from '../../../stores/ui';
 import Modal from '../../../components/ui/Modal.vue';
+import { useAuthStore } from '../../../stores/auth';
+import http from '../../../lib/http';
+
+const auth = useAuthStore();
+const instructorOptions = ref([]);
 
 const route = useRoute();
 const router = useRouter();
@@ -371,6 +389,7 @@ const form = reactive({
   requires_sequential_levels: false,
   bundle_discount_type: 'none',
   bundle_discount_value: 0,
+  instructor_ids: [],
 });
 
 const discountInput = ref(0);
@@ -468,7 +487,7 @@ async function handleSaveModule() {
     await coursesStore.saveModule(courseId.value, payload);
     uiStore.notify({ type: 'success', title: 'Module Added', message: 'Module saved successfully.' });
     showModuleModal.value = false;
-    await coursesStore.fetchCourse(currentCourse.value.slug);
+    await coursesStore.fetchAdminCourse(courseId.value);
   } catch (err) {
     uiStore.notify({ type: 'error', title: 'Error', message: err.response?.data?.message || 'Failed to save module.' });
   }
@@ -479,7 +498,7 @@ async function handleDeleteModule(moduleId) {
   try {
     await coursesStore.deleteModule(moduleId);
     uiStore.notify({ type: 'success', title: 'Module Deleted', message: 'Module removed.' });
-    await coursesStore.fetchCourse(currentCourse.value.slug);
+    await coursesStore.fetchAdminCourse(courseId.value);
   } catch (err) {
     uiStore.notify({ type: 'error', title: 'Error', message: 'Failed to delete module.' });
   }
@@ -513,7 +532,7 @@ async function handleSaveLesson() {
     await coursesStore.saveLesson(activeModule.value.id, fd);
     uiStore.notify({ type: 'success', title: 'Lesson Created', message: 'Lesson added to module.' });
     showLessonModal.value = false;
-    await coursesStore.fetchCourse(currentCourse.value.slug);
+    await coursesStore.fetchAdminCourse(courseId.value);
   } catch (err) {
     uiStore.notify({ type: 'error', title: 'Upload Failed', message: err.response?.data?.message || 'Could not upload lesson.' });
   }
@@ -524,7 +543,7 @@ async function handleDeleteLesson(lessonId) {
   try {
     await coursesStore.deleteLesson(lessonId);
     uiStore.notify({ type: 'success', title: 'Lesson Removed', message: 'Lesson deleted.' });
-    await coursesStore.fetchCourse(currentCourse.value.slug);
+    await coursesStore.fetchAdminCourse(courseId.value);
   } catch (err) {
     uiStore.notify({ type: 'error', title: 'Error', message: 'Could not remove lesson.' });
   }
@@ -547,6 +566,7 @@ async function handleSubmit() {
     bundle_discount_value: form.bundle_discount_type === 'percent'
       ? Number(discountInput.value)
       : Number(discountInput.value) * 100,
+    instructor_ids: auth.can('courses.manage-all') ? form.instructor_ids : undefined,
   };
 
   try {
@@ -561,24 +581,33 @@ async function handleSubmit() {
 }
 
 onMounted(async () => {
+  if (auth.can('courses.manage-all')) {
+    try {
+      const res = await http.get('/admin/users', { params: { role: 'instructor', status: 'active' } });
+      instructorOptions.value = (res.data.data || []).map(u => ({ id: u.id, name: u.name, email: u.email }));
+    } catch (e) {
+      instructorOptions.value = [];
+    }
+  }
+
   if (isEditing.value) {
-    // Fetch course for editing
-    const course = await coursesStore.fetchAdminCourses();
-    const current = coursesStore.adminCourses.find(c => String(c.id) === String(courseId.value));
-    if (current) {
-      await coursesStore.fetchCourse(current.slug);
-      if (currentCourse.value) {
-        form.title = currentCourse.value.title;
-        form.slug = currentCourse.value.slug;
-        form.description = currentCourse.value.description;
-        form.short_description = currentCourse.value.short_description;
-        form.status = currentCourse.value.status;
-        form.requires_sequential_levels = currentCourse.value.requires_sequential_levels;
-        form.bundle_discount_type = currentCourse.value.pricing.bundle_discount_type || 'none';
+    try {
+      const current = await coursesStore.fetchAdminCourse(courseId.value);
+      if (current) {
+        form.title = current.title;
+        form.slug = current.slug;
+        form.description = current.description;
+        form.short_description = current.short_description;
+        form.status = current.status;
+        form.requires_sequential_levels = current.requires_sequential_levels;
+        form.bundle_discount_type = current.pricing.bundle_discount_type || 'none';
+        form.instructor_ids = (current.instructors || []).map(i => i.id);
         discountInput.value = form.bundle_discount_type === 'fixed_kes'
-          ? (currentCourse.value.pricing.bundle_discount_value / 100)
-          : currentCourse.value.pricing.bundle_discount_value;
+          ? (current.pricing.bundle_discount_value / 100)
+          : current.pricing.bundle_discount_value;
       }
+    } catch (err) {
+      uiStore.notify({ type: 'error', title: 'Error', message: 'Could not load course.' });
     }
   }
 });

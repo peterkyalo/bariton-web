@@ -151,6 +151,18 @@ export const useCoursesStore = defineStore('courses', () => {
     }
   }
 
+  async function fetchAdminCourse(id) {
+    const res = await http.get(`/api/v1/admin/courses/${id}`);
+    currentCourse.value = res.data.course || null;
+    return currentCourse.value;
+  }
+
+  async function fetchInstructorCourse(id) {
+    const res = await http.get(`/api/v1/instructor/courses/${id}`);
+    currentCourse.value = res.data.course || null;
+    return currentCourse.value;
+  }
+
   async function saveModule(courseId, moduleData, moduleId = null) {
     let res;
     if (moduleId) {
@@ -208,6 +220,8 @@ export const useCoursesStore = defineStore('courses', () => {
     fetchInstructorCourses,
     fetchAdminCourses,
     saveCourse,
+    fetchAdminCourse,
+    fetchInstructorCourse,
     saveModule,
     deleteModule,
     saveLesson,
