@@ -1,9 +1,14 @@
 <script setup>
-defineProps({
+import { computed } from 'vue'
+
+const props = defineProps({
   open: { type: Boolean, default: false },
+  show: { type: Boolean, default: false },
   title: { type: String, default: '' },
   maxWidth: { type: String, default: 'max-w-lg' },
 })
+
+const isOpen = computed(() => props.open || props.show)
 
 defineEmits(['close'])
 </script>
@@ -18,7 +23,7 @@ defineEmits(['close'])
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
     >
-      <div v-if="open" class="fixed inset-0 z-50 overflow-y-auto bg-ink-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div v-if="isOpen" class="fixed inset-0 z-50 overflow-y-auto bg-ink-950/80 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="fixed inset-0" @click="$emit('close')"></div>
 
         <div

@@ -59,10 +59,12 @@ import EventsCatalogView from '@/views/events/EventsCatalogView.vue'
 import EventDetailView from '@/views/events/EventDetailView.vue'
 import StudentEventBookingsView from '@/views/student/StudentEventBookingsView.vue'
 import CoordinatorEventAttendeesView from '@/views/coordinator/CoordinatorEventAttendeesView.vue'
+import CoordinatorEventsManageView from '@/views/coordinator/CoordinatorEventsManageView.vue'
 
 import TutoringPackagesView from '@/views/tutoring/TutoringPackagesView.vue'
 import StudentTutoringView from '@/views/student/StudentTutoringView.vue'
 import InstructorTutoringScheduleView from '@/views/instructor/InstructorTutoringScheduleView.vue'
+import AdminTutoringPackagesView from '@/views/admin/tutoring/AdminTutoringPackagesView.vue'
 
 import HomeLandingView from '@/views/public/HomeLandingView.vue'
 import AboutView from '@/views/public/AboutView.vue'
@@ -271,6 +273,12 @@ const routes = [
     meta: { layout: StaffLayout, auth: true, permission: 'courses.manage-all' },
   },
   {
+    path: '/admin/tutoring/packages',
+    name: 'admin.tutoring.packages',
+    component: AdminTutoringPackagesView,
+    meta: { layout: StaffLayout, auth: true, permission: 'tutoring.manage-packages' },
+  },
+  {
     path: '/admin/cms/pages',
     name: 'admin.cms.pages',
     component: CmsPagesListView,
@@ -388,6 +396,12 @@ const routes = [
     path: '/coordinator/events',
     name: 'coordinator-events',
     component: CoordinatorEventAttendeesView,
+    meta: { layout: StaffLayout, auth: true, permission: 'events.manage' },
+  },
+  {
+    path: '/coordinator/events/manage',
+    name: 'coordinator-events-manage',
+    component: CoordinatorEventsManageView,
     meta: { layout: StaffLayout, auth: true, permission: 'events.manage' },
   },
 

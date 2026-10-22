@@ -23,12 +23,14 @@ export const MENU = [
   { section: 'Finance', label: 'Credit Notes', to: { name: 'finance.credit-notes' }, icon: 'receipt', permission: 'dashboard.finance' },
 
   { section: 'Events', label: 'Events overview', to: { name: 'dashboard.coordinator' }, icon: 'calendar', permission: 'dashboard.coordinator' },
+  { section: 'Events', label: 'Cohort Events Manager', to: { name: 'coordinator-events-manage' }, icon: 'calendar', permission: 'events.manage' },
   { section: 'Events', label: 'Attendee Check-In Roster', to: { name: 'coordinator-events' }, icon: 'users', permission: 'events.manage' },
   { section: 'Events', label: 'Public Events Schedule', to: { name: 'events-catalog' }, icon: 'calendar', permission: 'events.view' },
   { section: 'Events', label: '1-on-1 Mentorship Packs', to: { name: 'tutoring-packages' }, icon: 'music', permission: 'tutoring.view' },
 
   { section: 'Administration', label: 'Admin overview', to: { name: 'dashboard.admin' }, icon: 'shield', permission: 'dashboard.admin' },
   { section: 'Administration', label: 'Courses & Curriculum', to: { name: 'admin.courses' }, icon: 'layers', permission: 'courses.manage-all' },
+  { section: 'Administration', label: 'Tutoring Packages', to: { name: 'admin.tutoring.packages' }, icon: 'layers', permission: 'tutoring.manage-packages' },
   { section: 'Administration', label: 'Certificates Registry', to: { name: 'admin.certificates' }, icon: 'shield', permission: 'courses.manage-all' },
   { section: 'Administration', label: 'Users', to: { name: 'admin.users' }, icon: 'users', permission: 'users.view' },
   { section: 'Administration', label: 'Settings', to: { name: 'admin.settings' }, icon: 'sliders', permission: 'settings.view' },

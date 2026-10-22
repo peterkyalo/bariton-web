@@ -475,7 +475,7 @@
     </div>
 
     <!-- 3. Free Preview Lesson Modal -->
-    <Modal :show="showPreviewModal" @close="closePreviewModal" max-width="max-w-3xl">
+    <Modal :open="showPreviewModal" :show="showPreviewModal" @close="closePreviewModal" max-width="max-w-3xl">
       <div v-if="previewLesson" class="p-6 space-y-4">
         <div class="flex items-center justify-between pb-3 border-b border-slate-200">
           <div>

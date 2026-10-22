@@ -59,6 +59,45 @@ function formatDatetime(dt) {
     </div>
 
     <div v-else-if="dashboardStore.instructorMetrics" class="space-y-6">
+      <!-- Course Assignment Notification Banner -->
+      <div
+        v-if="dashboardStore.instructorMetrics.newly_assigned_courses?.length"
+        class="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-500/15 via-gold-500/10 to-amber-600/15 border border-amber-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl"
+      >
+        <div class="flex items-start gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center justify-center shrink-0 text-xl font-bold">
+            🔔
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-sm font-bold text-white">Course Faculty Assignment Notification</h2>
+              <span class="badge bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-bold uppercase">
+                Action Required
+              </span>
+            </div>
+            <p class="text-xs text-amber-200/90 mt-1">
+              You have been assigned to lead curriculum development for:
+              <strong class="text-white">
+                {{ dashboardStore.instructorMetrics.newly_assigned_courses.map(c => c.title).join(', ') }}
+              </strong>.
+              Add levels, video masterclasses, audio tracks, and sheet music.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 shrink-0 self-end sm:self-auto">
+          <RouterLink
+            v-for="c in dashboardStore.instructorMetrics.newly_assigned_courses"
+            :key="c.id"
+            :to="`/instructor/courses/${c.id}`"
+            class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs transition shadow-md flex items-center gap-1.5"
+          >
+            <span>Build Modules ({{ c.title }})</span>
+            <span>&rarr;</span>
+          </RouterLink>
+        </div>
+      </div>
+
       <!-- ========================================== -->
       <!-- ADMINLTE 4: SMALL BOXES ROW (4 WIDGETS)    -->
       <!-- ========================================== -->
@@ -255,16 +294,23 @@ function formatDatetime(dt) {
             <div
               v-for="c in dashboardStore.instructorMetrics.courses"
               :key="c.id"
-              class="p-3 bg-slate-950/60 border border-slate-800 rounded-xl space-y-1.5"
+              class="p-3 bg-slate-950/60 border border-slate-800 rounded-xl space-y-2 hover:border-indigo-500/40 transition"
             >
               <div class="flex items-center justify-between text-xs">
                 <span class="font-bold text-white truncate max-w-[160px]">{{ c.title }}</span>
                 <span class="px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 font-mono text-[10px] font-bold">
-                  {{ c.enrollments_count }} enrolled
+                  {{ c.modules_count || 0 }} modules · {{ c.enrollments_count }} enrolled
                 </span>
               </div>
               <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                <div class="bg-indigo-400 h-full rounded-full" :style="{ width: `${Math.min(100, c.enrollments_count * 10)}%` }"></div>
+                <div class="bg-indigo-400 h-full rounded-full" :style="{ width: `${Math.min(100, (c.enrollments_count || 1) * 10)}%` }"></div>
+              </div>
+              <div class="flex items-center justify-between pt-1 text-[11px]">
+                <span class="text-ink-400 uppercase font-mono text-[10px]">{{ c.status || 'draft' }}</span>
+                <RouterLink :to="`/instructor/courses/${c.id}`" class="text-amber-400 hover:text-amber-300 font-semibold flex items-center gap-1">
+                  <span>Manage Modules</span>
+                  <span>&rarr;</span>
+                </RouterLink>
               </div>
             </div>
 
