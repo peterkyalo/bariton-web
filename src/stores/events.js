@@ -213,6 +213,9 @@ export const useEventsStore = defineStore('events', () => {
       if (found) {
         found.status = 'attended';
         found.checked_in_at = new Date().toISOString();
+        if (coordinatorStats.value) {
+          coordinatorStats.value.attended = (coordinatorStats.value.attended || 0) + 1;
+        }
       }
       return res.data;
     } catch (err) {
