@@ -183,70 +183,74 @@
   }
 
   /* -------------------------------------------------------------
-     AdminLTE 4 Design System Components
+     AdminLTE 4 Luxury Conservatory Components
   -------------------------------------------------------------- */
   .small-box {
-    @apply relative overflow-hidden rounded-xl text-white shadow-md transition-all duration-300 border border-white/10;
+    @apply relative overflow-hidden rounded-2xl text-white shadow-xl transition-all duration-300 border border-slate-700/60 backdrop-blur-xl flex flex-col justify-between;
+  }
+  .small-box:hover {
+    @apply shadow-2xl -translate-y-1 border-white/25;
   }
   .small-box .inner {
-    @apply p-4 sm:p-5 relative z-10;
+    @apply p-5 sm:p-6 relative z-10 flex-1 flex flex-col justify-between;
   }
   .small-box .inner h3 {
-    @apply text-2xl sm:text-3xl font-extrabold tracking-tight mb-1 text-white;
+    @apply text-3xl sm:text-4xl font-serif font-extrabold tracking-tight mb-1 text-white flex items-baseline gap-1;
   }
   .small-box .inner p {
-    @apply text-xs font-medium uppercase tracking-wider text-white/90;
+    @apply text-xs font-bold uppercase tracking-wider text-white/85;
   }
   .small-box-icon {
-    @apply absolute top-2 right-3 text-5xl sm:text-6xl text-white/20 pointer-events-none transition-transform duration-300;
+    @apply absolute top-3 right-4 text-5xl sm:text-6xl text-white/15 pointer-events-none transition-all duration-300;
   }
   .small-box:hover .small-box-icon {
-    transform: scale(1.12);
+    transform: scale(1.15) rotate(4deg);
+    @apply text-white/25;
   }
   .small-box-footer {
-    @apply block py-1.5 px-4 text-xs font-semibold text-center text-white/90 bg-black/25 hover:bg-black/40 hover:text-white transition-colors relative z-10 flex items-center justify-center gap-1.5;
+    @apply py-2.5 px-5 text-xs font-bold text-center text-white/90 bg-black/35 hover:bg-black/50 hover:text-white transition-all duration-200 relative z-10 flex items-center justify-between border-t border-white/10;
   }
 
   /* AdminLTE 4 Card */
   .adminlte-card {
-    @apply rounded-xl bg-ink-900/90 border border-slate-700/60 shadow-lg overflow-hidden backdrop-blur-md;
+    @apply rounded-2xl bg-slate-900/80 border border-slate-800 shadow-xl overflow-hidden backdrop-blur-xl transition-all duration-200;
   }
   .adminlte-card.card-outline-primary {
-    @apply border-t-4 border-t-blue-500;
+    @apply border-t-2 border-t-blue-500 hover:border-slate-700;
   }
   .adminlte-card.card-outline-success {
-    @apply border-t-4 border-t-emerald-500;
+    @apply border-t-2 border-t-emerald-500 hover:border-slate-700;
   }
   .adminlte-card.card-outline-warning {
-    @apply border-t-4 border-t-amber-500;
+    @apply border-t-2 border-t-amber-500 hover:border-slate-700;
   }
   .adminlte-card.card-outline-danger {
-    @apply border-t-4 border-t-rose-500;
+    @apply border-t-2 border-t-rose-500 hover:border-slate-700;
   }
   .adminlte-card.card-outline-info {
-    @apply border-t-4 border-t-cyan-500;
+    @apply border-t-2 border-t-cyan-500 hover:border-slate-700;
   }
   .adminlte-card.card-outline-indigo {
-    @apply border-t-4 border-t-indigo-500;
+    @apply border-t-2 border-t-indigo-500 hover:border-slate-700;
   }
   .adminlte-card.card-outline-brass {
-    @apply border-t-4 border-t-brass-400;
+    @apply border-t-2 border-t-brass-400 hover:border-slate-700;
   }
 
   .adminlte-card-header {
-    @apply px-4 py-3 border-b border-slate-800 flex items-center justify-between bg-slate-950/50;
+    @apply px-5 py-4 border-b border-slate-800/80 flex items-center justify-between bg-slate-950/40;
   }
   .adminlte-card-title {
-    @apply font-bold text-sm tracking-tight text-white flex items-center gap-2;
+    @apply font-bold text-sm tracking-tight text-white flex items-center gap-2.5;
   }
   .adminlte-card-tools {
     @apply flex items-center gap-2;
   }
   .adminlte-card-body {
-    @apply p-4 sm:p-5;
+    @apply p-5 sm:p-6;
   }
   .adminlte-card-footer {
-    @apply px-4 py-2.5 border-t border-slate-800/80 bg-slate-950/30 text-xs text-ink-400 flex items-center justify-between;
+    @apply px-5 py-3 border-t border-slate-800/80 bg-slate-950/40 text-xs text-ink-400 flex items-center justify-between;
   }
 
   /* AdminLTE 4 Info Box */
