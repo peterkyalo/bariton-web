@@ -82,8 +82,9 @@
 ---
 
 ## 3. Automated Tests & Build Verification
-- **Test Runner**: Vitest 5.x
-- **Test Files**: 12 passed (12)
-- **Total Tests**: 73 passed (73)
+- **Test Runner**: Vitest 5.x (Frontend) & Pest PHP 3.x (Backend)
+- **Frontend Test Files**: 13 passed (13)
+- **Frontend Unit & Component Tests**: 78 passed (78), including dedicated tests for `FinanceCashEntryView.vue`, `FinancePaymentsView.vue`, and `FinanceRefundsView.vue`.
+- **Backend Pest Feature Tests**: 64 passed (64) across 618 assertions with 0 failures.
 - **Pass Rate**: 100%
-- **Production Build**: Clean bundle in `dist/` built in **1.75s**.
+- **Production Build**: Clean bundle in `dist/` built in **2.11s**.
