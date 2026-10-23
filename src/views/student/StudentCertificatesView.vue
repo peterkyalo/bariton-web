@@ -23,7 +23,7 @@ function formatDate(iso) {
     <div class="max-w-5xl mx-auto space-y-8">
       <!-- Header -->
       <div class="border-b border-slate-800 pb-5">
-        <h1 class="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+        <h1 class="text-3xl font-serif font-bold text-white tracking-tight flex items-center gap-3">
           <span>My Official Certificates</span>
         </h1>
         <p class="text-sm text-slate-400 mt-1">
@@ -77,7 +77,7 @@ function formatDate(iso) {
               </span>
             </div>
 
-            <h3 class="text-xl font-black text-white tracking-tight mb-2">
+            <h3 class="text-xl font-serif font-bold text-white tracking-tight mb-2">
               {{ cert.course_title }}
             </h3>
 

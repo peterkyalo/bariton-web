@@ -133,7 +133,7 @@ async function handleGradeSubmit() {
               Attempt #{{ submission?.attempt_number }}
             </span>
           </div>
-          <h1 class="text-2xl sm:text-3xl font-display font-bold text-white mt-1">
+          <h1 class="text-2xl sm:text-3xl font-serif font-bold text-white mt-1">
             Grading: {{ submission?.assignment?.title || 'Assignment Evaluation' }}
           </h1>
           <p class="text-xs text-ink-400 mt-0.5">

@@ -19,7 +19,7 @@
             {{ currentSlide.badge }}
           </span>
 
-          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight leading-tight mb-6">
+          <h1 class="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-white tracking-tight leading-tight mb-6">
             {{ currentSlide.title }}
           </h1>
 
@@ -100,7 +100,7 @@
             <span class="inline-block text-xs font-bold uppercase tracking-wider text-amber-600 bg-amber-50 border border-amber-200/50 px-3.5 py-1 rounded-full">
               {{ aboutBlock.tag || 'About Us' }}
             </span>
-            <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
+            <h2 class="text-3xl sm:text-4xl font-serif font-bold text-slate-900 tracking-tight leading-tight">
               {{ aboutBlock.title || 'Welcome to Bariton Music Academy' }}
             </h2>
             <p class="text-base text-slate-600 leading-relaxed font-normal">
@@ -136,7 +136,7 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-2xl mx-auto mb-14">
           <span class="inline-block text-xs font-bold uppercase tracking-wider text-amber-600 bg-amber-100/50 px-3 py-1 rounded-full mb-3">Categories</span>
-          <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">Instrument Syllabi & Disciplines</h2>
+          <h2 class="text-3xl sm:text-4xl font-serif font-bold text-slate-900 tracking-tight">Instrument Syllabi & Disciplines</h2>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -145,7 +145,7 @@
             <div class="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent"></div>
             <div class="relative z-10 w-full">
               <span class="text-xs font-bold uppercase tracking-wider text-amber-400 bg-amber-950/60 backdrop-blur-sm px-2.5 py-1 rounded-md">{{ cat.count_text }}</span>
-              <h3 class="text-xl font-bold text-white mt-2 group-hover:text-amber-400 transition-colors">{{ cat.title }}</h3>
+              <h3 class="text-xl font-serif font-bold text-white mt-2 group-hover:text-amber-400 transition-colors">{{ cat.title }}</h3>
             </div>
           </router-link>
         </div>
@@ -158,7 +158,7 @@
         <div class="flex flex-col md:flex-row items-center justify-between mb-12 gap-4">
           <div>
             <span class="inline-block text-xs font-bold uppercase tracking-wider text-amber-600 bg-amber-50 px-3 py-1 rounded-full mb-2">Curriculum</span>
-            <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">Featured Conservatory Courses</h2>
+            <h2 class="text-3xl sm:text-4xl font-serif font-bold text-slate-900 tracking-tight">Featured Conservatory Courses</h2>
           </div>
           <router-link to="/courses" class="text-sm font-bold text-amber-600 hover:text-amber-700 flex items-center gap-1">
             <span>Browse All Courses</span>
@@ -183,7 +183,7 @@
                     <span class="text-slate-400 text-[11px]">(128)</span>
                   </div>
                 </div>
-                <h3 class="text-xl font-bold text-slate-900 mb-2 group-hover:text-amber-600 transition-colors line-clamp-1">
+                <h3 class="text-xl font-serif font-bold text-slate-900 mb-2 group-hover:text-amber-600 transition-colors line-clamp-1">
                   {{ course.title }}
                 </h3>
                 <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-4">
@@ -212,7 +212,7 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-2xl mx-auto mb-14">
           <span class="inline-block text-xs font-bold uppercase tracking-wider text-amber-600 bg-amber-100/50 px-3 py-1 rounded-full mb-3">Instructors</span>
-          <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">Meet Our Master Faculty</h2>
+          <h2 class="text-3xl sm:text-4xl font-serif font-bold text-slate-900 tracking-tight">Meet Our Master Faculty</h2>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -221,7 +221,7 @@
               <img :src="inst.image" :alt="inst.name" class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-500" />
             </div>
             <div class="p-6 text-center">
-              <h3 class="text-lg font-bold text-slate-900 mb-1 group-hover:text-amber-600 transition-colors">{{ inst.name }}</h3>
+              <h3 class="text-lg font-serif font-bold text-slate-900 mb-1 group-hover:text-amber-600 transition-colors">{{ inst.name }}</h3>
               <p class="text-xs font-bold text-amber-600 mb-1">{{ inst.designation }}</p>
               <p class="text-xs text-slate-500">{{ inst.specialty }}</p>
             </div>
@@ -235,7 +235,7 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-2xl mx-auto mb-14">
           <span class="inline-block text-xs font-bold uppercase tracking-wider text-amber-600 bg-amber-50 px-3 py-1 rounded-full mb-3">Testimonials</span>
-          <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">What Our Students Say</h2>
+          <h2 class="text-3xl sm:text-4xl font-serif font-bold text-slate-900 tracking-tight">What Our Students Say</h2>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">

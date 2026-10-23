@@ -205,28 +205,28 @@ function formatTime(dt) {
     <!-- Top Stats Bar -->
     <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
       <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
-        <p class="text-xs font-medium text-slate-400">Available Credits</p>
+        <p class="text-xs font-display font-semibold uppercase tracking-wider text-slate-400">Available Credits</p>
         <div class="mt-2 flex items-baseline gap-2">
-          <span class="text-3xl font-extrabold text-amber-400">{{ totalAvailableCredits }}</span>
+          <span class="text-3xl font-display font-extrabold text-amber-400">{{ totalAvailableCredits }}</span>
           <span class="text-xs text-slate-500">hours</span>
         </div>
       </div>
       <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
-        <p class="text-xs font-medium text-slate-400">Active Packages</p>
+        <p class="text-xs font-display font-semibold uppercase tracking-wider text-slate-400">Active Packages</p>
         <div class="mt-2 flex items-baseline gap-2">
-          <span class="text-3xl font-extrabold text-white">{{ activePackages.length }}</span>
+          <span class="text-3xl font-display font-extrabold text-white">{{ activePackages.length }}</span>
         </div>
       </div>
       <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
-        <p class="text-xs font-medium text-slate-400">Upcoming Sessions</p>
+        <p class="text-xs font-display font-semibold uppercase tracking-wider text-slate-400">Upcoming Sessions</p>
         <div class="mt-2 flex items-baseline gap-2">
-          <span class="text-3xl font-extrabold text-emerald-400">{{ upcomingSessions.length }}</span>
+          <span class="text-3xl font-display font-extrabold text-emerald-400">{{ upcomingSessions.length }}</span>
         </div>
       </div>
       <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-sm">
-        <p class="text-xs font-medium text-slate-400">Completed Sessions</p>
+        <p class="text-xs font-display font-semibold uppercase tracking-wider text-slate-400">Completed Sessions</p>
         <div class="mt-2 flex items-baseline gap-2">
-          <span class="text-3xl font-extrabold text-slate-300">{{ pastSessions.filter(s => s.status === 'attended').length }}</span>
+          <span class="text-3xl font-display font-extrabold text-slate-300">{{ pastSessions.filter(s => s.status === 'attended').length }}</span>
         </div>
       </div>
     </div>

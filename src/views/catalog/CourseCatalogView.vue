@@ -6,7 +6,7 @@
         <span class="inline-block text-xs font-bold uppercase tracking-wider text-amber-400 bg-amber-500/20 border border-amber-500/30 px-3.5 py-1 rounded-full mb-3">
           Conservatory Curriculum
         </span>
-        <h1 class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight mb-4">
+        <h1 class="text-4xl sm:text-5xl font-serif font-bold text-white tracking-tight mb-4">
           Explore Our Courses
         </h1>
         <p class="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto leading-relaxed mb-4">

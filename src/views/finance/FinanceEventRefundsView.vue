@@ -84,7 +84,7 @@ onMounted(load)
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
     <div class="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-6">
       <div>
-        <h1 class="text-2xl sm:text-3xl font-display font-bold text-white">Event Refund Requests</h1>
+        <h1 class="text-2xl sm:text-3xl font-serif font-bold text-white">Event Refund Requests</h1>
         <p class="text-sm text-ink-300 mt-1">
           Review refund requests for bootcamps and workshops. Approving issues a credit note and releases the seat to the waitlist.
         </p>

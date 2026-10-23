@@ -48,7 +48,7 @@ const payments = computed(() => ordersStore.financePayments)
     <!-- Header -->
     <div class="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-6">
       <div>
-        <h1 class="text-2xl sm:text-3xl font-display font-bold text-white">
+        <h1 class="text-2xl sm:text-3xl font-serif font-bold text-white">
           Payment Transactions Ledger
         </h1>
         <p class="text-sm text-ink-300 mt-1">

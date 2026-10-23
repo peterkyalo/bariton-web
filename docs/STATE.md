@@ -92,4 +92,18 @@
   - Multi-Role Dashboards & CMS Engine (`AdminDashboardView.vue`, `FinanceDashboardView.vue`, `ContactView.vue`, `CmsPagesListView.vue`)
 - **Backend Pest Feature Tests**: 64 passed (64) across 618 assertions with 0 failures across all 8 phases, end-to-end integration walkthroughs, and CMS endpoints.
 - **Pass Rate**: 100%
-- **Production Build**: Clean bundle in `dist/` built in **1.87s**.
+- **Production Build**: Clean bundle in `dist/` built in **2.16s**.
+
+---
+
+## 4. Design System, Colors & Professional Typography Hierarchy
+- **Typography Tokens**:
+  - `--font-serif`: `"Playfair Display", Georgia, Cambria, "Times New Roman", Times, serif` (Classical conservatory prestige for primary page titles, diplomas, certificates, and prominent section headings).
+  - `--font-display`: `"Outfit", "Plus Jakarta Sans", "Inter", sans-serif` (Modern contemporary display for KPI metrics, counter numbers, badges, action buttons, and small-box widgets).
+  - `--font-sans`: `"Plus Jakarta Sans", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif` (Crisp geometric sans-serif for body paragraphs, data tables, form fields, and metadata).
+- **Color Palette & Aliases**:
+  - **Midnight Sapphire / Ink Canvas**: `--color-ink-950` (`#070a16`), `--color-ink-900` (`#0b1020`), `--color-ink-850` (`#10162b`), `--color-ink-800` (`#151c36`).
+  - **Navy Aliases**: `--color-navy-*` tokens mapped 1:1 to `--color-ink-*` to eliminate missing token fallbacks across 14+ views.
+  - **Refined Slate**: Dark `--color-slate-*` (`slate-950`, `slate-900`, `slate-850`, `slate-800`) mapped to conservatory sapphire midnight tones.
+  - **Acoustic Brass & Warm Gold**: `--color-brass-50` through `--color-brass-900` (`#dea644`, `#ecbd5c`, `#c8913a`), with `--color-gold-*` and `--color-amber-*` aliased directly to the bespoke metallic brass palette.
+

@@ -104,7 +104,7 @@ async function handleDownloadCreditNote(creditNote) {
     <!-- Page Header & Tab Navigation -->
     <div class="border-b border-white/10 pb-6 flex flex-wrap items-center justify-between gap-4">
       <div>
-        <h1 class="text-2xl sm:text-3xl font-display font-bold text-white">
+        <h1 class="text-2xl sm:text-3xl font-serif font-bold text-white">
           My Orders & Financial Ledger
         </h1>
         <p class="text-sm text-ink-300 mt-1">

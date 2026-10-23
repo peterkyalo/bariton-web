@@ -3,7 +3,7 @@
     <!-- Page Header (matches testimonial.html banner) -->
     <div class="bg-gradient-to-r from-slate-950 via-slate-900 to-amber-950 py-20 text-center relative overflow-hidden">
       <div class="max-w-4xl mx-auto px-4 relative z-10">
-        <h1 class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight mb-4">Testimonials</h1>
+        <h1 class="text-4xl sm:text-5xl font-serif font-bold text-white tracking-tight mb-4">Testimonials</h1>
         <nav class="flex justify-center items-center text-sm font-medium text-slate-300 gap-2">
           <router-link to="/" class="hover:text-amber-400">Home</router-link>
           <span>/</span>
@@ -17,14 +17,14 @@
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="text-center max-w-2xl mx-auto mb-14">
           <span class="inline-block text-xs font-bold uppercase tracking-wider text-amber-600 bg-amber-100/50 px-3 py-1 rounded-full mb-3">Student Reviews</span>
-          <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">Our Students Say!</h2>
+          <h2 class="text-3xl sm:text-4xl font-serif font-bold text-slate-900 tracking-tight">Our Students Say!</h2>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div v-for="(t, idx) in testimonials" :key="idx" class="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-xl transition-all flex flex-col justify-between text-center">
             <div>
               <img :src="t.avatar" :alt="t.name" class="w-16 h-16 rounded-full object-cover mx-auto mb-4 border-2 border-amber-500" />
-              <h4 class="text-base font-bold text-slate-900">{{ t.name }}</h4>
+              <h4 class="text-base font-serif font-bold text-slate-900">{{ t.name }}</h4>
               <p class="text-xs text-amber-600 font-semibold mb-3">{{ t.role }}</p>
               <div class="text-amber-500 text-xs mb-3">★★★★★</div>
               <p class="text-xs text-slate-600 leading-relaxed italic">"{{ t.quote }}"</p>

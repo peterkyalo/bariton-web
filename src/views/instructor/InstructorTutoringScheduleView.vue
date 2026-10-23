@@ -210,7 +210,7 @@ function formatDatetime(dt) {
     <!-- Header -->
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-800 pb-5">
       <div>
-        <h1 class="text-2xl font-bold text-white tracking-tight">1-on-1 Tutoring Studio & Schedule</h1>
+        <h1 class="text-2xl sm:text-3xl font-serif font-bold text-white tracking-tight">1-on-1 Tutoring Studio & Schedule</h1>
         <p class="text-xs text-slate-400 mt-1">
           Manage your recurring weekly teaching shifts, blackout dates, student attendance, and meeting links in <strong class="text-slate-200">Africa/Nairobi (EAT)</strong> timezone.
         </p>

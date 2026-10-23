@@ -24,7 +24,7 @@
           <span v-if="page.hero_badge" class="inline-block text-xs font-bold uppercase tracking-wider text-amber-400 bg-amber-500/20 border border-amber-500/30 px-3.5 py-1 rounded-full mb-4">
             {{ page.hero_badge }}
           </span>
-          <h1 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight mb-4">
+          <h1 class="text-3xl sm:text-5xl font-serif font-bold text-white tracking-tight mb-4">
             {{ page.hero_title || page.title }}
           </h1>
           <p v-if="page.hero_subtitle" class="text-base sm:text-lg text-slate-200 max-w-2xl mx-auto mb-6">
@@ -41,7 +41,7 @@
       <!-- Article Body -->
       <section class="py-16 bg-white">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div class="prose prose-slate lg:prose-lg max-w-none prose-headings:font-extrabold prose-headings:text-slate-900 prose-a:text-amber-600 hover:prose-a:text-amber-700">
+          <div class="prose prose-slate lg:prose-lg max-w-none prose-headings:font-serif prose-headings:font-bold prose-headings:text-slate-900 prose-a:text-amber-600 hover:prose-a:text-amber-700">
             <div v-html="formattedContent"></div>
           </div>
         </div>

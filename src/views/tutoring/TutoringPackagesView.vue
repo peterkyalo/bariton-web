@@ -60,7 +60,7 @@ function handleBookPackage(pkg) {
           </svg>
           Elite 1-on-1 Mentorship
         </div>
-        <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-white">
+        <h1 class="text-4xl sm:text-5xl font-serif font-bold tracking-tight text-white">
           Private Studio Tutoring & Technique Coaching
         </h1>
         <p class="text-lg text-slate-400">
@@ -110,7 +110,7 @@ function handleBookPackage(pkg) {
           <div>
             <div class="flex justify-between items-start mb-4">
               <div>
-                <h3 class="text-xl font-bold text-white group-hover:text-amber-400 transition-colors">
+                <h3 class="text-xl font-serif font-bold text-white group-hover:text-amber-400 transition-colors">
                   {{ pkg.title }}
                 </h3>
                 <p v-if="pkg.course" class="text-xs font-medium text-amber-500/80 mt-0.5">
@@ -131,7 +131,7 @@ function handleBookPackage(pkg) {
 
             <div class="mb-6 pb-6 border-b border-slate-800/80">
               <div class="flex items-baseline gap-2">
-                <span class="text-3xl font-extrabold text-white">
+                <span class="text-3xl font-display font-extrabold text-white">
                   {{ formatMoney(pkg.price_kes, selectedCurrency) }}
                 </span>
                 <span class="text-xs text-slate-400 font-medium">total package</span>

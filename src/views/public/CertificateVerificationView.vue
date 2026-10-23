@@ -36,16 +36,16 @@ function formatDate(iso) {
     <div class="max-w-3xl mx-auto w-full space-y-8">
       <!-- Academy Seal & Brand Header -->
       <div class="text-center space-y-2">
-        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-500 text-2xl font-black mb-1">
+        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brass-400/10 border border-brass-400/30 text-brass-400 text-2xl font-display font-black mb-1 shadow-inner">
           BMAS
         </div>
-        <h1 class="text-xs uppercase tracking-widest font-extrabold text-amber-500">
+        <p class="text-xs uppercase tracking-widest font-display font-extrabold text-brass-400">
           Bariton Music Academy • Academic Registry
-        </h1>
-        <h2 class="text-3xl font-black text-white tracking-tight">
+        </p>
+        <h1 class="text-3xl sm:text-4xl font-serif font-bold text-white tracking-tight">
           Official Credential Verification
-        </h2>
-        <p class="text-xs text-slate-400 max-w-md mx-auto">
+        </h1>
+        <p class="text-xs text-ink-300 max-w-md mx-auto">
           Public verification portal for authenticating conservatory diplomas and certificates of mastery.
         </p>
       </div>
@@ -127,15 +127,15 @@ function formatDate(iso) {
         <div class="p-6 sm:p-8 space-y-6">
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
-              <span class="text-xs uppercase tracking-wider text-slate-500 font-semibold block">Holder Name</span>
-              <span class="text-2xl font-black text-white mt-1 block tracking-tight">
+              <span class="text-xs uppercase tracking-wider text-slate-500 font-semibold block font-display">Holder Name</span>
+              <span class="text-2xl font-serif font-black text-white mt-1 block tracking-tight">
                 {{ examsStore.verificationResult.holder_name }}
               </span>
             </div>
 
             <div>
-              <span class="text-xs uppercase tracking-wider text-slate-500 font-semibold block">Course Title</span>
-              <span class="text-xl font-bold text-amber-400 mt-1 block">
+              <span class="text-xs uppercase tracking-wider text-slate-500 font-semibold block font-display">Course Title</span>
+              <span class="text-xl font-serif font-bold text-brass-400 mt-1 block">
                 {{ examsStore.verificationResult.course_title }}
               </span>
             </div>

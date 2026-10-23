@@ -101,7 +101,7 @@ function formatDate(iso) {
               {{ assignment.submission_type }} Submission
             </span>
           </div>
-          <h1 class="text-2xl sm:text-3xl font-display font-bold text-white mt-1">
+          <h1 class="text-2xl sm:text-3xl font-serif font-bold text-white mt-1">
             {{ assignment?.title || 'Assignment Assessment' }}
           </h1>
           <p class="text-xs text-ink-400 mt-0.5">
