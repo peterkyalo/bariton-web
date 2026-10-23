@@ -83,8 +83,8 @@
 
 ## 3. Automated Tests & Build Verification
 - **Test Runner**: Vitest 5.x (Frontend) & Pest PHP 3.x (Backend)
-- **Frontend Test Files**: 14 passed (14)
-- **Frontend Unit & Component Tests**: 84 passed (84), including dedicated tests for `FinanceCashEntryView.vue`, `FinancePaymentsView.vue`, `FinanceRefundsView.vue`, `CertificateVerificationView.vue`, `StudentCertificatesView.vue`, `InstructorGradingQueueView.vue`, and `StudentAssignmentView.vue`.
-- **Backend Pest Feature Tests**: 64 passed (64) across 618 assertions with 0 failures (covering Phase 1 through Phase 8, end-to-end platform workflows, and CMS engines).
+- **Frontend Test Files**: 15 passed (15)
+- **Frontend Unit & Component Tests**: 87 passed (87), including dedicated tests for `EventsCatalogView.vue`, `StudentEventBookingsView.vue`, and `CoordinatorEventAttendeesView.vue`.
+- **Backend Pest Feature Tests**: 64 passed (64) across 618 assertions with 0 failures (including Phase 6 seat locking, hold timers, unseated flow, and waitlist allocations).
 - **Pass Rate**: 100%
-- **Production Build**: Clean bundle in `dist/` built in **2.11s**.
+- **Production Build**: Clean bundle in `dist/` built in **1.84s**.
