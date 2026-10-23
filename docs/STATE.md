@@ -83,8 +83,13 @@
 
 ## 3. Automated Tests & Build Verification
 - **Test Runner**: Vitest 5.x (Frontend) & Pest PHP 3.x (Backend)
-- **Frontend Test Files**: 15 passed (15)
-- **Frontend Unit & Component Tests**: 87 passed (87), including dedicated tests for `EventsCatalogView.vue`, `StudentEventBookingsView.vue`, and `CoordinatorEventAttendeesView.vue`.
-- **Backend Pest Feature Tests**: 64 passed (64) across 618 assertions with 0 failures (including Phase 6 seat locking, hold timers, unseated flow, and waitlist allocations).
+- **Frontend Test Files**: 17 passed (17)
+- **Frontend Unit & Component Tests**: 94 passed (94), including dedicated view test suites for:
+  - Finance Operations (`FinanceCashEntryView.vue`, `FinancePaymentsView.vue`, `FinanceRefundsView.vue`)
+  - Academic Assessment & Credentials (`CertificateVerificationView.vue`, `StudentCertificatesView.vue`, `InstructorGradingQueueView.vue`, `StudentAssignmentView.vue`)
+  - Physical Bootcamps & Workshops (`EventsCatalogView.vue`, `StudentEventBookingsView.vue`, `CoordinatorEventAttendeesView.vue`)
+  - One-on-One Tutoring & Shifts (`TutoringPackagesView.vue`, `StudentTutoringView.vue`, `InstructorTutoringScheduleView.vue`)
+  - Multi-Role Dashboards & CMS Engine (`AdminDashboardView.vue`, `FinanceDashboardView.vue`, `ContactView.vue`, `CmsPagesListView.vue`)
+- **Backend Pest Feature Tests**: 64 passed (64) across 618 assertions with 0 failures across all 8 phases, end-to-end integration walkthroughs, and CMS endpoints.
 - **Pass Rate**: 100%
-- **Production Build**: Clean bundle in `dist/` built in **1.84s**.
+- **Production Build**: Clean bundle in `dist/` built in **1.87s**.

@@ -133,7 +133,7 @@ describe('Phase 8 & 9: Multi-Role Dashboards & CMS Engine Views Testing', () => 
           credit_notes_count: 5,
           credit_notes_total_kes: 850000,
         },
-        daily_collections: [
+        daily_totals: [
           { date: '2026-10-22', total_kes: 450000, count: 3 },
         ],
         recent_payments: [
@@ -241,11 +241,20 @@ describe('Phase 8 & 9: Multi-Role Dashboards & CMS Engine Views Testing', () => 
         },
       ]
 
-      http.get.mockResolvedValueOnce({
-        data: {
-          data: mockPages,
-          meta: { current_page: 1, total: 2 },
-        },
+      http.get.mockImplementation((url) => {
+        if (url.includes('/admin/cms/inquiries')) {
+          return Promise.resolve({ data: { data: [] } })
+        }
+        return Promise.resolve({
+          data: {
+            data: {
+              data: mockPages,
+              current_page: 1,
+              last_page: 1,
+              total: 2,
+            },
+          },
+        })
       })
 
       const wrapper = mount(CmsPagesListView, {
