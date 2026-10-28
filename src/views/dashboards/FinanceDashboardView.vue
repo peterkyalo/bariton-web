@@ -72,7 +72,7 @@ function formatDatetime(dt) {
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-2">
           Finance Directorate · Ledger & Cash Operations
         </div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+        <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight text-white">
           Financial Ledger: {{ auth.user?.name }}
         </h1>
         <p class="text-xs text-ink-300 mt-1 max-w-2xl">
@@ -129,7 +129,7 @@ function formatDatetime(dt) {
         <div class="glass p-5 rounded-2xl border-emerald-500/30">
           <p class="text-xs font-semibold text-emerald-400 uppercase tracking-wider">Gross Settled Revenue</p>
           <div class="mt-2 flex items-baseline gap-2">
-            <span class="text-2xl sm:text-3xl font-extrabold text-white">
+            <span class="text-2xl sm:text-3xl font-semibold text-white">
               {{ formatMoney(dashboardStore.financeMetrics.summary.total_revenue_kes) }}
             </span>
           </div>
@@ -139,7 +139,7 @@ function formatDatetime(dt) {
         <div class="glass p-5 rounded-2xl">
           <p class="text-xs font-semibold text-ink-400 uppercase tracking-wider">Cash Over-The-Counter</p>
           <div class="mt-2 flex items-baseline gap-2">
-            <span class="text-2xl sm:text-3xl font-extrabold text-amber-400">
+            <span class="text-2xl sm:text-3xl font-semibold text-amber-400">
               {{ formatMoney(dashboardStore.financeMetrics.summary.cash_total_kes) }}
             </span>
           </div>
@@ -151,7 +151,7 @@ function formatDatetime(dt) {
         <div class="glass p-5 rounded-2xl">
           <p class="text-xs font-semibold text-ink-400 uppercase tracking-wider">Pending Refunds</p>
           <div class="mt-2 flex items-baseline gap-2">
-            <span class="text-2xl sm:text-3xl font-extrabold text-rose-400">
+            <span class="text-2xl sm:text-3xl font-semibold text-rose-400">
               {{ dashboardStore.financeMetrics.summary.pending_refunds_count }}
             </span>
             <span class="text-xs text-ink-500">requests</span>
@@ -164,7 +164,7 @@ function formatDatetime(dt) {
         <div class="glass p-5 rounded-2xl">
           <p class="text-xs font-semibold text-ink-400 uppercase tracking-wider">Credit Notes Issued</p>
           <div class="mt-2 flex items-baseline gap-2">
-            <span class="text-2xl sm:text-3xl font-extrabold text-purple-400">
+            <span class="text-2xl sm:text-3xl font-semibold text-indigo-400">
               {{ dashboardStore.financeMetrics.summary.credit_notes_count }}
             </span>
             <span class="text-xs text-ink-500">credit notes</span>

@@ -29,7 +29,7 @@ function formatDate(d) {
         <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold uppercase tracking-wider mb-2">
           Physical Events & Bootcamps Coordination
         </div>
-        <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+        <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight text-white">
           Events Command Center: {{ auth.user?.name }}
         </h1>
         <p class="text-xs text-ink-300 mt-1 max-w-xl">
@@ -59,7 +59,7 @@ function formatDate(d) {
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div class="glass p-6 rounded-2xl border-blue-500/30">
           <p class="text-xs font-bold text-blue-400 uppercase tracking-wider">Scheduled Events</p>
-          <p class="text-3xl font-extrabold text-white my-2">
+          <p class="text-3xl font-semibold text-white my-2">
             {{ dashboardStore.coordinatorMetrics.events_count }}
           </p>
           <p class="text-xs text-ink-400">
@@ -69,7 +69,7 @@ function formatDate(d) {
 
         <div class="glass p-6 rounded-2xl border-emerald-500/30">
           <p class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Confirmed Attendees</p>
-          <p class="text-3xl font-extrabold text-emerald-400 my-2">
+          <p class="text-3xl font-semibold text-emerald-400 my-2">
             {{ dashboardStore.coordinatorMetrics.total_active_bookings }}
           </p>
           <p class="text-xs text-ink-400">
@@ -79,7 +79,7 @@ function formatDate(d) {
 
         <div class="glass p-6 rounded-2xl border-amber-500/30">
           <p class="text-xs font-bold text-amber-400 uppercase tracking-wider">Checked In On-Site</p>
-          <p class="text-3xl font-extrabold text-amber-400 my-2">
+          <p class="text-3xl font-semibold text-amber-400 my-2">
             {{ dashboardStore.coordinatorMetrics.total_attendees_checked_in }}
           </p>
           <p class="text-xs text-ink-400">
