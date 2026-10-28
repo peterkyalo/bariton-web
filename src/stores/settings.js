@@ -26,6 +26,7 @@ export const useSettingsStore = defineStore('settings', {
     async save(values) {
       const { data } = await http.put('/admin/settings', { settings: values })
       this.groups = data.data
+      this.publicSettings = null
       return this.groups
     },
 

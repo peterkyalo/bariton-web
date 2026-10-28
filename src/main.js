@@ -6,6 +6,10 @@ import './style.css'
 import { onAuthEvent } from './lib/http'
 import { useAuthStore } from './stores/auth'
 import { useUiStore } from './stores/ui'
+import { useSettingsStore } from './stores/settings'
+import { applyTheme, applyCachedTheme, themeFromSettings } from './lib/theme'
+
+applyCachedTheme()
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -30,3 +34,9 @@ onAuthEvent('twoFactorRequired', () => {
 })
 
 app.mount('#app')
+
+// Fetch admin-configured brand colors; failure keeps cached/default theme.
+useSettingsStore()
+  .fetchPublic()
+  .then((settings) => applyTheme(themeFromSettings(settings)))
+  .catch(() => {})

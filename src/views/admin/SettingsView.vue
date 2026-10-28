@@ -4,6 +4,9 @@ import { useSettingsStore } from '@/stores/settings'
 import { useUiStore } from '@/stores/ui'
 import { parseError } from '@/lib/http'
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
+import { applyTheme } from '@/lib/theme'
+
+const isColorKey = (key) => key === 'brand_primary_color' || key === 'brand_secondary_color'
 
 const settingsStore = useSettingsStore()
 const ui = useUiStore()
@@ -56,6 +59,10 @@ async function save() {
     }
 
     await settingsStore.save(payload)
+    applyTheme({
+      primary: payload.brand_primary_color,
+      secondary: payload.brand_secondary_color,
+    })
     ui.toast('System settings updated successfully. Cached across all workers.', 'success')
   } catch (err) {
     const { message } = parseError(err)
@@ -110,9 +117,26 @@ async function save() {
               <span class="text-[10px] font-mono text-ink-500">{{ item.key }}</span>
             </div>
 
+            <!-- Brand color picker -->
+            <div v-if="isColorKey(item.key)" class="flex items-center gap-3">
+              <input
+                :id="item.key"
+                v-model="formData[item.key]"
+                type="color"
+                class="h-9 w-14 cursor-pointer rounded-lg border border-white/10 bg-transparent p-0.5"
+              />
+              <input
+                v-model="formData[item.key]"
+                type="text"
+                maxlength="7"
+                class="field-input text-xs font-mono"
+                placeholder="#c8913a"
+              />
+            </div>
+
             <!-- Integer / Float -->
             <input
-              v-if="item.type === 'integer' || item.type === 'float'"
+              v-else-if="item.type === 'integer' || item.type === 'float'"
               :id="item.key"
               v-model="formData[item.key]"
               type="number"
