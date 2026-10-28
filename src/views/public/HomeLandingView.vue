@@ -14,8 +14,8 @@
       <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
         <div class="max-w-3xl">
           <!-- Animated Badge -->
-          <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-500/20 text-amber-400 border border-amber-500/30 mb-6">
-            <span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span>
+          <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 mb-6">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
             {{ currentSlide.badge }}
           </span>
 

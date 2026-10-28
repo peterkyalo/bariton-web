@@ -58,8 +58,8 @@ async function handleLogout() {
       </div>
 
       <div class="flex items-center gap-4">
-        <span class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-medium">
-          <span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
+        <span class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-medium">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
           2026 Conservatory Terms Open
         </span>
         <RouterLink to="/verify" class="text-slate-400 hover:text-amber-400 transition-colors text-xs">
