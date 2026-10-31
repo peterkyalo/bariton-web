@@ -6,7 +6,7 @@
         <button
           type="button"
           :class="[
-            'px-2.5 py-1 text-xs font-semibold rounded-md transition-colors',
+            'px-2.5 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer',
             mode === 'write' ? 'bg-gold-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'
           ]"
           @click="mode = 'write'"
@@ -16,7 +16,7 @@
         <button
           type="button"
           :class="[
-            'px-2.5 py-1 text-xs font-semibold rounded-md transition-colors hidden sm:block',
+            'px-2.5 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer',
             mode === 'split' ? 'bg-gold-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'
           ]"
           @click="mode = 'split'"
@@ -26,7 +26,7 @@
         <button
           type="button"
           :class="[
-            'px-2.5 py-1 text-xs font-semibold rounded-md transition-colors',
+            'px-2.5 py-1 text-xs font-semibold rounded-md transition-colors cursor-pointer',
             mode === 'preview' ? 'bg-gold-500 text-slate-950 shadow-sm' : 'text-slate-400 hover:text-white'
           ]"
           @click="mode = 'preview'"
@@ -51,24 +51,24 @@
       <button
         type="button"
         title="Heading 1"
-        class="px-2 py-1 rounded hover:bg-slate-800 hover:text-white font-bold"
-        @click="insertFormat('# ', '')"
+        class="px-2 py-1 rounded hover:bg-slate-800 hover:text-white font-bold cursor-pointer"
+        @click="insertLinePrefix('# ')"
       >
         H1
       </button>
       <button
         type="button"
         title="Heading 2"
-        class="px-2 py-1 rounded hover:bg-slate-800 hover:text-white font-bold"
-        @click="insertFormat('## ', '')"
+        class="px-2 py-1 rounded hover:bg-slate-800 hover:text-white font-bold cursor-pointer"
+        @click="insertLinePrefix('## ')"
       >
         H2
       </button>
       <button
         type="button"
         title="Heading 3"
-        class="px-2 py-1 rounded hover:bg-slate-800 hover:text-white font-bold"
-        @click="insertFormat('### ', '')"
+        class="px-2 py-1 rounded hover:bg-slate-800 hover:text-white font-bold cursor-pointer"
+        @click="insertLinePrefix('### ')"
       >
         H3
       </button>
@@ -79,7 +79,7 @@
       <button
         type="button"
         title="Bold"
-        class="px-2 py-1 rounded hover:bg-slate-800 hover:text-white font-bold"
+        class="px-2 py-1 rounded hover:bg-slate-800 hover:text-white font-bold cursor-pointer"
         @click="wrapSelection('**', '**')"
       >
         B
@@ -87,7 +87,7 @@
       <button
         type="button"
         title="Italic"
-        class="px-2 py-1 rounded hover:bg-slate-800 hover:text-white italic"
+        class="px-2 py-1 rounded hover:bg-slate-800 hover:text-white italic cursor-pointer"
         @click="wrapSelection('*', '*')"
       >
         I
@@ -95,7 +95,7 @@
       <button
         type="button"
         title="Strikethrough"
-        class="px-2 py-1 rounded hover:bg-slate-800 hover:text-white line-through"
+        class="px-2 py-1 rounded hover:bg-slate-800 hover:text-white line-through cursor-pointer"
         @click="wrapSelection('~~', '~~')"
       >
         S
@@ -107,8 +107,8 @@
       <button
         type="button"
         title="Bullet list"
-        class="p-1.5 rounded hover:bg-slate-800 hover:text-white"
-        @click="insertFormat('- ', '')"
+        class="p-1.5 rounded hover:bg-slate-800 hover:text-white cursor-pointer"
+        @click="insertList(false)"
       >
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
@@ -117,8 +117,8 @@
       <button
         type="button"
         title="Numbered list"
-        class="p-1.5 rounded hover:bg-slate-800 hover:text-white"
-        @click="insertFormat('1. ', '')"
+        class="p-1.5 rounded hover:bg-slate-800 hover:text-white cursor-pointer"
+        @click="insertList(true)"
       >
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 6h13M7 12h13M7 18h13M3 6h.01M3 12h.01M3 18h.01" />
@@ -131,16 +131,16 @@
       <button
         type="button"
         title="Blockquote"
-        class="px-2 py-1 rounded hover:bg-slate-800 hover:text-white font-serif"
-        @click="insertFormat('> ', '')"
+        class="px-2 py-1 rounded hover:bg-slate-800 hover:text-white font-serif cursor-pointer"
+        @click="insertLinePrefix('> ')"
       >
         &ldquo;
       </button>
       <button
         type="button"
         title="Note Box"
-        class="px-2 py-1 rounded hover:bg-slate-800 hover:text-gold-300 font-semibold text-[11px]"
-        @click="insertFormat('> [!NOTE] ', '')"
+        class="px-2 py-1 rounded hover:bg-slate-800 hover:text-gold-300 font-semibold text-[11px] cursor-pointer"
+        @click="insertLinePrefix('> [!NOTE] ')"
       >
         + Note
       </button>
@@ -151,7 +151,7 @@
       <button
         type="button"
         title="Code block"
-        class="px-2 py-1 rounded hover:bg-slate-800 hover:text-white font-mono text-xs"
+        class="px-2 py-1 rounded hover:bg-slate-800 hover:text-white font-mono text-xs cursor-pointer"
         @click="wrapSelection('```\n', '\n```')"
       >
         &lt;/&gt;
@@ -163,14 +163,14 @@
         type="button"
         title="Upload & insert image"
         :disabled="uploadingImage"
-        class="p-1.5 rounded hover:bg-slate-800 hover:text-white disabled:opacity-50"
+        class="px-2 py-1 rounded hover:bg-slate-800 hover:text-white disabled:opacity-50 flex items-center gap-1 cursor-pointer"
         data-testid="rte-image-btn"
         @click="imageInput?.click()"
       >
-        <svg v-if="!uploadingImage" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg v-if="!uploadingImage" class="w-3.5 h-3.5 text-gold-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
         </svg>
-        <span v-else class="text-[10px]">...</span>
+        <span class="text-[11px] font-semibold">{{ uploadingImage ? 'Uploading...' : 'Image' }}</span>
       </button>
       <input
         v-if="allowImages"
@@ -186,7 +186,7 @@
       <button
         type="button"
         title="Insert Link"
-        class="p-1.5 rounded hover:bg-slate-800 hover:text-white"
+        class="p-1.5 rounded hover:bg-slate-800 hover:text-white cursor-pointer"
         @click="insertLink"
       >
         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -198,7 +198,7 @@
       <button
         type="button"
         title="Horizontal rule"
-        class="px-2 py-1 rounded hover:bg-slate-800 hover:text-white font-bold text-xs"
+        class="px-2 py-1 rounded hover:bg-slate-800 hover:text-white font-bold text-xs cursor-pointer"
         @click="insertFormat('\n---\n', '')"
       >
         &mdash;
@@ -221,15 +221,23 @@
         ></textarea>
       </div>
 
-      <!-- Live Rendered Preview (Preview / Split) -->
+      <!-- Live Rendered Preview (Always visible below in 'write' mode when content exists, or side-by-side in 'split' / full in 'preview') -->
       <div
-        v-show="mode !== 'write'"
-        :class="['p-5 overflow-y-auto bg-navy-900/30', mode === 'preview' ? 'min-h-[260px]' : 'max-h-[400px]']"
+        v-show="mode !== 'write' || (modelValue && modelValue.trim().length > 0)"
+        :class="[
+          'p-5 overflow-y-auto bg-navy-900/30',
+          mode === 'write' ? 'border-t border-slate-800 max-h-[380px]' : '',
+          mode === 'preview' ? 'min-h-[260px]' : 'max-h-[420px]'
+        ]"
+        data-testid="rte-live-preview"
       >
+        <div v-if="mode === 'write'" class="text-[10px] font-bold uppercase tracking-wider text-gold-400 mb-2 flex items-center justify-between">
+          <span>Live Formatted &amp; Media Preview</span>
+        </div>
         <div v-if="!modelValue?.trim()" class="text-xs text-slate-500 italic py-8 text-center">
           No content written yet. Switch to "Write" mode to compose learning material.
         </div>
-        <div v-else class="prose prose-invert max-w-none text-xs sm:text-sm">
+        <div v-else class="prose prose-invert rich-text-content max-w-none text-xs sm:text-sm">
           <div v-html="renderedHtml"></div>
         </div>
       </div>
@@ -253,7 +261,7 @@ const props = defineProps({
   },
   rows: {
     type: Number,
-    default: 12,
+    default: 10,
   },
   allowImages: {
     type: Boolean,
@@ -297,12 +305,10 @@ function handleInput(e) {
 }
 
 function handleKeydown(e) {
-  // Ctrl+B / Cmd+B shortcut
   if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
     e.preventDefault()
     wrapSelection('**', '**')
   }
-  // Ctrl+I / Cmd+I shortcut
   if ((e.ctrlKey || e.metaKey) && e.key === 'i') {
     e.preventDefault()
     wrapSelection('*', '*')
@@ -325,6 +331,69 @@ function wrapSelection(prefix, suffix) {
   setTimeout(() => {
     textarea.focus()
     textarea.setSelectionRange(start + prefix.length, start + prefix.length + (selected ? selected.length : 4))
+  }, 0)
+}
+
+function insertLinePrefix(prefix) {
+  const textarea = textareaRef.value
+  if (!textarea) return
+
+  const start = textarea.selectionStart
+  const end = textarea.selectionEnd
+  const val = props.modelValue || ''
+
+  // Find start of the current line
+  const lineStart = val.lastIndexOf('\n', start - 1) + 1
+  const beforeLine = val.substring(0, lineStart)
+  const selectedOrRest = val.substring(lineStart, end)
+  const after = val.substring(end)
+
+  // Toggle or replace existing heading/quote prefix on the line
+  const cleanedLine = selectedOrRest.replace(/^(#{1,3}\s+|>\s*(\[!NOTE\]\s*)?)/, '')
+  const newVal = `${beforeLine}${prefix}${cleanedLine}${after}`
+  emit('update:modelValue', newVal)
+
+  setTimeout(() => {
+    textarea.focus()
+    const newCursor = beforeLine.length + prefix.length + cleanedLine.length
+    textarea.setSelectionRange(newCursor, newCursor)
+  }, 0)
+}
+
+function insertList(ordered = false) {
+  const textarea = textareaRef.value
+  if (!textarea) return
+
+  const start = textarea.selectionStart
+  const end = textarea.selectionEnd
+  const val = props.modelValue || ''
+
+  const lineStart = val.lastIndexOf('\n', start - 1) + 1
+  const lineEndIdx = val.indexOf('\n', end)
+  const lineEnd = lineEndIdx === -1 ? val.length : lineEndIdx
+
+  const before = val.substring(0, lineStart)
+  const targetBlock = val.substring(lineStart, lineEnd)
+  const after = val.substring(lineEnd)
+
+  const rawLines = targetBlock.split(/\r?\n/)
+  let itemNum = 1
+  const formattedLines = rawLines.map((line) => {
+    const clean = line.replace(/^([-*]\s+|\d+\.\s+)/, '').trim()
+    if (!clean && rawLines.length > 1) return ''
+    const marker = ordered ? `${itemNum++}. ` : '- '
+    return `${marker}${clean || 'List item'}`
+  })
+
+  const replacement = formattedLines.join('\n')
+  const needsLeadingNewline = before.length > 0 && !before.endsWith('\n\n') ? '\n' : ''
+  const newVal = `${before}${needsLeadingNewline}${replacement}${after}`
+  emit('update:modelValue', newVal)
+
+  setTimeout(() => {
+    textarea.focus()
+    const pos = before.length + needsLeadingNewline.length + replacement.length
+    textarea.setSelectionRange(pos, pos)
   }, 0)
 }
 
@@ -389,5 +458,18 @@ function insertLink() {
   margin-bottom: 0.5rem;
   line-height: 1.6;
 }
+.rich-text-editor :deep(ul) {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+.rich-text-editor :deep(ol) {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+.rich-text-editor :deep(li) {
+  display: list-item;
+  margin: 0.25rem 0;
+}
 </style>
-

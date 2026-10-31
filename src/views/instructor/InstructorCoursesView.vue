@@ -37,6 +37,12 @@
         class="card p-6 rounded-2xl bg-navy-900/70 border border-slate-800 hover:border-gold-500/40 transition-all flex flex-col justify-between space-y-6"
       >
         <div class="space-y-4">
+          <img
+            v-if="course.thumbnail_url || course.thumbnail_path"
+            :src="resolveMediaUrl(course.thumbnail_url || course.thumbnail_path)"
+            :alt="course.title"
+            class="w-full h-40 object-cover rounded-xl border border-slate-800"
+          />
           <div class="flex items-center justify-between">
             <span :class="['badge text-xs uppercase font-bold', course.status === 'published' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400']">
               {{ course.status }}
@@ -119,6 +125,7 @@ import { parseError } from '../../lib/http';
 import LoadingSpinner from '../../components/ui/LoadingSpinner.vue';
 import EmptyState from '../../components/ui/EmptyState.vue';
 import Modal from '../../components/ui/Modal.vue';
+import { resolveMediaUrl } from '../../lib/richText';
 
 const coursesStore = useCoursesStore();
 const auth = useAuthStore();

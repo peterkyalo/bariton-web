@@ -5,6 +5,7 @@ import {
   estimateReadingTime,
   sanitizeHtml,
   renderRichText,
+  resolveMediaUrl,
 } from '@/lib/richText'
 
 describe('richText utility tests', () => {
@@ -87,6 +88,22 @@ describe('richText utility tests', () => {
       expect(clean).not.toContain('<script')
       expect(clean).not.toContain('onclick')
       expect(clean).not.toContain('onerror')
+    })
+
+    it('properly formats CRLF (\\r\\n) bold paragraphs and numbered lists into <ol><li> elements', () => {
+      const crlfContent = '**Lorem ipsum dolor sit amet**. Quisque faucibus.\r\n\r\n1. First violin exercise.\r\n2. Second bowing exercise.\r\n\r\nFinal paragraph.'
+      const html = renderRichText(crlfContent, { dark: true })
+      expect(html).toContain('<strong')
+      expect(html).toContain('Lorem ipsum dolor sit amet')
+      expect(html).toContain('<ol')
+      expect(html).toContain('<li')
+      expect(html).toContain('First violin exercise.')
+      expect(html).toContain('Second bowing exercise.')
+    })
+
+    it('resolves relative storage paths and portless localhost storage URLs via resolveMediaUrl', () => {
+      expect(resolveMediaUrl('course-covers/test.png')).toContain('/storage/course-covers/test.png')
+      expect(resolveMediaUrl('http://localhost/storage/editor-images/pic.jpg')).toContain(':8000/storage/editor-images/pic.jpg')
     })
   })
 })

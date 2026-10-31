@@ -35,10 +35,15 @@
         </div>
         <h1 class="text-2xl font-serif font-bold text-white">{{ course.title }}</h1>
         <div class="flex flex-col sm:flex-row gap-4">
-          <img v-if="course.thumbnail_url" :src="course.thumbnail_url" alt="Course cover" class="w-full sm:w-48 h-28 object-cover rounded-xl border border-slate-700 shrink-0" />
+          <img
+            v-if="course.thumbnail_url || course.thumbnail_path"
+            :src="resolveMediaUrl(course.thumbnail_url || course.thumbnail_path)"
+            alt="Course cover"
+            class="w-full sm:w-48 h-28 object-cover rounded-xl border border-slate-700 shrink-0"
+          />
           <p v-if="course.short_description" class="text-sm text-slate-400">{{ course.short_description }}</p>
         </div>
-        <div v-if="course.description" class="prose prose-invert max-w-none text-sm" v-html="renderRichText(course.description, { dark: true })"></div>
+        <div v-if="course.description" class="prose prose-invert rich-text-content max-w-none text-sm" v-html="renderRichText(course.description, { dark: true })"></div>
 
         <div class="flex flex-wrap items-center gap-3 pt-2">
           <button id="toggle-course-overview" type="button" class="btn btn-secondary text-xs font-bold" @click="showOverviewEditor = !showOverviewEditor">
@@ -107,14 +112,14 @@
         >
           <div class="flex flex-wrap items-start justify-between gap-3">
             <div class="flex items-start gap-3">
-              <img v-if="module.image_url" :src="module.image_url" alt="" class="w-20 h-14 object-cover rounded-lg border border-slate-700 shrink-0" />
+              <img v-if="module.image_url || module.image_path" :src="resolveMediaUrl(module.image_url || module.image_path)" alt="" class="w-20 h-14 object-cover rounded-lg border border-slate-700 shrink-0" />
               <div>
               <span class="badge badge-gold text-[10px] font-bold uppercase tracking-wider mr-2">{{ module.level }}</span>
               <strong class="text-white text-base font-serif">{{ module.title }}</strong>
               <span class="text-xs text-slate-400 block mt-0.5">
                 KES {{ module.price_formatted }} (${{ module.price_usd_formatted }} USD)
               </span>
-              <div v-if="module.description" class="prose prose-invert max-w-none text-xs text-slate-500 mt-1" v-html="renderRichText(module.description, { dark: true })"></div>
+              <div v-if="module.description" class="prose prose-invert rich-text-content max-w-none text-xs text-slate-300 mt-1" v-html="renderRichText(module.description, { dark: true })"></div>
               <span v-if="module.attachments?.length" class="text-[11px] text-gold-400 mt-1 block">{{ module.attachments.length }} attached material(s)</span>
               </div>
             </div>
@@ -356,7 +361,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
 import RichTextEditor from '@/components/ui/RichTextEditor.vue'
 import MediaPanel from '@/components/ui/MediaPanel.vue'
 import PdfViewer from '@/components/ui/PdfViewer.vue'
-import { extractYouTubeId, getYouTubeThumbnail, estimateReadingTime, renderRichText } from '@/lib/richText'
+import { extractYouTubeId, getYouTubeThumbnail, estimateReadingTime, renderRichText, resolveMediaUrl } from '@/lib/richText'
 
 const route = useRoute()
 const coursesStore = useCoursesStore()
@@ -396,7 +401,7 @@ async function refresh() {
 async function saveStatus() {
   savingStatus.value = true
   try {
-    await http.put(`/admin/courses/${courseId.value}`, { status: statusDraft.value })
+    await http.put(`/instructor/courses/${courseId.value}`, { status: statusDraft.value })
     ui.notify({ type: 'success', title: 'Status updated', message: `Course is now ${statusDraft.value}.` })
     await refresh()
   } catch (err) {
@@ -409,7 +414,7 @@ async function saveStatus() {
 
 /* ---------------- Course overview & media ---------------- */
 const showOverviewEditor = ref(false)
-const showCourseMedia = ref(false)
+const showCourseMedia = ref(true)
 const overviewDraft = ref('')
 const savingOverview = ref(false)
 
@@ -420,7 +425,7 @@ watch(showOverviewEditor, (open) => {
 async function saveOverview() {
   savingOverview.value = true
   try {
-    await http.put(`/admin/courses/${courseId.value}`, { description: overviewDraft.value })
+    await http.put(`/instructor/courses/${courseId.value}`, { description: overviewDraft.value })
     ui.notify({ type: 'success', title: 'Overview saved', message: 'Course overview updated.' })
     await refresh()
     showOverviewEditor.value = false

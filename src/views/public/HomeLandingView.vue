@@ -169,7 +169,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div v-for="course in featuredCourses" :key="course.id" class="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:border-amber-500/30 transition-all flex flex-col justify-between group">
             <div class="relative aspect-[16/10] overflow-hidden bg-slate-900">
-              <img :src="course.thumbnail_path || course.image_url || 'https://images.unsplash.com/photo-1520523839898-507127b31130?auto=format&fit=crop&w=600&q=80'" :alt="course.title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+              <img :src="resolveMediaUrl(course.thumbnail_url || course.thumbnail_path || course.image_url) || 'https://images.unsplash.com/photo-1520523839898-507127b31130?auto=format&fit=crop&w=600&q=80'" :alt="course.title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
               <div class="absolute top-4 right-4 bg-slate-950/80 backdrop-blur-sm text-amber-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                 {{ course.level ? course.level.toUpperCase() : 'CONSERVATORY' }}
               </div>
@@ -264,6 +264,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useCmsStore } from '@/stores/cms'
 import { useCoursesStore } from '@/stores/courses'
+import { resolveMediaUrl } from '@/lib/richText'
 
 const auth = useAuthStore()
 const cmsStore = useCmsStore()

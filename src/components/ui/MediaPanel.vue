@@ -1,9 +1,9 @@
 <script setup>
-import { computed, reactive, ref } from 'vue'
+import { computed, reactive, ref, watch } from 'vue'
 import { useCoursesStore } from '@/stores/courses'
 import { useUiStore } from '@/stores/ui'
 import { parseError } from '@/lib/http'
-import { extractYouTubeId, getYouTubeThumbnail } from '@/lib/richText'
+import { extractYouTubeId, getYouTubeThumbnail, resolveMediaUrl } from '@/lib/richText'
 import PdfViewer from './PdfViewer.vue'
 
 /**
@@ -21,7 +21,24 @@ const coursesStore = useCoursesStore()
 const ui = useUiStore()
 
 const isCourse = computed(() => props.ownerType === 'course')
-const coverUrl = computed(() => (isCourse.value ? props.owner.thumbnail_url : props.owner.image_url))
+const localCoverUrl = ref(null)
+
+watch(
+  () => [props.owner?.thumbnail_url, props.owner?.thumbnail_path, props.owner?.image_url, props.owner?.image_path],
+  () => {
+    localCoverUrl.value = null
+  }
+)
+
+const coverUrl = computed(() => {
+  if (localCoverUrl.value !== null) {
+    return resolveMediaUrl(localCoverUrl.value)
+  }
+  const raw = isCourse.value
+    ? (props.owner?.thumbnail_url || props.owner?.thumbnail_path)
+    : (props.owner?.image_url || props.owner?.image_path)
+  return resolveMediaUrl(raw)
+})
 const attachments = computed(() => props.owner.attachments || [])
 
 const busy = ref(false)
@@ -52,7 +69,8 @@ async function onCoverSelected(e) {
   busy.value = true
   error.value = ''
   try {
-    await coursesStore.uploadCover(props.ownerType, props.owner.id, selected)
+    const res = await coursesStore.uploadCover(props.ownerType, props.owner.id, selected)
+    localCoverUrl.value = res?.thumbnail_url || res?.image_url || null
     ui.notify({ type: 'success', title: 'Image updated', message: isCourse.value ? 'Course cover image saved.' : 'Module image saved.' })
     emit('changed')
   } catch (err) {
@@ -67,6 +85,7 @@ async function removeCover() {
   error.value = ''
   try {
     await coursesStore.removeCover(props.ownerType, props.owner.id)
+    localCoverUrl.value = ''
     emit('changed')
   } catch (err) {
     fail(err, 'Could not remove image.')

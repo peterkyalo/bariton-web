@@ -118,7 +118,7 @@
             <div class="rounded-2xl overflow-hidden shadow-2xl border border-slate-700/80 bg-slate-900 group relative">
               <div class="aspect-video relative overflow-hidden bg-slate-950">
                 <img
-                  :src="course.thumbnail_url || course.thumbnail_path || 'https://images.unsplash.com/photo-1520523839898-507127b31130?auto=format&fit=crop&w=800&q=80'"
+                  :src="resolveMediaUrl(course.thumbnail_url || course.thumbnail_path) || 'https://images.unsplash.com/photo-1520523839898-507127b31130?auto=format&fit=crop&w=800&q=80'"
                   :alt="course.title"
                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
@@ -584,7 +584,7 @@ import EmptyState from '../../components/ui/EmptyState.vue';
 import Modal from '../../components/ui/Modal.vue';
 import MaterialList from '../../components/ui/MaterialList.vue';
 import PdfViewer from '../../components/ui/PdfViewer.vue';
-import { renderRichText } from '../../lib/richText';
+import { renderRichText, resolveMediaUrl } from '../../lib/richText';
 
 const route = useRoute();
 const router = useRouter();
