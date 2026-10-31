@@ -300,9 +300,9 @@
     </Modal>
 
     <!-- Add Lesson Modal -->
-    <Modal :open="showLessonModal" title="Lesson" @close="showLessonModal = false">
+    <Modal :open="showLessonModal" title="Lesson" :max-width="lessonForm.type === 'richtext' ? 'max-w-4xl' : 'max-w-2xl'" @close="showLessonModal = false">
       <div class="space-y-4">
-        <h3 class="text-lg font-serif font-bold text-white">Add Lesson to Module</h3>
+        <h3 class="text-lg font-serif font-bold text-white">Add Learning Material to Module</h3>
         <form @submit.prevent="handleSaveLesson" class="space-y-4">
           <div>
             <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Lesson Title *</label>
@@ -311,9 +311,10 @@
 
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Format *</label>
+              <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Learning Material Format *</label>
               <select v-model="lessonForm.type" class="w-full px-3 py-2 rounded-lg bg-navy-950 border border-slate-700 text-xs text-white">
-                <option value="youtube">YouTube Masterclass</option>
+                <option value="youtube">YouTube Masterclass Video</option>
+                <option value="richtext">Rich Text / Article & Notation Guide</option>
                 <option value="audio">Guided Audio (MP3/WAV)</option>
                 <option value="pdf">Sheet Music / PDF Score</option>
               </select>
@@ -324,22 +325,90 @@
             </div>
           </div>
 
-          <div v-if="lessonForm.type === 'youtube'">
-            <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">YouTube Video ID *</label>
-            <input v-model="lessonForm.youtube_video_id" type="text" required class="w-full px-3 py-2 rounded-lg bg-navy-950 border border-slate-700 text-xs text-white" placeholder="e.g. Mh4f9AYRCZY" />
+          <!-- YouTube Video ID / Link -->
+          <div v-if="lessonForm.type === 'youtube'" class="space-y-2">
+            <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">YouTube Video ID or Full Link *</label>
+            <input
+              v-model="lessonForm.youtube_video_id"
+              type="text"
+              required
+              class="w-full px-3 py-2 rounded-lg bg-navy-950 border border-slate-700 text-xs text-white font-mono"
+              placeholder="e.g. Mh4f9AYRCZY or https://www.youtube.com/watch?v=Mh4f9AYRCZY"
+            />
+            <div v-if="extractedAdminYoutubeId" class="flex items-center gap-3 p-2.5 rounded-xl bg-navy-900 border border-slate-800">
+              <img :src="getYouTubeThumbnail(extractedAdminYoutubeId)" class="w-24 h-14 object-cover rounded-lg border border-slate-700" alt="Video thumbnail" />
+              <div class="text-xs">
+                <span class="text-emerald-400 font-bold flex items-center gap-1.5">
+                  ✓ Valid Video ID: <code class="px-1.5 py-0.5 rounded bg-navy-950 text-white font-mono">{{ extractedAdminYoutubeId }}</code>
+                </span>
+                <a :href="`https://www.youtube.com/watch?v=${extractedAdminYoutubeId}`" target="_blank" rel="noopener noreferrer" class="text-gold-400 hover:underline block text-[11px] mt-0.5">
+                  Verify on YouTube &rarr;
+                </a>
+              </div>
+            </div>
           </div>
 
-          <div v-else>
+          <!-- Rich Text Editor -->
+          <div v-else-if="lessonForm.type === 'richtext'" class="space-y-2">
             <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">
-              Upload File ({{ lessonForm.type === 'audio' ? 'Audio MP3/WAV, Max 50MB' : 'PDF Score, Max 20MB' }}) *
+              Course Material (Rich Text Editor) *
             </label>
-            <input
-              type="file"
-              :accept="lessonForm.type === 'audio' ? 'audio/*' : 'application/pdf'"
-              required
-              @change="onFileChange"
-              class="w-full text-xs text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-gold-500/20 file:text-gold-300 hover:file:bg-gold-500/30"
+            <RichTextEditor
+              v-model="lessonForm.content"
+              placeholder="Compose detailed instructional material, practice directives, chord sheets, or fingering diagrams here..."
             />
+          </div>
+
+          <!-- Audio Upload -->
+          <div v-else-if="lessonForm.type === 'audio'" class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">
+                Upload Audio Track (MP3, WAV, AAC, FLAC, OGG · Max 50MB) *
+              </label>
+              <input
+                type="file"
+                accept="audio/*"
+                required
+                @change="onFileChange"
+                class="w-full text-xs text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-gold-500/20 file:text-gold-300 hover:file:bg-gold-500/30"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">
+                Supplemental Listening Notes (Optional)
+              </label>
+              <RichTextEditor
+                v-model="lessonForm.content"
+                :rows="6"
+                placeholder="Optional listening instructions, time markers, or ear-training tips..."
+              />
+            </div>
+          </div>
+
+          <!-- PDF Upload -->
+          <div v-else-if="lessonForm.type === 'pdf'" class="space-y-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">
+                Upload PDF Score / Sheet Music (Max 20MB) *
+              </label>
+              <input
+                type="file"
+                accept="application/pdf"
+                required
+                @change="onFileChange"
+                class="w-full text-xs text-slate-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-sky-500/20 file:text-sky-300 hover:file:bg-sky-500/30"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">
+                Score Analysis Notes (Optional)
+              </label>
+              <RichTextEditor
+                v-model="lessonForm.content"
+                :rows="6"
+                placeholder="Optional performance guidance or annotations..."
+              />
+            </div>
           </div>
 
           <div class="flex items-center">
@@ -365,6 +434,8 @@ import { useRoute, useRouter } from 'vue-router';
 import { useCoursesStore } from '../../../stores/courses';
 import { useUiStore } from '../../../stores/ui';
 import Modal from '../../../components/ui/Modal.vue';
+import RichTextEditor from '../../../components/ui/RichTextEditor.vue';
+import { extractYouTubeId, getYouTubeThumbnail } from '../../../lib/richText';
 import { useAuthStore } from '../../../stores/auth';
 import http from '../../../lib/http';
 
@@ -459,10 +530,12 @@ const lessonForm = reactive({
   title: '',
   type: 'youtube',
   youtube_video_id: '',
+  content: '',
   duration_seconds: 600,
   is_preview: false,
 });
 const lessonFile = ref(null);
+const extractedAdminYoutubeId = computed(() => extractYouTubeId(lessonForm.youtube_video_id));
 
 function onFileChange(e) {
   lessonFile.value = e.target.files[0] || null;
@@ -509,6 +582,7 @@ function openAddLessonModal(module) {
   lessonForm.title = '';
   lessonForm.type = 'youtube';
   lessonForm.youtube_video_id = '';
+  lessonForm.content = '';
   lessonForm.duration_seconds = 600;
   lessonForm.is_preview = false;
   lessonFile.value = null;
@@ -524,9 +598,17 @@ async function handleSaveLesson() {
     fd.append('is_preview', lessonForm.is_preview ? '1' : '0');
 
     if (lessonForm.type === 'youtube') {
-      fd.append('youtube_video_id', lessonForm.youtube_video_id);
-    } else if (lessonFile.value) {
-      fd.append('file', lessonFile.value);
+      const vid = extractedAdminYoutubeId.value || lessonForm.youtube_video_id;
+      fd.append('youtube_video_id', vid);
+    } else if (lessonForm.type === 'richtext') {
+      fd.append('content', lessonForm.content || '');
+    } else if (lessonForm.type === 'audio' || lessonForm.type === 'pdf') {
+      if (lessonFile.value) {
+        fd.append('file', lessonFile.value);
+      }
+      if (lessonForm.content) {
+        fd.append('content', lessonForm.content);
+      }
     }
 
     await coursesStore.saveLesson(activeModule.value.id, fd);
