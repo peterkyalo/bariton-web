@@ -34,7 +34,32 @@
           <span class="text-xs text-slate-400">{{ course.modules?.length || 0 }} modules · {{ totalLessons }} lessons</span>
         </div>
         <h1 class="text-2xl font-serif font-bold text-white">{{ course.title }}</h1>
-        <p class="text-sm text-slate-400">{{ course.short_description || course.description }}</p>
+        <div class="flex flex-col sm:flex-row gap-4">
+          <img v-if="course.thumbnail_url" :src="course.thumbnail_url" alt="Course cover" class="w-full sm:w-48 h-28 object-cover rounded-xl border border-slate-700 shrink-0" />
+          <p v-if="course.short_description" class="text-sm text-slate-400">{{ course.short_description }}</p>
+        </div>
+        <div v-if="course.description" class="prose prose-invert max-w-none text-sm" v-html="renderRichText(course.description, { dark: true })"></div>
+
+        <div class="flex flex-wrap items-center gap-3 pt-2">
+          <button id="toggle-course-overview" type="button" class="btn btn-secondary text-xs font-bold" @click="showOverviewEditor = !showOverviewEditor">
+            {{ showOverviewEditor ? 'Close overview editor' : 'Edit course overview' }}
+          </button>
+          <button id="toggle-course-media" type="button" class="btn btn-secondary text-xs font-bold" @click="showCourseMedia = !showCourseMedia">
+            {{ showCourseMedia ? 'Hide cover & materials' : `Cover image & materials (${course.attachments?.length || 0})` }}
+          </button>
+        </div>
+
+        <div v-if="showOverviewEditor" class="space-y-3 pt-2">
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Course overview (rich text)</label>
+          <RichTextEditor v-model="overviewDraft" :rows="10" placeholder="Describe the course goals, outcomes and audience..." />
+          <div class="flex justify-end">
+            <button id="save-course-overview" type="button" class="btn btn-primary text-xs font-bold" :disabled="savingOverview" @click="saveOverview">
+              {{ savingOverview ? 'Saving...' : 'Save overview' }}
+            </button>
+          </div>
+        </div>
+
+        <MediaPanel v-if="showCourseMedia" owner-type="course" :owner="course" @changed="refresh" />
 
         <div class="flex flex-wrap items-center gap-3 pt-2 border-t border-slate-800">
           <label class="text-xs text-slate-300 font-semibold uppercase tracking-wider">Publication status</label>
@@ -81,13 +106,17 @@
           class="card p-5 rounded-2xl bg-navy-900/70 border border-slate-800 space-y-4"
         >
           <div class="flex flex-wrap items-start justify-between gap-3">
-            <div>
+            <div class="flex items-start gap-3">
+              <img v-if="module.image_url" :src="module.image_url" alt="" class="w-20 h-14 object-cover rounded-lg border border-slate-700 shrink-0" />
+              <div>
               <span class="badge badge-gold text-[10px] font-bold uppercase tracking-wider mr-2">{{ module.level }}</span>
               <strong class="text-white text-base font-serif">{{ module.title }}</strong>
               <span class="text-xs text-slate-400 block mt-0.5">
                 KES {{ module.price_formatted }} (${{ module.price_usd_formatted }} USD)
               </span>
-              <p v-if="module.description" class="text-xs text-slate-500 mt-1">{{ module.description }}</p>
+              <div v-if="module.description" class="prose prose-invert max-w-none text-xs text-slate-500 mt-1" v-html="renderRichText(module.description, { dark: true })"></div>
+              <span v-if="module.attachments?.length" class="text-[11px] text-gold-400 mt-1 block">{{ module.attachments.length }} attached material(s)</span>
+              </div>
             </div>
             <div class="flex items-center gap-2 shrink-0">
               <button class="btn btn-secondary text-xs py-1.5 px-3" @click="openLessonModal(module)">+ Add Lesson</button>
@@ -124,7 +153,7 @@
     </template>
 
     <!-- Module modal -->
-    <Modal :open="showModuleModal" :title="moduleEditId ? 'Edit Module' : 'Add Module'" @close="showModuleModal = false">
+    <Modal :open="showModuleModal" :title="moduleEditId ? 'Edit Module' : 'Add Module'" max-width="max-w-3xl" @close="showModuleModal = false">
       <form class="space-y-4" @submit.prevent="submitModule">
         <div>
           <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Module Title *</label>
@@ -145,9 +174,14 @@
           </div>
         </div>
         <div>
-          <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Description</label>
-          <textarea id="module-description" v-model="moduleForm.description" rows="2" class="w-full px-3 py-2 rounded-lg bg-navy-950 border border-slate-700 text-xs text-white"></textarea>
+          <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Description (rich text)</label>
+          <RichTextEditor id="module-description" v-model="moduleForm.description" :rows="8" placeholder="What will students learn in this module?" />
         </div>
+
+        <!-- Image & learning materials (module must exist first) -->
+        <MediaPanel v-if="moduleEditId && editingModule" owner-type="module" :owner="editingModule" @changed="refresh" />
+        <p v-else class="text-[11px] text-slate-500">Save the module first, then edit it to add an image, YouTube videos, PDFs or audio.</p>
+
         <p v-if="moduleError" class="text-xs text-red-400">{{ moduleError }}</p>
         <div class="flex justify-end gap-2 pt-2">
           <button type="button" class="btn btn-secondary text-xs" @click="showModuleModal = false">Cancel</button>
@@ -299,7 +333,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCoursesStore } from '@/stores/courses'
 import { useUiStore } from '@/stores/ui'
@@ -308,7 +342,8 @@ import http, { parseError } from '@/lib/http'
 import Modal from '@/components/ui/Modal.vue'
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
 import RichTextEditor from '@/components/ui/RichTextEditor.vue'
-import { extractYouTubeId, getYouTubeThumbnail, estimateReadingTime } from '@/lib/richText'
+import MediaPanel from '@/components/ui/MediaPanel.vue'
+import { extractYouTubeId, getYouTubeThumbnail, estimateReadingTime, renderRichText } from '@/lib/richText'
 
 const route = useRoute()
 const coursesStore = useCoursesStore()
@@ -359,10 +394,35 @@ async function saveStatus() {
   }
 }
 
+/* ---------------- Course overview & media ---------------- */
+const showOverviewEditor = ref(false)
+const showCourseMedia = ref(false)
+const overviewDraft = ref('')
+const savingOverview = ref(false)
+
+watch(showOverviewEditor, (open) => {
+  if (open) overviewDraft.value = course.value?.description || ''
+})
+
+async function saveOverview() {
+  savingOverview.value = true
+  try {
+    await http.put(`/admin/courses/${courseId.value}`, { description: overviewDraft.value })
+    ui.notify({ type: 'success', title: 'Overview saved', message: 'Course overview updated.' })
+    await refresh()
+    showOverviewEditor.value = false
+  } catch (err) {
+    ui.notify({ type: 'error', title: 'Could not save overview', message: parseError(err).message })
+  } finally {
+    savingOverview.value = false
+  }
+}
+
 /* ---------------- Modules ---------------- */
 const showModuleModal = ref(false)
 const moduleEditId = ref(null)
 const moduleError = ref('')
+const editingModule = computed(() => (course.value?.modules || []).find((m) => m.id === moduleEditId.value) || null)
 const moduleForm = reactive({ title: '', level: 'beginner', description: '', priceMajor: 3000 })
 
 function openModuleModal(module = null) {

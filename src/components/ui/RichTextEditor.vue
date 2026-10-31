@@ -157,6 +157,31 @@
         &lt;/&gt;
       </button>
 
+      <!-- Image upload -->
+      <button
+        v-if="allowImages"
+        type="button"
+        title="Upload & insert image"
+        :disabled="uploadingImage"
+        class="p-1.5 rounded hover:bg-slate-800 hover:text-white disabled:opacity-50"
+        data-testid="rte-image-btn"
+        @click="imageInput?.click()"
+      >
+        <svg v-if="!uploadingImage" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+        </svg>
+        <span v-else class="text-[10px]">...</span>
+      </button>
+      <input
+        v-if="allowImages"
+        ref="imageInput"
+        type="file"
+        accept="image/jpeg,image/png,image/webp,image/gif"
+        class="hidden"
+        data-testid="rte-image-input"
+        @change="handleImageSelected"
+      />
+
       <!-- Link -->
       <button
         type="button"
@@ -181,6 +206,7 @@
     </div>
 
     <!-- Editor Stage -->
+    <p v-if="imageError" class="px-3 py-1.5 text-[11px] text-red-400 bg-red-500/10 border-b border-red-500/20">{{ imageError }}</p>
     <div :class="['grid', mode === 'split' ? 'grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-slate-800' : 'grid-cols-1']">
       <!-- Text Area (Write / Split) -->
       <div v-show="mode !== 'preview'" class="relative">
@@ -214,6 +240,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { renderRichText, estimateReadingTime } from '@/lib/richText'
+import { useCoursesStore } from '@/stores/courses'
 
 const props = defineProps({
   modelValue: {
@@ -228,15 +255,42 @@ const props = defineProps({
     type: Number,
     default: 12,
   },
+  allowImages: {
+    type: Boolean,
+    default: true,
+  },
 })
 
 const emit = defineEmits(['update:modelValue'])
 
+const coursesStore = useCoursesStore()
 const textareaRef = ref(null)
+const imageInput = ref(null)
+const uploadingImage = ref(false)
+const imageError = ref('')
 const mode = ref('write') // 'write', 'split', 'preview'
 
 const readingStats = computed(() => estimateReadingTime(props.modelValue))
 const renderedHtml = computed(() => renderRichText(props.modelValue, { dark: true }))
+
+async function handleImageSelected(e) {
+  const file = e.target.files?.[0]
+  e.target.value = ''
+  if (!file) return
+
+  imageError.value = ''
+  uploadingImage.value = true
+  try {
+    const { url } = await coursesStore.uploadEditorImage(file)
+    const alt = file.name.replace(/\.[^.]+$/, '').replace(/[\[\]()]/g, '')
+    insertFormat(`\n![${alt}](${url})\n`, '')
+  } catch (err) {
+    const errors = err.response?.data?.errors
+    imageError.value = (errors && Object.values(errors)[0]?.[0]) || err.response?.data?.message || 'Image upload failed.'
+  } finally {
+    uploadingImage.value = false
+  }
+}
 
 function handleInput(e) {
   emit('update:modelValue', e.target.value)
@@ -302,6 +356,11 @@ function insertLink() {
 </script>
 
 <style scoped>
+.rich-text-editor :deep(img) {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+}
 .rich-text-editor :deep(h1) {
   font-size: 1.35rem;
   font-weight: 700;
