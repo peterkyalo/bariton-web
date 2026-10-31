@@ -73,3 +73,4 @@ describe('richText utility tests', () => {
     })
   })
 })
+
