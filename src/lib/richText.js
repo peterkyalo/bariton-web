@@ -59,7 +59,7 @@ export function estimateReadingTime(text) {
 /**
  * Render Markdown & HTML content to clean, structured HTML.
  */
-export function renderRichText(content, { dark = false } = {}) {
+function renderRichTextRaw(content, { dark = false } = {}) {
   if (!content || typeof content !== 'string') return '';
 
   let text = content.trim();
@@ -106,6 +106,9 @@ export function renderRichText(content, { dark = false } = {}) {
   text = text.replace(/\*(.*?)\*/gim, '<em>$1</em>');
   text = text.replace(/~~(.*?)~~/gim, '<del class="line-through opacity-70">$1</del>');
 
+  // Images: ![alt](url)
+  text = text.replace(/!\[([^\]]*)\]\(([^)\s]+)\)/gim, `<img src="$2" alt="$1" loading="lazy" class="my-4 max-w-full h-auto rounded-xl border ${borderColor}">`);
+
   // Links: [text](url)
   text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/gim, `<a href="$2" target="_blank" rel="noopener noreferrer" class="text-gold-400 underline hover:text-gold-300 font-medium">$1</a>`);
 
@@ -139,3 +142,46 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
+
+const DROP_TAGS = ['script', 'style', 'iframe', 'object', 'embed', 'link', 'meta', 'form', 'input', 'button', 'textarea', 'select', 'svg', 'math', 'base']
+
+/**
+ * Defence-in-depth sanitizer for HTML that is rendered with v-html.
+ * The API already sanitizes rich text on save; this protects against legacy / tampered content.
+ */
+export function sanitizeHtml(html) {
+  if (!html || typeof html !== 'string') return ''
+  if (typeof DOMParser === 'undefined') return html.replace(/<[^>]*>/g, '')
+
+  const doc = new DOMParser().parseFromString(`<div id="sanitize-root">${html}</div>`, 'text/html')
+  const root = doc.getElementById('sanitize-root')
+  if (!root) return ''
+
+  root.querySelectorAll(DROP_TAGS.join(',')).forEach((el) => el.remove())
+
+  root.querySelectorAll('*').forEach((el) => {
+    for (const attr of Array.from(el.attributes)) {
+      const name = attr.name.toLowerCase()
+      const value = attr.value.replace(/[\u0000-\u0020\u007f]+/g, '').toLowerCase()
+      const isUrlAttr = name === 'href' || name === 'src'
+      if (name.startsWith('on') || name === 'style' || name === 'srcdoc') {
+        el.removeAttribute(attr.name)
+      } else if (isUrlAttr && /^(javascript|data|vbscript):/.test(value)) {
+        el.removeAttribute(attr.name)
+      }
+    }
+    if (el.tagName === 'A' && el.getAttribute('href')) {
+      el.setAttribute('rel', 'noopener noreferrer')
+      el.setAttribute('target', '_blank')
+    }
+  })
+
+  return root.innerHTML
+}
+
+/**
+ * Render Markdown & HTML content to clean, sanitized HTML safe for v-html.
+ */
+export function renderRichText(content, options = {}) {
+  return sanitizeHtml(renderRichTextRaw(content, options))
+}

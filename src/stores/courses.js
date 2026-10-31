@@ -198,6 +198,40 @@ export const useCoursesStore = defineStore('courses', () => {
     return res.data;
   }
 
+  /* ---- Course & module rich media: inline images, covers, attachments ---- */
+  const multipart = { headers: { 'Content-Type': 'multipart/form-data' } };
+  const ownerPath = (ownerType, ownerId) =>
+    `/api/v1/instructor/${ownerType === 'course' ? 'courses' : 'modules'}/${ownerId}`;
+
+  async function uploadEditorImage(file) {
+    const fd = new FormData();
+    fd.append('image', file);
+    const res = await http.post('/api/v1/instructor/uploads/images', fd, multipart);
+    return res.data;
+  }
+
+  async function uploadCover(ownerType, ownerId, file) {
+    const fd = new FormData();
+    fd.append('image', file);
+    const res = await http.post(`${ownerPath(ownerType, ownerId)}/cover`, fd, multipart);
+    return res.data;
+  }
+
+  async function removeCover(ownerType, ownerId) {
+    const res = await http.delete(`${ownerPath(ownerType, ownerId)}/cover`);
+    return res.data;
+  }
+
+  async function addAttachment(ownerType, ownerId, formData) {
+    const res = await http.post(`${ownerPath(ownerType, ownerId)}/attachments`, formData, multipart);
+    return res.data;
+  }
+
+  async function deleteAttachment(attachmentId) {
+    const res = await http.delete(`/api/v1/instructor/attachments/${attachmentId}`);
+    return res.data;
+  }
+
   return {
     catalog,
     catalogMeta,
@@ -226,5 +260,10 @@ export const useCoursesStore = defineStore('courses', () => {
     deleteModule,
     saveLesson,
     deleteLesson,
+    uploadEditorImage,
+    uploadCover,
+    removeCover,
+    addAttachment,
+    deleteAttachment,
   };
 });
