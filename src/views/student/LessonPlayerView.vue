@@ -1,60 +1,82 @@
 <template>
-  <div class="h-[calc(100vh-4rem)] flex flex-col lg:flex-row bg-navy-950 text-white overflow-hidden">
-    <!-- Main Content Stage (Video / Audio / PDF) -->
-    <div class="flex-1 flex flex-col overflow-y-auto">
-      <!-- Top Navigation Bar -->
-      <div class="px-6 py-4 border-b border-slate-800 bg-navy-900/60 backdrop-blur-sm flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <router-link
-            to="/student/courses"
-            class="p-2 rounded-lg bg-navy-950 text-slate-400 hover:text-white border border-slate-800 transition-colors"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-            </svg>
-          </router-link>
-          <div>
-            <span class="text-xs font-semibold text-gold-400 tracking-wider uppercase flex items-center gap-2">
-              <span>{{ enrollment?.course?.title }}</span>
-              <span v-if="enrollment?.path_type === 'validation'" class="px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30">
-                Skills Validation Track
-              </span>
-            </span>
-            <h1 class="text-lg font-serif font-bold text-white truncate max-w-xl">
-              {{ enrollment?.path_type === 'validation' ? 'Skills Assessment Studio' : (currentLesson?.title || currentModule?.title || 'Select a lesson to begin') }}
-            </h1>
-          </div>
-        </div>
+  <div class="space-y-6 text-white">
+    <!-- Student Dashboard Style Header & Breadcrumbs -->
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+      <div class="flex items-start sm:items-center gap-3.5 min-w-0">
+        <router-link
+          to="/student/courses"
+          class="p-2.5 rounded-xl bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800 border border-slate-800 transition-colors shrink-0"
+          title="Back to My Enrolled Courses"
+        >
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </router-link>
 
-        <!-- Overall Course Progress Badge -->
-        <div class="flex items-center gap-4">
-          <div class="text-right">
-            <span class="text-[11px] text-slate-400 block">Course Progress ({{ completedLessonsCount }}/{{ totalAccessibleLessonsCount }} Lessons)</span>
-            <span class="block text-sm font-bold text-gold-400" data-testid="course-progress-percent">{{ courseProgressPercent }}% Complete</span>
+        <div class="min-w-0">
+          <div class="flex flex-wrap items-center gap-2">
+            <nav class="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider text-slate-400" aria-label="Breadcrumb">
+              <router-link to="/student" class="hover:text-brass-300 transition-colors">Dashboard</router-link>
+              <span>/</span>
+              <router-link to="/student/courses" class="hover:text-brass-300 transition-colors">My Courses</router-link>
+              <span>/</span>
+              <span class="text-gold-400 truncate max-w-[240px]">{{ enrollment?.course?.title || 'Course Studio' }}</span>
+            </nav>
+            <span
+              v-if="enrollment?.path_type === 'validation'"
+              class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30"
+            >
+              Skills Validation Track
+            </span>
+            <span
+              v-else
+              class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-500/15 text-blue-300 border border-blue-500/30"
+            >
+              Conservatory Classroom
+            </span>
           </div>
-          <div class="w-20 sm:w-28 h-2.5 bg-slate-800 rounded-full overflow-hidden">
-            <div
-              class="h-full bg-gradient-to-r from-gold-500 to-emerald-400 transition-all duration-500"
-              :style="{ width: `${courseProgressPercent}%` }"
-            ></div>
-          </div>
+
+          <h1 class="text-xl sm:text-2xl font-serif font-bold text-white truncate mt-1">
+            {{ enrollment?.path_type === 'validation' ? 'Skills Assessment Studio' : (currentLesson?.title || currentModule?.title || 'Select a lesson to begin') }}
+          </h1>
         </div>
       </div>
 
-      <!-- Player Area -->
-      <div class="flex-1 p-6 flex flex-col items-center justify-start bg-navy-950/90 relative">
-        <div v-if="coursesStore.loading && !enrollment" class="py-20 text-center my-auto">
+      <!-- Overall Course Progress Card Pill -->
+      <div class="flex items-center gap-4 px-4 py-2.5 rounded-xl bg-slate-900/90 border border-slate-800 shrink-0 self-start lg:self-auto">
+        <div class="text-right">
+          <span class="text-[11px] text-slate-400 block">
+            Course Progress ({{ completedLessonsCount }}/{{ totalAccessibleLessonsCount }} Lessons)
+          </span>
+          <span class="block text-sm font-bold text-gold-400" data-testid="course-progress-percent">
+            {{ courseProgressPercent }}% Complete
+          </span>
+        </div>
+        <div class="w-24 sm:w-32 h-2.5 bg-slate-800 rounded-full overflow-hidden">
+          <div
+            class="h-full bg-gradient-to-r from-gold-500 to-emerald-400 transition-all duration-500"
+            :style="{ width: `${courseProgressPercent}%` }"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Dashboard 2-Column Learning Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <!-- Left / Primary Stage (8 cols on lg) -->
+      <div class="lg:col-span-8 space-y-6 min-w-0">
+        <div v-if="coursesStore.loading && !enrollment" class="adminlte-card p-16 text-center">
           <LoadingSpinner text="Loading your enrolled course curriculum..." />
         </div>
 
-        <div v-else-if="loadingLesson" class="py-20 text-center my-auto">
+        <div v-else-if="loadingLesson" class="adminlte-card p-16 text-center">
           <LoadingSpinner text="Loading lesson material..." />
         </div>
 
         <!-- Professional Validation Track Hero Studio -->
         <div
           v-else-if="enrollment?.path_type === 'validation'"
-          class="w-full max-w-2xl p-8 rounded-2xl bg-slate-900/90 border border-amber-500/40 shadow-2xl space-y-6 text-center"
+          class="w-full p-8 rounded-2xl bg-slate-900/90 border border-amber-500/40 shadow-2xl space-y-6 text-center"
         >
           <div class="w-16 h-16 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 text-3xl">
             🎯
@@ -417,20 +439,19 @@
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Curriculum Sidebar Drawer -->
-    <div class="w-full lg:w-96 border-t lg:border-t-0 lg:border-l border-slate-800 bg-navy-900/95 flex flex-col h-auto lg:h-full">
-      <div class="p-4 border-b border-slate-800 flex items-center justify-between">
-        <div>
-          <h3 class="font-serif font-bold text-white text-base">Course Curriculum</h3>
-          <p class="text-xs text-slate-400">{{ enrollment?.course?.title }}</p>
+      <!-- Right Column: Course Curriculum Card (4 cols on lg) -->
+      <div class="lg:col-span-4 adminlte-card card-outline-brass flex flex-col lg:sticky lg:top-20 overflow-hidden">
+        <div class="adminlte-card-header">
+          <div>
+            <h3 class="font-serif font-bold text-white text-base">Course Curriculum</h3>
+            <p class="text-xs text-slate-400">{{ enrollment?.course?.title }}</p>
+          </div>
+          <span class="badge badge-gold text-xs font-bold">{{ courseProgressPercent }}%</span>
         </div>
-        <span class="badge badge-gold text-xs font-bold">{{ courseProgressPercent }}%</span>
-      </div>
 
-      <!-- Module & Lessons List -->
-      <div class="flex-1 overflow-y-auto p-4 space-y-4">
+        <!-- Module & Lessons List -->
+        <div class="max-h-[70vh] overflow-y-auto p-4 space-y-4">
         <div
           v-for="module in enrollment?.modules"
           :key="module.id"
@@ -567,6 +588,7 @@
             Take Exam
           </span>
         </router-link>
+      </div>
       </div>
     </div>
   </div>

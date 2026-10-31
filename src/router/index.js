@@ -352,7 +352,7 @@ const routes = [
     path: '/student/courses/:uuid/player',
     name: 'student.player',
     component: LessonPlayerView,
-    meta: { layout: GuestLayout, auth: true, permission: 'courses.enroll' },
+    meta: { layout: StudentLayout, auth: true, permission: 'courses.enroll' },
   },
   {
     path: '/student/orders',
