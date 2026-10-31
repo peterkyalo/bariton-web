@@ -33,24 +33,24 @@ async function handleLogout() {
 
 <template>
   <!-- Top Utility Bar (Contact & Conservatory Announcement) -->
-  <div class="hidden md:block bg-slate-950 text-slate-300 text-xs py-2 px-4 sm:px-6 lg:px-8 border-b border-slate-900">
+  <div class="hidden md:block bg-[#060913] text-slate-300 text-xs py-2.5 px-4 sm:px-6 lg:px-8 border-b border-amber-500/20 font-serif">
     <div class="max-w-7xl mx-auto flex items-center justify-between">
       <div class="flex items-center gap-6">
-        <span class="inline-flex items-center gap-1.5 text-slate-400">
-          <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <span class="inline-flex items-center gap-1.5 text-slate-300">
+          <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
           Kilimani, Nairobi, Kenya
         </span>
-        <a href="tel:+254712345678" class="inline-flex items-center gap-1.5 text-slate-400 hover:text-amber-400 transition-colors">
-          <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a href="tel:+254712345678" class="inline-flex items-center gap-1.5 text-slate-300 hover:text-amber-400 transition-colors">
+          <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
           </svg>
           +254 712 345 678
         </a>
-        <a href="mailto:admissions@bmas.com" class="inline-flex items-center gap-1.5 text-slate-400 hover:text-amber-400 transition-colors">
-          <svg class="w-3.5 h-3.5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <a href="mailto:admissions@bmas.com" class="inline-flex items-center gap-1.5 text-slate-300 hover:text-amber-400 transition-colors">
+          <svg class="w-3.5 h-3.5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
           </svg>
           admissions@bmas.com
@@ -58,11 +58,11 @@ async function handleLogout() {
       </div>
 
       <div class="flex items-center gap-4">
-        <span class="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-medium">
+        <span class="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-400/30 font-semibold">
           <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
           2026 Conservatory Terms Open
         </span>
-        <RouterLink to="/verify" class="text-slate-400 hover:text-amber-400 transition-colors text-xs">
+        <RouterLink to="/verify" class="text-amber-300/90 hover:text-amber-200 font-semibold transition-colors text-xs">
           Verify Certificate
         </RouterLink>
       </div>
@@ -70,21 +70,21 @@ async function handleLogout() {
   </div>
 
   <!-- Main Sticky Header -->
-  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-slate-100 transition-all">
+  <header class="sticky top-0 z-50 bg-[#fdfcf8]/95 backdrop-blur-md shadow-sm border-b border-amber-900/10 transition-all font-serif">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-20">
         <!-- Brand Logo -->
         <RouterLink to="/" class="flex items-center gap-3.5 group flex-shrink-0" @click="closeMobile">
-          <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-600 via-amber-500 to-amber-400 flex items-center justify-center text-white shadow-md shadow-amber-500/25 group-hover:scale-105 transition-transform duration-300">
+          <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-700 via-amber-500 to-amber-400 flex items-center justify-center text-slate-950 shadow-md shadow-amber-500/25 group-hover:scale-105 transition-transform duration-300">
             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
             </svg>
           </div>
           <div>
-            <span class="text-xl font-bold tracking-tight text-slate-900 group-hover:text-amber-600 transition-colors block leading-none">
+            <span class="text-2xl font-bold tracking-wider text-slate-950 group-hover:text-amber-700 transition-colors block leading-none">
               BARITON
             </span>
-            <span class="text-[11px] font-semibold tracking-widest uppercase text-amber-600 block mt-1">
+            <span class="text-[11px] font-bold tracking-[0.2em] uppercase text-amber-700 block mt-1">
               Music Academy
             </span>
           </div>

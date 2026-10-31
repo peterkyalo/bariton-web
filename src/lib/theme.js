@@ -2,8 +2,8 @@ const HEX = /^#[0-9a-fA-F]{6}$/
 const STORAGE_KEY = 'bariton_theme'
 
 export const DEFAULT_THEME = {
-  primary: '#c8913a',
-  secondary: '#2f6fe4',
+  primary: '#d49b38',
+  secondary: '#3b76f6',
 }
 
 /**

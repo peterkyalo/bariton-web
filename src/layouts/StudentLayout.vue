@@ -65,7 +65,7 @@ async function handleResendVerification() {
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col lg:flex-row bg-[#080d1a] text-slate-100 font-sans">
+  <div class="min-h-screen flex flex-col lg:flex-row bg-gradient-to-br from-[#060913] via-[#091022] to-[#0c152c] text-slate-100 font-serif">
     <!-- Mobile Drawer Overlay -->
     <div
       v-if="ui.sidebarOpen"
@@ -75,15 +75,18 @@ async function handleResendVerification() {
 
     <!-- Left Sidebar -->
     <aside
-      class="fixed inset-y-0 left-0 z-50 w-64 bg-[#0f172a] border-r border-slate-800 flex flex-col transition-transform duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0"
+      class="fixed inset-y-0 left-0 z-50 w-64 bg-[#0a1022]/95 backdrop-blur-xl border-r border-amber-500/15 flex flex-col transition-transform duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 shadow-2xl"
       :class="ui.sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
     >
-      <div class="h-14 px-4 border-b border-slate-800 flex items-center justify-between bg-[#0b1120] shrink-0">
-        <RouterLink to="/student" class="flex items-center gap-2.5" @click="ui.toggleSidebar(false)">
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brass-400 to-amber-600 flex items-center justify-center font-bold text-slate-950 shadow-md">
+      <div class="h-16 px-4 border-b border-slate-800/80 flex items-center justify-between bg-gradient-to-r from-[#070b18] to-[#0d152b] shrink-0">
+        <RouterLink to="/student" class="flex items-center gap-3 group" @click="ui.toggleSidebar(false)">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center font-bold text-slate-950 shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform">
             ♬
           </div>
-          <span class="font-bold text-sm tracking-tight text-white uppercase">Bariton</span>
+          <div>
+            <span class="font-bold text-base tracking-wider text-white uppercase block leading-none">Bariton</span>
+            <span class="text-[10px] font-semibold tracking-widest uppercase text-amber-400 block mt-0.5">Conservatory</span>
+          </div>
         </RouterLink>
         <button
           type="button"
@@ -96,37 +99,37 @@ async function handleResendVerification() {
       </div>
 
       <!-- User panel -->
-      <div class="p-3 border-b border-slate-800/80 bg-[#0d1527] shrink-0">
+      <div class="p-3.5 border-b border-slate-800/80 bg-[#0c1428]/90 shrink-0">
         <div class="flex items-center gap-3">
-          <div class="w-9 h-9 rounded-full bg-gradient-to-br from-brass-500 to-amber-600 text-slate-950 font-bold flex items-center justify-center text-xs shadow shrink-0">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 font-bold flex items-center justify-center text-sm shadow-md ring-2 ring-amber-400/25 shrink-0">
             {{ auth.user?.name?.charAt(0) || 'S' }}
           </div>
           <div class="min-w-0 flex-1">
-            <div class="text-xs font-semibold text-white truncate">{{ auth.user?.name }}</div>
-            <div class="text-[10px] text-slate-400 truncate">{{ auth.user?.email }}</div>
+            <div class="text-sm font-bold text-white truncate">{{ auth.user?.name }}</div>
+            <div class="text-[11px] text-amber-300/80 truncate">{{ auth.user?.email }}</div>
           </div>
         </div>
       </div>
 
       <!-- Menu -->
-      <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-4" aria-label="Student menu">
+      <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-5" aria-label="Student menu">
         <div v-for="section in menu" :key="section.title" class="space-y-1">
-          <div class="px-2 text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+          <div class="px-2.5 text-[11px] font-bold uppercase tracking-[0.14em] text-amber-400/70 mb-1.5">
             {{ section.title }}
           </div>
           <RouterLink
             v-for="item in section.items"
             :key="item.to"
             :to="item.to"
-            class="flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs font-medium transition group"
+            class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-200 group border"
             :class="isActive(item)
-              ? 'bg-blue-600 text-white font-semibold shadow-md'
-              : 'text-slate-300 hover:text-white hover:bg-slate-800/70'"
+              ? 'bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent border-amber-400/35 text-amber-200 font-bold shadow-sm'
+              : 'border-transparent text-slate-300 hover:text-white hover:bg-slate-800/60'"
             @click="ui.toggleSidebar(false)"
           >
             <svg
-              class="w-4 h-4 shrink-0"
-              :class="isActive(item) ? 'text-white' : 'text-slate-400 group-hover:text-white'"
+              class="w-4 h-4 shrink-0 transition-colors"
+              :class="isActive(item) ? 'text-amber-400' : 'text-slate-400 group-hover:text-amber-300'"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -139,10 +142,10 @@ async function handleResendVerification() {
       </nav>
 
       <!-- Footer -->
-      <div class="p-3 border-t border-slate-800 bg-[#0b1120] shrink-0">
+      <div class="p-3 border-t border-slate-800/80 bg-[#070b18] shrink-0">
         <button
           type="button"
-          class="w-full flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-semibold text-rose-400 hover:bg-rose-500/10 transition"
+          class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/25 transition"
           @click="handleLogout"
         >
           <span>Sign Out</span>
@@ -153,8 +156,8 @@ async function handleResendVerification() {
 
     <!-- Content -->
     <div class="flex-1 flex flex-col min-w-0">
-      <!-- Slim top bar (no navigation links) -->
-      <header class="h-14 border-b border-slate-800 bg-[#0b1120] px-4 flex items-center justify-between sticky top-0 z-30 shadow-sm">
+      <!-- Slim top bar -->
+      <header class="h-16 border-b border-slate-800/80 bg-[#080d1d]/90 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-sm">
         <button
           type="button"
           class="lg:hidden p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800 transition"
@@ -165,18 +168,21 @@ async function handleResendVerification() {
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
           </svg>
         </button>
-        <div class="hidden lg:block text-xs text-slate-400">Student Portal</div>
+        <div class="hidden lg:flex items-center gap-2 text-sm text-slate-300">
+          <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+          <span class="font-semibold tracking-wide text-amber-200/90">Bariton Conservatory Student Portal</span>
+        </div>
 
         <div class="relative">
           <button
             type="button"
             @click="userMenuOpen = !userMenuOpen"
-            class="flex items-center gap-2 p-1 rounded-lg hover:bg-slate-800 transition text-xs"
+            class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-xl border border-slate-800 bg-slate-900/70 hover:border-amber-500/30 hover:bg-slate-800/80 transition text-xs"
           >
-            <div class="w-7 h-7 rounded-full bg-brass-400 text-slate-950 font-bold flex items-center justify-center text-xs">
+            <div class="w-7 h-7 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 font-bold flex items-center justify-center text-xs shadow-sm">
               {{ auth.user?.name?.charAt(0) || 'S' }}
             </div>
-            <span class="hidden sm:inline font-semibold text-white">{{ auth.user?.name }}</span>
+            <span class="hidden sm:inline font-semibold text-white text-sm">{{ auth.user?.name }}</span>
             <svg class="w-3.5 h-3.5 text-slate-400 hidden sm:inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
             </svg>

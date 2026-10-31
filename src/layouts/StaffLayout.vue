@@ -67,7 +67,7 @@ const filteredMenu = computed(() => {
 </script>
 
 <template>
-  <div class="min-h-screen flex flex-col lg:flex-row bg-[#080d1a] text-slate-100 font-sans">
+  <div class="min-h-screen flex flex-col lg:flex-row bg-gradient-to-br from-[#060913] via-[#091022] to-[#0c152c] text-slate-100 font-serif">
     <!-- Mobile Drawer Overlay -->
     <div
       v-if="ui.sidebarOpen"
@@ -79,20 +79,23 @@ const filteredMenu = computed(() => {
     <!-- ADMINLTE 4: MAIN SIDEBAR (sidebar-dark)        -->
     <!-- ============================================== -->
     <aside
-      class="fixed inset-y-0 left-0 z-50 w-64 bg-[#0f172a] border-r border-slate-800 flex flex-col transition-transform duration-300 lg:static lg:translate-x-0"
+      class="fixed inset-y-0 left-0 z-50 w-64 bg-[#0a1022]/95 backdrop-blur-xl border-r border-amber-500/15 flex flex-col transition-transform duration-300 lg:static lg:translate-x-0 shadow-2xl"
       :class="ui.sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
     >
       <!-- Brand Logo Header -->
-      <div class="h-14 px-4 border-b border-slate-800 flex items-center justify-between bg-[#0b1120]">
-        <RouterLink to="/" class="flex items-center gap-2.5">
-          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brass-400 to-amber-600 flex items-center justify-center font-bold text-slate-950 shadow-md">
+      <div class="h-16 px-4 border-b border-slate-800/80 flex items-center justify-between bg-gradient-to-r from-[#070b18] to-[#0d152b]">
+        <RouterLink to="/" class="flex items-center gap-3 group">
+          <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 flex items-center justify-center font-bold text-slate-950 shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform">
             ♬
           </div>
-          <div class="flex items-center gap-1.5">
-            <span class="font-bold text-sm tracking-tight text-white uppercase">Bariton</span>
-            <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-blue-600 text-white tracking-wider">
-              LTE 4
-            </span>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="font-bold text-base tracking-wider text-white uppercase leading-none">Bariton</span>
+              <span class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-400/30 tracking-wider">
+                Staff
+              </span>
+            </div>
+            <span class="text-[10px] font-semibold tracking-widest uppercase text-amber-400/80 block mt-0.5">Conservatory</span>
           </div>
         </RouterLink>
 
@@ -106,17 +109,17 @@ const filteredMenu = computed(() => {
       </div>
 
       <!-- User Panel (AdminLTE 4) -->
-      <div class="p-3 border-b border-slate-800/80 bg-[#0d1527]">
+      <div class="p-3.5 border-b border-slate-800/80 bg-[#0c1428]/90">
         <div class="flex items-center gap-3">
           <div class="relative shrink-0">
-            <div class="w-9 h-9 rounded-full bg-gradient-to-br from-brass-500 to-amber-600 text-slate-950 font-bold flex items-center justify-center text-xs shadow">
+            <div class="w-10 h-10 rounded-full bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 font-bold flex items-center justify-center text-sm shadow-md ring-2 ring-amber-400/25">
               {{ auth.user?.name?.charAt(0) || 'U' }}
             </div>
             <span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-slate-900" title="Online"></span>
           </div>
           <div class="min-w-0 flex-1">
-            <div class="text-xs font-semibold text-white truncate">{{ auth.user?.name }}</div>
-            <div class="text-[10px] text-emerald-400 flex items-center gap-1 font-medium">
+            <div class="text-sm font-bold text-white truncate">{{ auth.user?.name }}</div>
+            <div class="text-[11px] text-emerald-400 flex items-center gap-1 font-medium">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
               <span>Online · {{ auth.roles?.[0] || 'Staff' }}</span>
             </div>
@@ -131,17 +134,17 @@ const filteredMenu = computed(() => {
             v-model="sidebarFilter"
             type="text"
             placeholder="Search menu..."
-            class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition"
+            class="w-full bg-slate-900/90 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-amber-400/60 transition"
           />
           <span class="absolute right-2.5 top-2 text-slate-500 text-xs">🔍</span>
         </div>
       </div>
 
       <!-- AdminLTE 4 Sidebar Navigation Menu -->
-      <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-4">
+      <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-5">
         <div v-for="section in filteredMenu" :key="section.title" class="space-y-1">
           <!-- Section Header -->
-          <div class="px-2 text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+          <div class="px-2.5 text-[11px] font-bold uppercase tracking-[0.14em] text-amber-400/70 mb-1.5">
             {{ section.title }}
           </div>
 
@@ -150,15 +153,15 @@ const filteredMenu = computed(() => {
             v-for="item in section.items"
             :key="item.label"
             :to="item.to"
-            class="flex items-center gap-2.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition group"
+            class="flex items-center gap-3 px-3 py-2 rounded-xl text-[13px] font-medium transition-all duration-200 group border"
             :class="isActive(item.to)
-              ? 'bg-blue-600 text-white font-semibold shadow-md'
-              : 'text-slate-300 hover:text-white hover:bg-slate-800/70'"
+              ? 'bg-gradient-to-r from-amber-500/20 via-amber-500/10 to-transparent border-amber-400/35 text-amber-200 font-bold shadow-sm'
+              : 'border-transparent text-slate-300 hover:text-white hover:bg-slate-800/60'"
             @click="ui.toggleSidebar(false)"
           >
             <svg
-              class="w-4 h-4 shrink-0"
-              :class="isActive(item.to) ? 'text-white' : 'text-slate-400 group-hover:text-white'"
+              class="w-4 h-4 shrink-0 transition-colors"
+              :class="isActive(item.to) ? 'text-amber-400' : 'text-slate-400 group-hover:text-amber-300'"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -171,14 +174,14 @@ const filteredMenu = computed(() => {
       </nav>
 
       <!-- Sidebar Footer (System Version & Logout) -->
-      <div class="p-3 border-t border-slate-800 bg-[#0b1120] flex items-center justify-between text-xs">
-        <RouterLink to="/profile" class="text-slate-400 hover:text-white transition flex items-center gap-1.5">
+      <div class="p-3 border-t border-slate-800/80 bg-[#070b18] flex items-center justify-between text-xs">
+        <RouterLink to="/profile" class="text-slate-400 hover:text-amber-300 transition flex items-center gap-1.5 font-medium">
           <span>⚙</span>
           <span>Preferences</span>
         </RouterLink>
         <button
           type="button"
-          class="text-rose-400 hover:text-rose-300 transition flex items-center gap-1 font-semibold"
+          class="text-rose-400 hover:text-rose-300 transition flex items-center gap-1 font-bold"
           title="Sign Out"
           @click="handleLogout"
         >
@@ -193,7 +196,7 @@ const filteredMenu = computed(() => {
     <!-- ============================================== -->
     <div class="flex-1 flex flex-col min-w-0">
       <!-- AdminLTE 4 Top Navbar (app-header) -->
-      <header class="h-14 border-b border-slate-800 bg-[#0b1120] px-4 flex items-center justify-between sticky top-0 z-30 shadow-sm">
+      <header class="h-16 border-b border-slate-800/80 bg-[#080d1d]/90 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-sm">
         <!-- Left: Toggle & Quick Links -->
         <div class="flex items-center gap-4">
           <button
@@ -207,12 +210,12 @@ const filteredMenu = computed(() => {
             </svg>
           </button>
 
-          <nav class="hidden sm:flex items-center gap-3 text-xs font-medium text-slate-400">
-            <RouterLink to="/" class="hover:text-white transition">Public Site</RouterLink>
+          <nav class="hidden sm:flex items-center gap-3 text-sm font-medium text-slate-300">
+            <RouterLink to="/" class="hover:text-amber-300 transition">Public Site</RouterLink>
             <span class="text-slate-700">|</span>
-            <RouterLink to="/courses" class="hover:text-white transition">Catalog</RouterLink>
+            <RouterLink to="/courses" class="hover:text-amber-300 transition">Catalog</RouterLink>
             <span class="text-slate-700">|</span>
-            <RouterLink to="/events" class="hover:text-white transition">Events</RouterLink>
+            <RouterLink to="/events" class="hover:text-amber-300 transition">Events</RouterLink>
           </nav>
         </div>
 

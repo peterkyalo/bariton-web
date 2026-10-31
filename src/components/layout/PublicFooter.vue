@@ -12,29 +12,29 @@ function handleSubscribe() {
 </script>
 
 <template>
-  <footer class="bg-slate-950 text-slate-400 border-t border-slate-900 mt-auto">
+  <footer class="bg-gradient-to-b from-[#060913] to-[#04060d] text-slate-300 border-t border-amber-500/20 mt-auto font-serif">
     <!-- Main Footer Columns -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-12">
         <!-- Col 1: Brand & Philosophy -->
         <div class="space-y-4">
           <RouterLink to="/" class="flex items-center gap-3 group">
-            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-600 via-amber-500 to-amber-400 flex items-center justify-center text-white shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-600 via-amber-500 to-amber-400 flex items-center justify-center text-slate-950 shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform">
               <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z" />
               </svg>
             </div>
             <div>
-              <span class="text-xl font-bold tracking-tight text-white group-hover:text-amber-400 transition-colors block leading-none">
+              <span class="text-xl font-bold tracking-wider text-white group-hover:text-amber-400 transition-colors block leading-none">
                 BARITON
               </span>
-              <span class="text-[10px] font-semibold tracking-widest uppercase text-amber-500 block mt-1">
+              <span class="text-[10px] font-bold tracking-[0.2em] uppercase text-amber-400 block mt-1">
                 Music Academy
               </span>
             </div>
           </RouterLink>
 
-          <p class="text-xs text-slate-400 leading-relaxed">
+          <p class="text-[13px] text-slate-300/90 leading-relaxed">
             East Africa's premier music conservatory offering accredited progressive grades, physical weekend bootcamps, masterclasses, and verifiable international credentials.
           </p>
 

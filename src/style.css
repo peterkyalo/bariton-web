@@ -5,45 +5,46 @@
    Deep navy canvas, brass/gold accents, violet glow.
 ---------------------------------------------------------------- */
 @theme static {
-  /* Single site-wide typeface: Georgia serif (articles & long-form content) */
-  --font-sans: Georgia, "Times New Roman", serif;
-  --font-display: Georgia, "Times New Roman", serif;
-  --font-serif: Georgia, "Times New Roman", serif;
+  /* Single site-wide typeface: Times New Roman serif across all text, headings, controls, and badges */
+  --font-sans: "Times New Roman", Times, serif;
+  --font-display: "Times New Roman", Times, serif;
+  --font-serif: "Times New Roman", Times, serif;
+  --font-mono: "Times New Roman", Times, serif;
 
-  /* Ink / Midnight Sapphire Canvas */
-  --color-ink-950: #070a16;
-  --color-ink-900: #0b1020;
-  --color-ink-850: #10162b;
-  --color-ink-800: #151c36;
-  --color-ink-700: #1f2847;
-  --color-ink-600: #2c375e;
-  --color-ink-500: #4a5682;
-  --color-ink-400: #7a86b0;
-  --color-ink-300: #a7b0d1;
-  --color-ink-200: #cdd3ea;
-  --color-ink-100: #e8ebf7;
-  --color-ink-50: #f4f6fc;
+  /* Imperial Conservatory Midnight & Warm Ivory Canvas */
+  --color-ink-950: #060913;
+  --color-ink-900: #0a1022;
+  --color-ink-850: #0f172e;
+  --color-ink-800: #141f3c;
+  --color-ink-700: #1e2c52;
+  --color-ink-600: #2c3e6e;
+  --color-ink-500: #4c5f91;
+  --color-ink-400: #8292be;
+  --color-ink-300: #b2bddc;
+  --color-ink-200: #d8def0;
+  --color-ink-100: #eef1f9;
+  --color-ink-50: #f9fafd;
 
   /* Navy Aliases (Directly mapped to Ink canvas for 100% cohesion) */
-  --color-navy-950: #070a16;
-  --color-navy-900: #0b1020;
-  --color-navy-850: #10162b;
-  --color-navy-800: #151c36;
-  --color-navy-700: #1f2847;
-  --color-navy-600: #2c375e;
-  --color-navy-500: #4a5682;
-  --color-navy-400: #7a86b0;
-  --color-navy-300: #a7b0d1;
-  --color-navy-200: #cdd3ea;
-  --color-navy-100: #e8ebf7;
-  --color-navy-50: #f4f6fc;
+  --color-navy-950: #060913;
+  --color-navy-900: #0a1022;
+  --color-navy-850: #0f172e;
+  --color-navy-800: #141f3c;
+  --color-navy-700: #1e2c52;
+  --color-navy-600: #2c3e6e;
+  --color-navy-500: #4c5f91;
+  --color-navy-400: #8292be;
+  --color-navy-300: #b2bddc;
+  --color-navy-200: #d8def0;
+  --color-navy-100: #eef1f9;
+  --color-navy-50: #f9fafd;
 
   /* Refined Slate Shading (Harmonized with Deep Conservatory Midnight) */
-  --color-slate-950: #070a16;
-  --color-slate-900: #0b1020;
-  --color-slate-850: #10162b;
-  --color-slate-800: #151c36;
-  --color-slate-700: #1f2847;
+  --color-slate-950: #060913;
+  --color-slate-900: #0a1022;
+  --color-slate-850: #0f172e;
+  --color-slate-800: #141f3c;
+  --color-slate-700: #1e2c52;
 
   /* PRIMARY palette ("brass"): derived from --brand-primary, set by admin via CMS settings.
      The configured color is the 500 shade; other shades are tints/shades of it. */
@@ -149,34 +150,43 @@
 @layer base {
   /* Defaults; overridden at runtime from CMS settings (brand_primary_color / brand_secondary_color) */
   :root {
-    --brand-primary: #c8913a;
-    --brand-secondary: #2f6fe4;
+    --brand-primary: #d49b38;
+    --brand-secondary: #3b76f6;
   }
   html {
     color-scheme: dark;
+    font-family: "Times New Roman", Times, serif;
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
   body {
-    @apply bg-ink-950 font-sans text-ink-100;
-    font-family: Georgia, "Times New Roman", serif;
+    @apply bg-ink-950 font-serif text-ink-100;
+    font-family: "Times New Roman", Times, serif;
+    letter-spacing: 0.012em;
+    line-height: 1.62;
     background-image:
-      radial-gradient(1200px 600px at 10% -10%, color-mix(in srgb, var(--brand-secondary) 14%, transparent), transparent 60%),
-      radial-gradient(900px 500px at 110% 10%, color-mix(in srgb, var(--brand-primary) 11%, transparent), transparent 60%);
+      radial-gradient(1300px 680px at 8% -12%, color-mix(in srgb, var(--brand-secondary) 16%, transparent), transparent 62%),
+      radial-gradient(1000px 560px at 108% 12%, color-mix(in srgb, var(--brand-primary) 14%, transparent), transparent 62%),
+      radial-gradient(800px 500px at 50% 105%, color-mix(in srgb, var(--brand-secondary) 8%, transparent), transparent 65%);
     background-attachment: fixed;
   }
-  button, input, select, textarea {
-    font-family: inherit;
+  *, *::before, *::after, button, input, select, textarea, optgroup, code, kbd, samp {
+    font-family: "Times New Roman", Times, serif;
   }
-  /* Prestigious Conservatory Typography Hierarchy: Playfair Display for primary titles */
+  /* Prestigious Conservatory Typography Hierarchy: Times New Roman for all titles and functional headings */
   h1, h2, h3 {
     @apply font-serif tracking-tight text-white;
+    font-family: "Times New Roman", Times, serif;
+    letter-spacing: 0.01em;
   }
-  /* Outfit Display for functional headings, badges, and counters */
   h4, h5, h6 {
-    @apply font-display font-semibold tracking-tight text-white;
+    @apply font-serif font-semibold tracking-tight text-white;
+    font-family: "Times New Roman", Times, serif;
+    letter-spacing: 0.015em;
   }
   ::selection {
-    background: color-mix(in srgb, var(--brand-primary) 40%, transparent);
+    background: color-mix(in srgb, var(--brand-primary) 42%, transparent);
     color: #ffffff;
   }
   :focus-visible {
@@ -339,18 +349,19 @@
 
   /* Dashboard card */
   .adminlte-card {
-    @apply relative rounded-2xl border border-white/[0.07] overflow-hidden backdrop-blur-xl transition-all duration-200;
-    background-color: rgb(16 22 43 / 0.72);
-    background-image: linear-gradient(180deg, rgb(255 255 255 / 0.035), rgb(255 255 255 / 0) 40%);
-    box-shadow: 0 1px 0 0 rgb(255 255 255 / 0.04) inset, 0 18px 40px -24px rgb(0 0 0 / 0.7);
+    @apply relative rounded-2xl border border-white/[0.08] overflow-hidden backdrop-blur-xl transition-all duration-300;
+    background-color: rgb(14 21 43 / 0.78);
+    background-image: linear-gradient(180deg, rgb(255 255 255 / 0.045), rgb(255 255 255 / 0) 45%);
+    box-shadow: 0 1px 0 0 rgb(255 255 255 / 0.05) inset, 0 20px 44px -22px rgb(0 0 0 / 0.75);
   }
   .adminlte-card:hover {
-    @apply border-white/[0.12];
+    @apply border-brass-300/20;
+    box-shadow: 0 1px 0 0 rgb(255 255 255 / 0.07) inset, 0 24px 50px -20px rgb(0 0 0 / 0.82);
   }
   .adminlte-card::before {
     content: '';
-    @apply absolute inset-x-0 top-0 h-[2px] z-10;
-    background: linear-gradient(90deg, var(--card-accent, transparent), transparent 70%);
+    @apply absolute inset-x-0 top-0 h-[2.5px] z-10;
+    background: linear-gradient(90deg, var(--card-accent, var(--brand-primary)), transparent 75%);
   }
   .adminlte-card.card-outline-primary { --card-accent: var(--brand-secondary); }
   .adminlte-card.card-outline-success { --card-accent: var(--color-success-500); }
@@ -361,10 +372,10 @@
   .adminlte-card.card-outline-brass { --card-accent: var(--brand-primary); }
 
   .adminlte-card-header {
-    @apply px-5 py-3.5 border-b border-white/[0.06] flex items-center justify-between bg-white/[0.02];
+    @apply px-5 py-4 border-b border-white/[0.07] flex items-center justify-between bg-gradient-to-r from-white/[0.03] to-transparent;
   }
   .adminlte-card-title {
-    @apply font-semibold text-[13px] tracking-wide text-ink-100 flex items-center gap-2.5;
+    @apply font-bold text-[15px] tracking-wide text-ink-50 flex items-center gap-2.5;
   }
   .adminlte-card-tools {
     @apply flex items-center gap-2;
@@ -521,8 +532,8 @@
   border-radius: 0.75rem;
   overflow-x: auto;
   margin: 0.85rem 0;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  font-size: 0.8rem;
+  font-family: "Times New Roman", Times, serif;
+  font-size: 0.875rem;
 }
 .prose hr,
 .rich-text-content hr {
