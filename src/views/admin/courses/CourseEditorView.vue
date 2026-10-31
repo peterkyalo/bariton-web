@@ -65,15 +65,22 @@
         <!-- Full Description -->
         <div>
           <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
-            Complete Course Description
+            Complete Course Description (Rich Text &amp; Inline Images)
           </label>
-          <textarea
+          <RichTextEditor
             v-model="form.description"
-            rows="4"
-            class="w-full px-4 py-2.5 rounded-xl bg-navy-950 border border-slate-700 text-sm text-white focus:outline-none focus:border-gold-500"
+            :rows="8"
             placeholder="Detailed overview of syllabus, prerequisites, repertoire and instructional outcomes..."
-          ></textarea>
+          />
         </div>
+
+        <!-- Course Cover Image & Learning Materials (When Editing) -->
+        <MediaPanel
+          v-if="isEditing && currentCourse"
+          owner-type="course"
+          :owner="currentCourse"
+          @changed="coursesStore.fetchAdminCourse(courseId)"
+        />
 
         <!-- Status & Progression Flags -->
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-800">
@@ -208,18 +215,37 @@
           :key="module.id"
           class="card p-5 rounded-2xl bg-navy-900/70 border border-slate-800 space-y-4"
         >
-          <div class="flex items-center justify-between">
-            <div>
-              <span class="badge badge-gold text-[10px] font-bold uppercase tracking-wider mr-2">
-                {{ module.level }}
-              </span>
-              <strong class="text-white text-base font-serif">{{ module.title }}</strong>
-              <span class="text-xs text-slate-400 block mt-0.5">
-                KES {{ module.price_formatted }} (${{ module.price_usd_formatted }} USD)
-              </span>
+          <div class="flex items-start justify-between gap-4">
+            <div class="flex items-start gap-3">
+              <img
+                v-if="module.image_url"
+                :src="module.image_url"
+                :alt="module.title"
+                class="w-20 h-14 rounded-lg object-cover border border-slate-700 shrink-0"
+              />
+              <div>
+                <span class="badge badge-gold text-[10px] font-bold uppercase tracking-wider mr-2">
+                  {{ module.level }}
+                </span>
+                <strong class="text-white text-base font-serif">{{ module.title }}</strong>
+                <span class="text-xs text-slate-400 block mt-0.5">
+                  KES {{ module.price_formatted }} (${{ module.price_usd_formatted }} USD)
+                </span>
+                <div
+                  v-if="module.description"
+                  class="mt-2 prose prose-invert max-w-none text-xs text-slate-300"
+                  v-html="renderRichText(module.description, { dark: true })"
+                ></div>
+              </div>
             </div>
 
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 shrink-0">
+              <button
+                @click="openEditModuleModal(module)"
+                class="btn btn-secondary text-xs py-1.5 px-3"
+              >
+                Edit Module
+              </button>
               <button
                 @click="openAddLessonModal(module)"
                 class="btn btn-secondary text-xs py-1.5 px-3 flex items-center gap-1"
@@ -234,6 +260,13 @@
               </button>
             </div>
           </div>
+
+          <!-- Module Cover Image & Learning Materials (PDF, Audio, YouTube, Image) -->
+          <MediaPanel
+            owner-type="module"
+            :owner="module"
+            @changed="coursesStore.fetchAdminCourse(courseId)"
+          />
 
           <!-- Lessons in module -->
           <div class="space-y-2 pt-2 border-t border-slate-800/80">
@@ -264,10 +297,10 @@
       </div>
     </div>
 
-    <!-- Add Module Modal -->
-    <Modal :open="showModuleModal" title="Module" @close="showModuleModal = false">
+    <!-- Add / Edit Module Modal -->
+    <Modal :open="showModuleModal" title="Module" max-width="max-w-3xl" @close="showModuleModal = false">
       <div class="space-y-4">
-        <h3 class="text-lg font-serif font-bold text-white">Add Curriculum Module</h3>
+        <h3 class="text-lg font-serif font-bold text-white">{{ editingModuleId ? 'Edit Curriculum Module' : 'Add Curriculum Module' }}</h3>
         <form @submit.prevent="handleSaveModule" class="space-y-4">
           <div>
             <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Module Title *</label>
@@ -288,12 +321,16 @@
             </div>
           </div>
           <div>
-            <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Description</label>
-            <textarea v-model="moduleForm.description" rows="2" class="w-full px-3 py-2 rounded-lg bg-navy-950 border border-slate-700 text-xs text-white"></textarea>
+            <label class="block text-xs font-semibold text-slate-300 uppercase mb-1">Module Syllabus &amp; Rich Text Description</label>
+            <RichTextEditor
+              v-model="moduleForm.description"
+              :rows="6"
+              placeholder="Compose module syllabus, learning goals, and repertoire notes..."
+            />
           </div>
           <div class="flex justify-end gap-2 pt-2">
             <button type="button" @click="showModuleModal = false" class="btn btn-secondary text-xs">Cancel</button>
-            <button type="submit" class="btn btn-primary text-xs font-bold">Add Module</button>
+            <button type="submit" class="btn btn-primary text-xs font-bold">{{ editingModuleId ? 'Save Module' : 'Add Module' }}</button>
           </div>
         </form>
       </div>
@@ -435,7 +472,8 @@ import { useCoursesStore } from '../../../stores/courses';
 import { useUiStore } from '../../../stores/ui';
 import Modal from '../../../components/ui/Modal.vue';
 import RichTextEditor from '../../../components/ui/RichTextEditor.vue';
-import { extractYouTubeId, getYouTubeThumbnail } from '../../../lib/richText';
+import MediaPanel from '../../../components/ui/MediaPanel.vue';
+import { extractYouTubeId, getYouTubeThumbnail, renderRichText } from '../../../lib/richText';
 import { useAuthStore } from '../../../stores/auth';
 import http from '../../../lib/http';
 
@@ -517,6 +555,7 @@ const simulatedDiscountError = computed(() => {
 
 // Module & Lesson Modals
 const showModuleModal = ref(false);
+const editingModuleId = ref(null);
 const moduleForm = reactive({
   title: '',
   level: 'beginner',
@@ -542,10 +581,20 @@ function onFileChange(e) {
 }
 
 function openCreateModuleModal() {
+  editingModuleId.value = null;
   moduleForm.title = '';
   moduleForm.level = 'beginner';
   moduleForm.description = '';
   modulePriceKesMajor.value = 3000;
+  showModuleModal.value = true;
+}
+
+function openEditModuleModal(module) {
+  editingModuleId.value = module.id;
+  moduleForm.title = module.title || '';
+  moduleForm.level = module.level || 'beginner';
+  moduleForm.description = module.description || '';
+  modulePriceKesMajor.value = Math.round(Number(module.price_kes || 0) / 100);
   showModuleModal.value = true;
 }
 
@@ -557,8 +606,8 @@ async function handleSaveModule() {
       description: moduleForm.description,
       price_kes: Number(modulePriceKesMajor.value) * 100,
     };
-    await coursesStore.saveModule(courseId.value, payload);
-    uiStore.notify({ type: 'success', title: 'Module Added', message: 'Module saved successfully.' });
+    await coursesStore.saveModule(courseId.value, payload, editingModuleId.value);
+    uiStore.notify({ type: 'success', title: editingModuleId.value ? 'Module Updated' : 'Module Added', message: 'Module saved successfully.' });
     showModuleModal.value = false;
     await coursesStore.fetchAdminCourse(courseId.value);
   } catch (err) {

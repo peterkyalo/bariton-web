@@ -3,6 +3,7 @@ import {
   extractYouTubeId,
   getYouTubeThumbnail,
   estimateReadingTime,
+  sanitizeHtml,
   renderRichText,
 } from '@/lib/richText'
 
@@ -70,6 +71,22 @@ describe('richText utility tests', () => {
       expect(html).toContain('<li')
       expect(html).toContain('Scale in C Major')
       expect(html).toContain('Keep your wrists relaxed')
+    })
+
+    it('renders Markdown inline images into figure and img elements', () => {
+      const markdown = 'Look at the fretboard diagram:\n\n![C Major Chord](/storage/editor-images/chord.png)'
+      const html = renderRichText(markdown, { dark: true })
+      expect(html).toContain('<img src="/storage/editor-images/chord.png"')
+      expect(html).toContain('alt="C Major Chord"')
+    })
+
+    it('sanitizes dangerous script tags and event handlers in HTML input', () => {
+      const unsafe = '<p onclick="evil()">Safe paragraph</p><script>alert(1)</script><img src="/storage/a.png" onerror="alert(2)">'
+      const clean = sanitizeHtml(unsafe)
+      expect(clean).toContain('Safe paragraph')
+      expect(clean).not.toContain('<script')
+      expect(clean).not.toContain('onclick')
+      expect(clean).not.toContain('onerror')
     })
   })
 })

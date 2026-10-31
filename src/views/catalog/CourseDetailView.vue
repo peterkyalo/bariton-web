@@ -61,9 +61,14 @@
               {{ course.title }}
             </h1>
 
-            <p class="text-base sm:text-lg text-slate-300 leading-relaxed font-light max-w-3xl">
-              {{ course.description }}
+            <p v-if="course.short_description" class="text-base sm:text-lg text-slate-300 leading-relaxed font-light max-w-3xl">
+              {{ course.short_description }}
             </p>
+            <div
+              v-else-if="course.description"
+              class="prose prose-invert max-w-3xl text-sm sm:text-base text-slate-300"
+              v-html="renderRichText(course.description, { dark: true })"
+            ></div>
 
             <!-- Key Metadata Strip -->
             <div class="pt-4 flex flex-wrap items-center gap-6 text-xs sm:text-sm text-slate-300 border-t border-slate-800/80">
@@ -113,7 +118,7 @@
             <div class="rounded-2xl overflow-hidden shadow-2xl border border-slate-700/80 bg-slate-900 group relative">
               <div class="aspect-video relative overflow-hidden bg-slate-950">
                 <img
-                  :src="course.thumbnail_path || 'https://images.unsplash.com/photo-1520523839898-507127b31130?auto=format&fit=crop&w=800&q=80'"
+                  :src="course.thumbnail_url || course.thumbnail_path || 'https://images.unsplash.com/photo-1520523839898-507127b31130?auto=format&fit=crop&w=800&q=80'"
                   :alt="course.title"
                   class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                 />
@@ -156,11 +161,18 @@
           <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200/80 space-y-4">
             <h2 class="text-xl sm:text-2xl font-serif font-bold text-slate-900 flex items-center gap-2">
               <span class="w-2.5 h-6 bg-amber-500 rounded-full inline-block"></span>
-              Course Overview & Performance Goals
+              Course Overview &amp; Performance Goals
             </h2>
-            <p class="text-slate-600 text-sm sm:text-base leading-relaxed">
-              {{ course.short_description || course.description }}
-            </p>
+            <div
+              class="prose prose-slate max-w-none text-slate-600 text-sm sm:text-base leading-relaxed"
+              v-html="renderRichText(course.description || course.short_description, { dark: false })"
+            ></div>
+
+            <!-- Course Promotional & Learning Materials -->
+            <div v-if="course.attachments?.length" class="pt-4 border-t border-slate-100 space-y-2">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Course Preview Media &amp; Resources</h3>
+              <MaterialList :attachments="course.attachments" :dark="false" />
+            </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-100 text-xs text-slate-600">
               <div class="flex items-center gap-2.5">
@@ -212,21 +224,31 @@
               >
                 <!-- Module Header -->
                 <div class="p-6 bg-slate-50/70 border-b border-slate-200/80 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div class="space-y-1.5 max-w-xl">
-                    <div class="flex items-center gap-2">
-                      <span :class="['px-2.5 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider', levelBadgeClass(module.level)]">
-                        Level {{ module.order }}: {{ module.level }}
-                      </span>
-                      <span class="text-xs text-slate-400 font-medium">• {{ module.lessons?.length || 0 }} Lessons</span>
+                  <div class="flex items-start gap-4 max-w-xl">
+                    <img
+                      v-if="module.image_url"
+                      :src="module.image_url"
+                      :alt="module.title"
+                      class="w-24 h-16 rounded-xl object-cover border border-slate-200 shrink-0"
+                    />
+                    <div class="space-y-1.5">
+                      <div class="flex items-center gap-2">
+                        <span :class="['px-2.5 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider', levelBadgeClass(module.level)]">
+                          Level {{ module.order }}: {{ module.level }}
+                        </span>
+                        <span class="text-xs text-slate-400 font-medium">• {{ module.lessons?.length || 0 }} Lessons</span>
+                      </div>
+
+                      <h3 class="text-xl font-serif font-bold text-slate-900">
+                        {{ module.title }}
+                      </h3>
+
+                      <div
+                        v-if="module.description"
+                        class="prose prose-slate max-w-none text-xs text-slate-600 leading-relaxed"
+                        v-html="renderRichText(module.description, { dark: false })"
+                      ></div>
                     </div>
-
-                    <h3 class="text-xl font-serif font-bold text-slate-900">
-                      {{ module.title }}
-                    </h3>
-
-                    <p class="text-xs text-slate-600 leading-relaxed">
-                      {{ module.description }}
-                    </p>
                   </div>
 
                   <!-- Individual Module Pricing Card -->
@@ -247,8 +269,15 @@
                   </div>
                 </div>
 
-                <!-- Lessons in this module -->
-                <div class="p-6 space-y-3">
+                <!-- Lessons & Media in this module -->
+                <div class="p-6 space-y-4">
+                  <div v-if="module.attachments?.length" class="space-y-2 pb-3 border-b border-slate-100">
+                    <div class="text-xs font-bold uppercase tracking-wider text-slate-400">
+                      Module Preview Media &amp; Materials
+                    </div>
+                    <MaterialList :attachments="module.attachments" :dark="false" />
+                  </div>
+
                   <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
                     Lessons in this Level ({{ module.lessons?.length || 0 }})
                   </div>
@@ -548,6 +577,7 @@ import { useUiStore } from '../../stores/ui';
 import LoadingSpinner from '../../components/ui/LoadingSpinner.vue';
 import EmptyState from '../../components/ui/EmptyState.vue';
 import Modal from '../../components/ui/Modal.vue';
+import MaterialList from '../../components/ui/MaterialList.vue';
 import { renderRichText } from '../../lib/richText';
 
 const route = useRoute();

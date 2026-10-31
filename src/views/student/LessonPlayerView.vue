@@ -262,7 +262,7 @@
           <div class="flex items-center justify-between border-b border-slate-800/80 pb-2">
             <h4 class="font-bold text-white text-xs uppercase tracking-wider flex items-center gap-1.5">
               <span>📖</span>
-              <span>Lesson Notes & Guidance</span>
+              <span>Lesson Notes &amp; Guidance</span>
             </h4>
             <span v-if="currentLesson.duration_seconds" class="text-xs text-slate-400">
               Duration: {{ Math.round(currentLesson.duration_seconds / 60) }} mins
@@ -276,6 +276,26 @@
             class="pt-3 border-t border-slate-800/80 prose prose-invert max-w-none text-xs sm:text-sm text-slate-300"
             v-html="renderedCurrentLessonContent"
           ></div>
+        </div>
+
+        <!-- Course & Module Learning Materials (PDF, Audio, YouTube, Images) -->
+        <div
+          v-if="currentModule?.attachments?.length || enrollment?.course?.attachments?.length"
+          class="w-full max-w-4xl mt-6 p-5 rounded-xl bg-navy-900/60 border border-slate-800 space-y-4"
+        >
+          <div v-if="currentModule?.attachments?.length" class="space-y-2">
+            <h4 class="font-bold text-gold-400 text-xs uppercase tracking-wider">
+              Module Learning Materials ({{ currentModule.title }})
+            </h4>
+            <MaterialList :attachments="currentModule.attachments" :dark="true" />
+          </div>
+
+          <div v-if="enrollment?.course?.attachments?.length" class="space-y-2">
+            <h4 class="font-bold text-gold-400 text-xs uppercase tracking-wider">
+              Course Reference Materials
+            </h4>
+            <MaterialList :attachments="enrollment.course.attachments" :dark="true" />
+          </div>
         </div>
       </div>
     </div>
@@ -407,6 +427,7 @@ import { useCoursesStore } from '../../stores/courses';
 import { useUiStore } from '../../stores/ui';
 import LoadingSpinner from '../../components/ui/LoadingSpinner.vue';
 import EmptyState from '../../components/ui/EmptyState.vue';
+import MaterialList from '../../components/ui/MaterialList.vue';
 import { renderRichText, estimateReadingTime } from '../../lib/richText';
 
 const route = useRoute();
@@ -415,6 +436,10 @@ const uiStore = useUiStore();
 
 const enrollment = computed(() => coursesStore.currentEnrollment);
 const currentLesson = computed(() => coursesStore.currentLesson);
+const currentModule = computed(() => {
+  if (!enrollment.value?.modules || !currentLesson.value) return null;
+  return enrollment.value.modules.find(m => m.lessons?.some(l => l.id === currentLesson.value.id)) || null;
+});
 const courseProgressPercent = computed(() => enrollment.value?.progress_percent || 0);
 
 const renderedCurrentLessonContent = computed(() => renderRichText(currentLesson.value?.content || '', { dark: true }));
