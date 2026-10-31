@@ -134,10 +134,10 @@
           </div>
         </div>
 
-        <!-- 3. PDF Lesson Viewer with Mark Complete Button -->
+        <!-- 3. PDF Lesson Viewer (Inline Scrollable Reader + Mark Complete Button) -->
         <div
           v-else-if="currentLesson.type === 'pdf'"
-          class="w-full max-w-4xl p-8 rounded-2xl bg-navy-900/90 border border-slate-800 shadow-2xl space-y-6"
+          class="w-full max-w-5xl p-6 sm:p-8 rounded-2xl bg-navy-900/90 border border-slate-800 shadow-2xl space-y-6"
         >
           <div class="flex items-center justify-between pb-4 border-b border-slate-800">
             <div class="flex items-center gap-3">
@@ -151,43 +151,23 @@
                 <p class="text-xs text-slate-400">{{ currentLesson.file_name || 'Sheet Music Score & Mnemonic Notes' }}</p>
               </div>
             </div>
-
-            <a
-              v-if="currentLesson.stream_url"
-              :href="currentLesson.stream_url"
-              target="_blank"
-              download
-              class="btn btn-secondary text-xs flex items-center gap-2"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-              </svg>
-              Download PDF Score
-            </a>
           </div>
 
-          <!-- PDF Frame or Notice -->
-          <div class="h-96 rounded-xl bg-slate-950 flex flex-col items-center justify-center border border-slate-800 p-6 text-center space-y-4">
-            <p class="text-sm text-slate-300 max-w-md">
-              Score notation ready for study. Review the fingering annotations, dynamics, and performance notes.
-            </p>
-            <a
-              v-if="currentLesson.stream_url"
-              :href="currentLesson.stream_url"
-              target="_blank"
-              class="btn btn-primary text-sm flex items-center gap-2"
-            >
-              <span>Open Sheet Music in Fullscreen Viewer</span>
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-            </a>
-          </div>
+          <!-- Inline Scrollable PDF Reader -->
+          <PdfViewer
+            v-if="currentLesson.stream_url"
+            :src="currentLesson.stream_url"
+            :title="currentLesson.file_name || currentLesson.title"
+            :file-size-bytes="currentLesson.file_size_bytes"
+            :dark="true"
+            :default-open="true"
+            height-class="h-[680px]"
+          />
 
           <!-- Mark Complete Trigger -->
           <div class="pt-4 flex items-center justify-between border-t border-slate-800">
             <span class="text-xs text-slate-400">
-              Finished reviewing this sheet music?
+              Finished reading and reviewing this PDF course material?
             </span>
             <button
               @click="markPdfComplete"
@@ -428,6 +408,7 @@ import { useUiStore } from '../../stores/ui';
 import LoadingSpinner from '../../components/ui/LoadingSpinner.vue';
 import EmptyState from '../../components/ui/EmptyState.vue';
 import MaterialList from '../../components/ui/MaterialList.vue';
+import PdfViewer from '../../components/ui/PdfViewer.vue';
 import { renderRichText, estimateReadingTime } from '../../lib/richText';
 
 const route = useRoute();

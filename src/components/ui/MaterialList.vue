@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { extractYouTubeId } from '@/lib/richText'
+import PdfViewer from './PdfViewer.vue'
 
 const props = defineProps({
   attachments: { type: Array, default: () => [] },
@@ -52,23 +53,15 @@ function embedUrl(att) {
       <!-- Audio -->
       <audio v-else-if="att.kind === 'audio' && att.url" :src="att.url" controls class="w-full"></audio>
 
-      <!-- PDF -->
-      <a
+      <!-- PDF (Inline Scrollable Reader + Expand & Download) -->
+      <PdfViewer
         v-else-if="att.kind === 'pdf' && att.url"
-        :href="att.url"
-        target="_blank"
-        rel="noopener noreferrer"
-        :class="[
-          'flex items-center justify-between gap-3 p-3 rounded-xl border text-xs transition',
-          dark ? 'bg-navy-950/60 border-slate-800 hover:border-sky-500/50 text-slate-200' : 'bg-sky-50 border-sky-200 hover:border-sky-400 text-slate-800',
-        ]"
-      >
-        <span class="flex items-center gap-2 truncate">
-          <span class="px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-400 font-bold uppercase text-[10px]">PDF</span>
-          <span class="truncate">{{ att.file_name || 'Download document' }}</span>
-        </span>
-        <span class="text-slate-400 shrink-0">{{ formatSize(att.file_size_bytes) }} &rarr;</span>
-      </a>
+        :src="att.url"
+        :title="att.title || att.file_name || 'Course PDF Document'"
+        :file-size-bytes="att.file_size_bytes"
+        :dark="dark"
+        :default-open="false"
+      />
     </div>
   </div>
 </template>

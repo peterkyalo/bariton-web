@@ -543,12 +543,17 @@
           <audio :src="previewLesson.stream_url" controls class="w-full"></audio>
         </div>
 
-        <!-- 4. PDF Sheet Music Preview -->
-        <div v-else-if="previewLesson.type === 'pdf'" class="p-6 rounded-xl bg-sky-50 border border-sky-200 text-center space-y-3">
-          <p class="text-xs text-sky-800 font-medium">Sheet Music Score Preview</p>
-          <a v-if="previewLesson.stream_url" :href="previewLesson.stream_url" target="_blank" class="btn btn-primary text-xs inline-flex items-center gap-2">
-            View / Download Score (PDF)
-          </a>
+        <!-- 4. PDF Sheet Music Preview (Inline Scrollable PDF Reader) -->
+        <div v-else-if="previewLesson.type === 'pdf'" class="space-y-3">
+          <PdfViewer
+            v-if="previewLesson.stream_url"
+            :src="previewLesson.stream_url"
+            :title="previewLesson.file_name || previewLesson.title"
+            :file-size-bytes="previewLesson.file_size_bytes"
+            :dark="false"
+            :default-open="true"
+            height-class="h-[520px]"
+          />
         </div>
 
         <p class="text-sm text-slate-600 leading-relaxed">
@@ -578,6 +583,7 @@ import LoadingSpinner from '../../components/ui/LoadingSpinner.vue';
 import EmptyState from '../../components/ui/EmptyState.vue';
 import Modal from '../../components/ui/Modal.vue';
 import MaterialList from '../../components/ui/MaterialList.vue';
+import PdfViewer from '../../components/ui/PdfViewer.vue';
 import { renderRichText } from '../../lib/richText';
 
 const route = useRoute();

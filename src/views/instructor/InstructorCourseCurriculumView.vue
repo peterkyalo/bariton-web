@@ -130,22 +130,34 @@
             <div
               v-for="lesson in module.lessons"
               :key="lesson.id"
-              class="flex items-center justify-between p-2.5 rounded-xl bg-navy-950/60 border border-slate-800 text-xs"
+              class="p-2.5 rounded-xl bg-navy-950/60 border border-slate-800 text-xs space-y-2"
             >
-              <div class="flex items-center gap-2 truncate">
-                <span :class="['font-bold uppercase font-mono text-[10px] px-2 py-0.5 rounded', formatBadgeClass(lesson.type)]">
-                  {{ formatTypeLabel(lesson.type) }}
-                </span>
-                <span class="text-white font-medium truncate">{{ lesson.title }}</span>
-                <span v-if="lesson.file_name" class="text-slate-500 truncate">· {{ lesson.file_name }}</span>
-                <span v-else-if="lesson.youtube_video_id" class="text-slate-500 truncate">· ID: {{ lesson.youtube_video_id }}</span>
-                <span v-else-if="lesson.content" class="text-slate-500 truncate">· {{ estimateReadingTime(lesson.content).words }} words</span>
-                <span v-if="lesson.is_preview" class="text-[10px] text-emerald-400 font-bold ml-1">(Free Preview)</span>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2 truncate">
+                  <span :class="['font-bold uppercase font-mono text-[10px] px-2 py-0.5 rounded', formatBadgeClass(lesson.type)]">
+                    {{ formatTypeLabel(lesson.type) }}
+                  </span>
+                  <span class="text-white font-medium truncate">{{ lesson.title }}</span>
+                  <span v-if="lesson.file_name" class="text-slate-500 truncate">· {{ lesson.file_name }}</span>
+                  <span v-else-if="lesson.youtube_video_id" class="text-slate-500 truncate">· ID: {{ lesson.youtube_video_id }}</span>
+                  <span v-else-if="lesson.content" class="text-slate-500 truncate">· {{ estimateReadingTime(lesson.content).words }} words</span>
+                  <span v-if="lesson.is_preview" class="text-[10px] text-emerald-400 font-bold ml-1">(Free Preview)</span>
+                </div>
+                <div class="flex items-center gap-3 ml-3 shrink-0">
+                  <button class="text-gold-400 hover:text-gold-300" @click="openLessonModal(module, lesson)">Edit</button>
+                  <button class="text-red-400 hover:text-red-300" @click="removeLesson(lesson)">Remove</button>
+                </div>
               </div>
-              <div class="flex items-center gap-3 ml-3 shrink-0">
-                <button class="text-gold-400 hover:text-gold-300" @click="openLessonModal(module, lesson)">Edit</button>
-                <button class="text-red-400 hover:text-red-300" @click="removeLesson(lesson)">Remove</button>
-              </div>
+
+              <PdfViewer
+                v-if="lesson.type === 'pdf' && lesson.stream_url"
+                :src="lesson.stream_url"
+                :title="lesson.file_name || lesson.title"
+                :file-size-bytes="lesson.file_size_bytes"
+                :dark="true"
+                :default-open="false"
+                height-class="h-[540px]"
+              />
             </div>
           </div>
         </div>
@@ -343,6 +355,7 @@ import Modal from '@/components/ui/Modal.vue'
 import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
 import RichTextEditor from '@/components/ui/RichTextEditor.vue'
 import MediaPanel from '@/components/ui/MediaPanel.vue'
+import PdfViewer from '@/components/ui/PdfViewer.vue'
 import { extractYouTubeId, getYouTubeThumbnail, estimateReadingTime, renderRichText } from '@/lib/richText'
 
 const route = useRoute()

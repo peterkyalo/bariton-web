@@ -4,6 +4,7 @@ import { useCoursesStore } from '@/stores/courses'
 import { useUiStore } from '@/stores/ui'
 import { parseError } from '@/lib/http'
 import { extractYouTubeId, getYouTubeThumbnail } from '@/lib/richText'
+import PdfViewer from './PdfViewer.vue'
 
 /**
  * Manage the cover image and learning materials (YouTube, PDF, audio, images)
@@ -169,20 +170,32 @@ async function removeMaterial(att) {
         Learning Materials ({{ attachments.length }})
       </label>
       <p v-if="!attachments.length" class="text-xs text-slate-500">No videos, documents, audio or images attached yet.</p>
-      <ul v-else class="space-y-1.5">
+      <ul v-else class="space-y-2">
         <li
           v-for="att in attachments"
           :key="att.id"
-          class="flex items-center justify-between gap-3 p-2 rounded-lg bg-navy-900/70 border border-slate-800 text-xs"
+          class="p-2.5 rounded-lg bg-navy-900/70 border border-slate-800 text-xs space-y-2"
           data-testid="attachment-row"
         >
-          <span class="flex items-center gap-2 truncate">
-            <img v-if="att.kind === 'youtube'" :src="getYouTubeThumbnail(att.youtube_video_id)" alt="" class="w-12 h-7 object-cover rounded" />
-            <img v-else-if="att.kind === 'image' && att.url" :src="att.url" alt="" class="w-12 h-7 object-cover rounded" />
-            <span class="font-mono font-bold uppercase text-[10px] px-1.5 py-0.5 rounded bg-gold-500/10 text-gold-400">{{ kindLabels[att.kind] }}</span>
-            <span class="text-white truncate">{{ att.title || att.file_name || att.youtube_video_id }}</span>
-          </span>
-          <button type="button" class="text-red-400 hover:text-red-300 shrink-0" :disabled="busy" @click="removeMaterial(att)">Remove</button>
+          <div class="flex items-center justify-between gap-3">
+            <span class="flex items-center gap-2 truncate">
+              <img v-if="att.kind === 'youtube'" :src="getYouTubeThumbnail(att.youtube_video_id)" alt="" class="w-12 h-7 object-cover rounded" />
+              <img v-else-if="att.kind === 'image' && att.url" :src="att.url" alt="" class="w-12 h-7 object-cover rounded" />
+              <span class="font-mono font-bold uppercase text-[10px] px-1.5 py-0.5 rounded bg-gold-500/10 text-gold-400">{{ kindLabels[att.kind] }}</span>
+              <span class="text-white truncate">{{ att.title || att.file_name || att.youtube_video_id }}</span>
+            </span>
+            <button type="button" class="text-red-400 hover:text-red-300 shrink-0" :disabled="busy" @click="removeMaterial(att)">Remove</button>
+          </div>
+
+          <PdfViewer
+            v-if="att.kind === 'pdf' && att.url"
+            :src="att.url"
+            :title="att.title || att.file_name || 'PDF Course Material'"
+            :file-size-bytes="att.file_size_bytes"
+            :dark="true"
+            :default-open="false"
+            height-class="h-[520px]"
+          />
         </li>
       </ul>
     </div>

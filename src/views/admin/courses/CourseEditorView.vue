@@ -273,24 +273,36 @@
             <div
               v-for="lesson in module.lessons"
               :key="lesson.id"
-              class="flex items-center justify-between p-2.5 rounded-xl bg-navy-950/60 border border-slate-800 text-xs"
+              class="p-2.5 rounded-xl bg-navy-950/60 border border-slate-800 text-xs space-y-2"
             >
-              <div class="flex items-center gap-2 truncate">
-                <span class="font-bold text-gold-400 uppercase font-mono text-[10px] px-1.5 py-0.5 rounded bg-gold-500/10">
-                  {{ lesson.type }}
-                </span>
-                <span class="text-white font-medium truncate">{{ lesson.title }}</span>
-                <span v-if="lesson.is_preview" class="text-[10px] text-emerald-400 font-bold ml-1">
-                  (Free Preview)
-                </span>
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2 truncate">
+                  <span class="font-bold text-gold-400 uppercase font-mono text-[10px] px-1.5 py-0.5 rounded bg-gold-500/10">
+                    {{ lesson.type }}
+                  </span>
+                  <span class="text-white font-medium truncate">{{ lesson.title }}</span>
+                  <span v-if="lesson.is_preview" class="text-[10px] text-emerald-400 font-bold ml-1">
+                    (Free Preview)
+                  </span>
+                </div>
+
+                <button
+                  @click="handleDeleteLesson(lesson.id)"
+                  class="text-red-400 hover:text-red-300 ml-3"
+                >
+                  Remove
+                </button>
               </div>
 
-              <button
-                @click="handleDeleteLesson(lesson.id)"
-                class="text-red-400 hover:text-red-300 ml-3"
-              >
-                Remove
-              </button>
+              <PdfViewer
+                v-if="lesson.type === 'pdf' && lesson.stream_url"
+                :src="lesson.stream_url"
+                :title="lesson.file_name || lesson.title"
+                :file-size-bytes="lesson.file_size_bytes"
+                :dark="true"
+                :default-open="false"
+                height-class="h-[540px]"
+              />
             </div>
           </div>
         </div>
@@ -473,6 +485,7 @@ import { useUiStore } from '../../../stores/ui';
 import Modal from '../../../components/ui/Modal.vue';
 import RichTextEditor from '../../../components/ui/RichTextEditor.vue';
 import MediaPanel from '../../../components/ui/MediaPanel.vue';
+import PdfViewer from '../../../components/ui/PdfViewer.vue';
 import { extractYouTubeId, getYouTubeThumbnail, renderRichText } from '../../../lib/richText';
 import { useAuthStore } from '../../../stores/auth';
 import http from '../../../lib/http';
