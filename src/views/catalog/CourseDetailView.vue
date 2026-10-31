@@ -267,6 +267,9 @@
                         <svg v-else-if="lesson.type === 'audio'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                         </svg>
+                        <svg v-else-if="lesson.type === 'richtext' || lesson.type === 'text'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
                         <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                         </svg>
@@ -489,6 +492,7 @@
           </button>
         </div>
 
+        <!-- 1. YouTube Preview -->
         <div v-if="previewLesson.type === 'youtube'" class="aspect-video w-full rounded-xl overflow-hidden bg-black shadow-lg">
           <iframe
             :src="`https://www.youtube.com/embed/${previewLesson.youtube_video_id}?autoplay=1&rel=0`"
@@ -497,6 +501,25 @@
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowfullscreen
           ></iframe>
+        </div>
+
+        <!-- 2. Rich Text Guide Preview -->
+        <div v-else-if="previewLesson.type === 'richtext' || previewLesson.type === 'text'" class="p-6 rounded-xl bg-slate-50 border border-slate-200 max-h-96 overflow-y-auto">
+          <div class="prose prose-slate max-w-none text-sm" v-html="renderRichText(previewLesson.content)"></div>
+        </div>
+
+        <!-- 3. Audio Masterclass Preview -->
+        <div v-else-if="previewLesson.type === 'audio'" class="p-6 rounded-xl bg-amber-50 border border-amber-200 text-center space-y-4">
+          <p class="text-xs text-amber-800 font-medium">Free Audio Masterclass Preview</p>
+          <audio :src="previewLesson.stream_url" controls class="w-full"></audio>
+        </div>
+
+        <!-- 4. PDF Sheet Music Preview -->
+        <div v-else-if="previewLesson.type === 'pdf'" class="p-6 rounded-xl bg-sky-50 border border-sky-200 text-center space-y-3">
+          <p class="text-xs text-sky-800 font-medium">Sheet Music Score Preview</p>
+          <a v-if="previewLesson.stream_url" :href="previewLesson.stream_url" target="_blank" class="btn btn-primary text-xs inline-flex items-center gap-2">
+            View / Download Score (PDF)
+          </a>
         </div>
 
         <p class="text-sm text-slate-600 leading-relaxed">
@@ -525,6 +548,7 @@ import { useUiStore } from '../../stores/ui';
 import LoadingSpinner from '../../components/ui/LoadingSpinner.vue';
 import EmptyState from '../../components/ui/EmptyState.vue';
 import Modal from '../../components/ui/Modal.vue';
+import { renderRichText } from '../../lib/richText';
 
 const route = useRoute();
 const router = useRouter();
@@ -561,6 +585,7 @@ function levelBadgeClass(level) {
 function typeIconClass(type) {
   if (type === 'youtube') return 'bg-rose-100 text-rose-600 border border-rose-200';
   if (type === 'audio') return 'bg-amber-100 text-amber-600 border border-amber-200';
+  if (type === 'richtext' || type === 'text') return 'bg-emerald-100 text-emerald-600 border border-emerald-200';
   return 'bg-sky-100 text-sky-600 border border-sky-200';
 }
 

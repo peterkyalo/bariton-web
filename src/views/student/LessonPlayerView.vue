@@ -202,10 +202,80 @@
           </div>
         </div>
 
-        <!-- Lesson Description Footer -->
-        <div v-if="currentLesson" class="w-full max-w-4xl mt-6 p-4 rounded-xl bg-navy-900/40 border border-slate-800 text-sm text-slate-300">
-          <h4 class="font-bold text-white text-xs uppercase tracking-wider mb-1">Lesson Notes</h4>
-          <p>{{ currentLesson.summary || 'Follow along with the guided materials and practice diligently.' }}</p>
+        <!-- 4. Rich Text Article & Notation Guide Viewer -->
+        <div
+          v-else-if="currentLesson.type === 'richtext' || currentLesson.type === 'text'"
+          class="w-full max-w-4xl p-6 sm:p-8 rounded-2xl bg-navy-900/90 border border-emerald-500/30 shadow-2xl space-y-6"
+        >
+          <div class="flex items-center justify-between pb-4 border-b border-slate-800">
+            <div class="flex items-center gap-3">
+              <div class="p-3 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-xl font-serif font-bold text-white">{{ currentLesson.title }}</h2>
+                <p class="text-xs text-slate-400 flex items-center gap-2 mt-0.5">
+                  <span>Written Masterclass & Performance Guide</span>
+                  <span>·</span>
+                  <span class="text-gold-400">{{ readingStats.text }}</span>
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <span v-if="isLessonCompleted(currentLesson.id)" class="px-3 py-1.5 rounded-xl bg-emerald-500/20 text-emerald-400 text-xs font-bold flex items-center gap-1.5 border border-emerald-500/30">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                </svg>
+                <span>Completed</span>
+              </span>
+            </div>
+          </div>
+
+          <!-- Rich Text Article Body -->
+          <div class="rounded-xl bg-navy-950/80 border border-slate-800 p-6 sm:p-8 max-h-[550px] overflow-y-auto">
+            <div class="prose prose-invert max-w-none text-slate-200" v-html="renderedCurrentLessonContent"></div>
+          </div>
+
+          <!-- Mark Complete Trigger -->
+          <div class="pt-4 flex items-center justify-between border-t border-slate-800">
+            <span class="text-xs text-slate-400">
+              Finished studying this instructional guide?
+            </span>
+            <button
+              @click="markRichtextComplete"
+              :disabled="isLessonCompleted(currentLesson.id)"
+              class="btn btn-primary text-xs py-2 px-4 flex items-center gap-2 font-bold"
+            >
+              <svg v-if="isLessonCompleted(currentLesson.id)" class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>{{ isLessonCompleted(currentLesson.id) ? 'Lesson Completed' : 'Mark as Complete' }}</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Lesson Description & Supplemental Notes Footer -->
+        <div v-if="currentLesson" class="w-full max-w-4xl mt-6 p-5 rounded-xl bg-navy-900/40 border border-slate-800 text-sm text-slate-300 space-y-3">
+          <div class="flex items-center justify-between border-b border-slate-800/80 pb-2">
+            <h4 class="font-bold text-white text-xs uppercase tracking-wider flex items-center gap-1.5">
+              <span>📖</span>
+              <span>Lesson Notes & Guidance</span>
+            </h4>
+            <span v-if="currentLesson.duration_seconds" class="text-xs text-slate-400">
+              Duration: {{ Math.round(currentLesson.duration_seconds / 60) }} mins
+            </span>
+          </div>
+          <p v-if="currentLesson.summary" class="text-xs text-slate-400">
+            {{ currentLesson.summary }}
+          </p>
+          <div
+            v-if="currentLesson.content && currentLesson.type !== 'richtext' && currentLesson.type !== 'text'"
+            class="pt-3 border-t border-slate-800/80 prose prose-invert max-w-none text-xs sm:text-sm text-slate-300"
+            v-html="renderedCurrentLessonContent"
+          ></div>
         </div>
       </div>
     </div>
@@ -283,8 +353,8 @@
                 <span class="truncate">{{ lesson.title }}</span>
               </div>
 
-              <span class="text-[10px] text-slate-500 uppercase font-mono ml-2">
-                {{ lesson.type }}
+              <span :class="['text-[9px] uppercase font-mono px-1.5 py-0.5 rounded ml-2 shrink-0 font-bold', formatTypeBadge(lesson.type)]">
+                {{ lesson.type === 'richtext' ? 'Text' : lesson.type }}
               </span>
             </button>
           </div>
@@ -337,6 +407,7 @@ import { useCoursesStore } from '../../stores/courses';
 import { useUiStore } from '../../stores/ui';
 import LoadingSpinner from '../../components/ui/LoadingSpinner.vue';
 import EmptyState from '../../components/ui/EmptyState.vue';
+import { renderRichText, estimateReadingTime } from '../../lib/richText';
 
 const route = useRoute();
 const coursesStore = useCoursesStore();
@@ -345,6 +416,9 @@ const uiStore = useUiStore();
 const enrollment = computed(() => coursesStore.currentEnrollment);
 const currentLesson = computed(() => coursesStore.currentLesson);
 const courseProgressPercent = computed(() => enrollment.value?.progress_percent || 0);
+
+const renderedCurrentLessonContent = computed(() => renderRichText(currentLesson.value?.content || '', { dark: true }));
+const readingStats = computed(() => estimateReadingTime(currentLesson.value?.content || ''));
 
 const loadingLesson = ref(false);
 const audioPlayerRef = ref(null);
@@ -355,6 +429,16 @@ let ytInterval = null;
 
 function isLessonCompleted(lessonId) {
   return enrollment.value?.progress_map?.[lessonId]?.status === 'completed';
+}
+
+function formatTypeBadge(type) {
+  switch (type) {
+    case 'youtube': return 'bg-rose-500/20 text-rose-300';
+    case 'richtext': case 'text': return 'bg-emerald-500/20 text-emerald-300';
+    case 'audio': return 'bg-amber-500/20 text-amber-300';
+    case 'pdf': return 'bg-sky-500/20 text-sky-300';
+    default: return 'bg-slate-800 text-slate-400';
+  }
 }
 
 async function selectLesson(lesson) {
@@ -473,6 +557,20 @@ async function markPdfComplete() {
       mark_complete: true,
     });
     uiStore.notify({ type: 'success', title: 'Lesson Completed', message: 'PDF study marked as completed!' });
+  } catch (err) {
+    uiStore.notify({ type: 'error', title: 'Error', message: 'Could not update lesson progress.' });
+  }
+}
+
+// 4. Rich Text: Mark complete
+async function markRichtextComplete() {
+  if (!currentLesson.value || isLessonCompleted(currentLesson.value.id)) return;
+  try {
+    await coursesStore.recordLessonProgress(currentLesson.value.uuid, {
+      progress_percent: 100,
+      mark_complete: true,
+    });
+    uiStore.notify({ type: 'success', title: 'Lesson Completed', message: 'Rich text study material marked as completed!' });
   } catch (err) {
     uiStore.notify({ type: 'error', title: 'Error', message: 'Could not update lesson progress.' });
   }
