@@ -1,6 +1,6 @@
 <script setup>
 import { computed } from 'vue'
-import { extractYouTubeId } from '@/lib/richText'
+import { extractYouTubeId, resolveMediaUrl } from '@/lib/richText'
 import PdfViewer from './PdfViewer.vue'
 
 const props = defineProps({
@@ -36,7 +36,8 @@ function embedUrl(att) {
           class="w-full h-full"
           frameborder="0"
           loading="lazy"
-          allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          referrerpolicy="strict-origin-when-cross-origin"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           allowfullscreen
         ></iframe>
       </div>
@@ -44,19 +45,19 @@ function embedUrl(att) {
       <!-- Image -->
       <img
         v-else-if="att.kind === 'image' && att.url"
-        :src="att.url"
+        :src="resolveMediaUrl(att.url)"
         :alt="att.title || att.file_name || 'Course material image'"
         loading="lazy"
         class="max-w-full h-auto rounded-xl border border-slate-700"
       />
 
       <!-- Audio -->
-      <audio v-else-if="att.kind === 'audio' && att.url" :src="att.url" controls class="w-full"></audio>
+      <audio v-else-if="att.kind === 'audio' && att.url" :src="resolveMediaUrl(att.url)" controls class="w-full"></audio>
 
       <!-- PDF (Inline Scrollable Reader + Expand & Download) -->
       <PdfViewer
         v-else-if="att.kind === 'pdf' && att.url"
-        :src="att.url"
+        :src="resolveMediaUrl(att.url)"
         :title="att.title || att.file_name || 'Course PDF Document'"
         :file-size-bytes="att.file_size_bytes"
         :dark="dark"

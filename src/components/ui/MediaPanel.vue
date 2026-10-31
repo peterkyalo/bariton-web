@@ -46,6 +46,11 @@ const error = ref('')
 const fileInput = ref(null)
 const form = reactive({ kind: 'youtube', title: '', youtube_video_id: '' })
 const file = ref(null)
+const expandedYoutubeIds = reactive({})
+
+function toggleYoutubePreview(id) {
+  expandedYoutubeIds[id] = !expandedYoutubeIds[id]
+}
 
 const accept = computed(() => ({
   pdf: 'application/pdf',
@@ -199,16 +204,47 @@ async function removeMaterial(att) {
           <div class="flex items-center justify-between gap-3">
             <span class="flex items-center gap-2 truncate">
               <img v-if="att.kind === 'youtube'" :src="getYouTubeThumbnail(att.youtube_video_id)" alt="" class="w-12 h-7 object-cover rounded" />
-              <img v-else-if="att.kind === 'image' && att.url" :src="att.url" alt="" class="w-12 h-7 object-cover rounded" />
+              <img v-else-if="att.kind === 'image' && att.url" :src="resolveMediaUrl(att.url)" alt="" class="w-12 h-7 object-cover rounded" />
               <span class="font-mono font-bold uppercase text-[10px] px-1.5 py-0.5 rounded bg-gold-500/10 text-gold-400">{{ kindLabels[att.kind] }}</span>
               <span class="text-white truncate">{{ att.title || att.file_name || att.youtube_video_id }}</span>
             </span>
-            <button type="button" class="text-red-400 hover:text-red-300 shrink-0" :disabled="busy" @click="removeMaterial(att)">Remove</button>
+            <div class="flex items-center gap-2 shrink-0">
+              <button
+                v-if="att.kind === 'youtube'"
+                type="button"
+                class="px-2 py-0.5 rounded bg-gold-500/15 text-gold-300 hover:bg-gold-500/25 font-semibold text-[11px] cursor-pointer"
+                @click="toggleYoutubePreview(att.id)"
+              >
+                {{ expandedYoutubeIds[att.id] ? 'Hide Video' : 'Play Video' }}
+              </button>
+              <button type="button" class="text-red-400 hover:text-red-300" :disabled="busy" @click="removeMaterial(att)">Remove</button>
+            </div>
           </div>
+
+          <div
+            v-if="att.kind === 'youtube' && expandedYoutubeIds[att.id]"
+            class="aspect-video w-full rounded-xl overflow-hidden bg-black border border-slate-800"
+          >
+            <iframe
+              :src="`https://www.youtube.com/embed/${extractYouTubeId(att.youtube_video_id)}?rel=0`"
+              class="w-full h-full"
+              frameborder="0"
+              referrerpolicy="strict-origin-when-cross-origin"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+            ></iframe>
+          </div>
+
+          <audio
+            v-if="att.kind === 'audio' && att.url"
+            :src="resolveMediaUrl(att.url)"
+            controls
+            class="w-full h-8"
+          ></audio>
 
           <PdfViewer
             v-if="att.kind === 'pdf' && att.url"
-            :src="att.url"
+            :src="resolveMediaUrl(att.url)"
             :title="att.title || att.file_name || 'PDF Course Material'"
             :file-size-bytes="att.file_size_bytes"
             :dark="true"

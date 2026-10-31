@@ -38,8 +38,8 @@
       >
         <div class="space-y-4">
           <img
-            v-if="course.thumbnail_url || course.thumbnail_path"
-            :src="resolveMediaUrl(course.thumbnail_url || course.thumbnail_path)"
+            v-if="resolveMediaUrl(course.thumbnail_url || course.thumbnail_path) || extractFirstImageUrl(course.description)"
+            :src="resolveMediaUrl(course.thumbnail_url || course.thumbnail_path) || extractFirstImageUrl(course.description)"
             :alt="course.title"
             class="w-full h-40 object-cover rounded-xl border border-slate-800"
           />
@@ -57,7 +57,7 @@
               {{ course.title }}
             </h3>
             <p class="text-xs text-slate-400 mt-1 line-clamp-2">
-              {{ course.short_description || course.description }}
+              {{ course.short_description || stripRichTextToPlain(course.description) }}
             </p>
           </div>
 
@@ -125,7 +125,7 @@ import { parseError } from '../../lib/http';
 import LoadingSpinner from '../../components/ui/LoadingSpinner.vue';
 import EmptyState from '../../components/ui/EmptyState.vue';
 import Modal from '../../components/ui/Modal.vue';
-import { resolveMediaUrl } from '../../lib/richText';
+import { resolveMediaUrl, extractFirstImageUrl, stripRichTextToPlain } from '../../lib/richText';
 
 const coursesStore = useCoursesStore();
 const auth = useAuthStore();

@@ -409,7 +409,7 @@ import LoadingSpinner from '../../components/ui/LoadingSpinner.vue';
 import EmptyState from '../../components/ui/EmptyState.vue';
 import MaterialList from '../../components/ui/MaterialList.vue';
 import PdfViewer from '../../components/ui/PdfViewer.vue';
-import { renderRichText, estimateReadingTime } from '../../lib/richText';
+import { renderRichText, estimateReadingTime, extractYouTubeId } from '../../lib/richText';
 
 const route = useRoute();
 const coursesStore = useCoursesStore();
@@ -457,7 +457,7 @@ async function selectLesson(lesson) {
     await nextTick();
 
     if (currentLesson.value?.type === 'youtube') {
-      initYouTubePlayer(currentLesson.value.youtube_video_id);
+      initYouTubePlayer(extractYouTubeId(currentLesson.value.youtube_video_id));
     }
   } catch (err) {
     uiStore.notify({ type: 'error', title: 'Error', message: 'Failed to load lesson.' });

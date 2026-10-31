@@ -119,7 +119,7 @@
             <!-- Thumbnail Visual Header -->
             <div class="relative aspect-[16/10] overflow-hidden bg-slate-900">
               <img
-                :src="resolveMediaUrl(course.thumbnail_url || course.thumbnail_path) || getCourseFallbackImage(course.slug)"
+                :src="resolveMediaUrl(course.thumbnail_url || course.thumbnail_path) || extractFirstImageUrl(course.description) || getCourseFallbackImage(course.slug)"
                 :alt="course.title"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                 loading="lazy"
@@ -186,7 +186,7 @@
 
               <!-- Short Description -->
               <p class="text-xs text-slate-500 leading-relaxed line-clamp-2 mb-4">
-                {{ course.short_description || course.description }}
+                {{ course.short_description || stripRichTextToPlain(course.description) }}
               </p>
             </div>
           </div>
@@ -229,7 +229,7 @@
 import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import { useCoursesStore } from '@/stores/courses'
-import { resolveMediaUrl } from '@/lib/richText'
+import { resolveMediaUrl, extractFirstImageUrl, stripRichTextToPlain } from '@/lib/richText'
 
 const coursesStore = useCoursesStore()
 const searchQuery = ref('')

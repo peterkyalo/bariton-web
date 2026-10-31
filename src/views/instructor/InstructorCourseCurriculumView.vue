@@ -36,8 +36,8 @@
         <h1 class="text-2xl font-serif font-bold text-white">{{ course.title }}</h1>
         <div class="flex flex-col sm:flex-row gap-4">
           <img
-            v-if="course.thumbnail_url || course.thumbnail_path"
-            :src="resolveMediaUrl(course.thumbnail_url || course.thumbnail_path)"
+            v-if="resolveMediaUrl(course.thumbnail_url || course.thumbnail_path) || extractFirstImageUrl(course.description)"
+            :src="resolveMediaUrl(course.thumbnail_url || course.thumbnail_path) || extractFirstImageUrl(course.description)"
             alt="Course cover"
             class="w-full sm:w-48 h-28 object-cover rounded-xl border border-slate-700 shrink-0"
           />
@@ -112,7 +112,12 @@
         >
           <div class="flex flex-wrap items-start justify-between gap-3">
             <div class="flex items-start gap-3">
-              <img v-if="module.image_url || module.image_path" :src="resolveMediaUrl(module.image_url || module.image_path)" alt="" class="w-20 h-14 object-cover rounded-lg border border-slate-700 shrink-0" />
+              <img
+                v-if="resolveMediaUrl(module.image_url || module.image_path) || extractFirstImageUrl(module.description)"
+                :src="resolveMediaUrl(module.image_url || module.image_path) || extractFirstImageUrl(module.description)"
+                alt=""
+                class="w-20 h-14 object-cover rounded-lg border border-slate-700 shrink-0"
+              />
               <div>
               <span class="badge badge-gold text-[10px] font-bold uppercase tracking-wider mr-2">{{ module.level }}</span>
               <strong class="text-white text-base font-serif">{{ module.title }}</strong>
@@ -144,19 +149,48 @@
                   </span>
                   <span class="text-white font-medium truncate">{{ lesson.title }}</span>
                   <span v-if="lesson.file_name" class="text-slate-500 truncate">· {{ lesson.file_name }}</span>
-                  <span v-else-if="lesson.youtube_video_id" class="text-slate-500 truncate">· ID: {{ lesson.youtube_video_id }}</span>
+                  <span v-else-if="lesson.youtube_video_id" class="text-slate-500 truncate">· ID: {{ extractYouTubeId(lesson.youtube_video_id) }}</span>
                   <span v-else-if="lesson.content" class="text-slate-500 truncate">· {{ estimateReadingTime(lesson.content).words }} words</span>
                   <span v-if="lesson.is_preview" class="text-[10px] text-emerald-400 font-bold ml-1">(Free Preview)</span>
                 </div>
                 <div class="flex items-center gap-3 ml-3 shrink-0">
+                  <button
+                    v-if="lesson.type === 'youtube' && lesson.youtube_video_id"
+                    type="button"
+                    class="px-2 py-0.5 rounded bg-rose-500/15 text-rose-300 hover:bg-rose-500/25 font-semibold text-[11px] cursor-pointer"
+                    @click="toggleLessonPreview(lesson.id)"
+                  >
+                    {{ expandedLessonIds[lesson.id] ? 'Hide Video' : 'Preview Video' }}
+                  </button>
                   <button class="text-gold-400 hover:text-gold-300" @click="openLessonModal(module, lesson)">Edit</button>
                   <button class="text-red-400 hover:text-red-300" @click="removeLesson(lesson)">Remove</button>
                 </div>
               </div>
 
+              <div
+                v-if="lesson.type === 'youtube' && lesson.youtube_video_id && expandedLessonIds[lesson.id]"
+                class="aspect-video w-full rounded-xl overflow-hidden bg-black border border-slate-800"
+              >
+                <iframe
+                  :src="`https://www.youtube.com/embed/${extractYouTubeId(lesson.youtube_video_id)}?rel=0`"
+                  class="w-full h-full"
+                  frameborder="0"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen
+                ></iframe>
+              </div>
+
+              <audio
+                v-if="lesson.type === 'audio' && lesson.stream_url"
+                :src="resolveMediaUrl(lesson.stream_url)"
+                controls
+                class="w-full h-8"
+              ></audio>
+
               <PdfViewer
                 v-if="lesson.type === 'pdf' && lesson.stream_url"
-                :src="lesson.stream_url"
+                :src="resolveMediaUrl(lesson.stream_url)"
                 :title="lesson.file_name || lesson.title"
                 :file-size-bytes="lesson.file_size_bytes"
                 :dark="true"
@@ -361,7 +395,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner.vue'
 import RichTextEditor from '@/components/ui/RichTextEditor.vue'
 import MediaPanel from '@/components/ui/MediaPanel.vue'
 import PdfViewer from '@/components/ui/PdfViewer.vue'
-import { extractYouTubeId, getYouTubeThumbnail, estimateReadingTime, renderRichText, resolveMediaUrl } from '@/lib/richText'
+import { extractYouTubeId, getYouTubeThumbnail, estimateReadingTime, renderRichText, resolveMediaUrl, extractFirstImageUrl } from '@/lib/richText'
 
 const route = useRoute()
 const coursesStore = useCoursesStore()
@@ -375,6 +409,11 @@ const loadError = ref('')
 const saving = ref(false)
 const savingStatus = ref(false)
 const statusDraft = ref('draft')
+const expandedLessonIds = reactive({})
+
+function toggleLessonPreview(id) {
+  expandedLessonIds[id] = !expandedLessonIds[id]
+}
 
 const totalLessons = computed(() =>
   (course.value?.modules || []).reduce((n, m) => n + (m.lessons?.length || 0), 0),

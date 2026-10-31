@@ -169,7 +169,7 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div v-for="course in featuredCourses" :key="course.id" class="bg-white rounded-3xl overflow-hidden border border-slate-100 shadow-sm hover:shadow-xl hover:border-amber-500/30 transition-all flex flex-col justify-between group">
             <div class="relative aspect-[16/10] overflow-hidden bg-slate-900">
-              <img :src="resolveMediaUrl(course.thumbnail_url || course.thumbnail_path || course.image_url) || 'https://images.unsplash.com/photo-1520523839898-507127b31130?auto=format&fit=crop&w=600&q=80'" :alt="course.title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+              <img :src="resolveMediaUrl(course.thumbnail_url || course.thumbnail_path || course.image_url) || extractFirstImageUrl(course.description) || 'https://images.unsplash.com/photo-1520523839898-507127b31130?auto=format&fit=crop&w=600&q=80'" :alt="course.title" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
               <div class="absolute top-4 right-4 bg-slate-950/80 backdrop-blur-sm text-amber-400 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
                 {{ course.level ? course.level.toUpperCase() : 'CONSERVATORY' }}
               </div>
@@ -187,7 +187,7 @@
                   {{ course.title }}
                 </h3>
                 <p class="text-xs text-slate-500 line-clamp-2 leading-relaxed mb-4">
-                  {{ course.short_description || course.description }}
+                  {{ course.short_description || stripRichTextToPlain(course.description) }}
                 </p>
               </div>
               <div class="pt-4 border-t border-slate-100 flex items-center justify-between">
@@ -264,7 +264,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useCmsStore } from '@/stores/cms'
 import { useCoursesStore } from '@/stores/courses'
-import { resolveMediaUrl } from '@/lib/richText'
+import { resolveMediaUrl, extractFirstImageUrl, stripRichTextToPlain } from '@/lib/richText'
 
 const auth = useAuthStore()
 const cmsStore = useCmsStore()

@@ -6,6 +6,8 @@ import {
   sanitizeHtml,
   renderRichText,
   resolveMediaUrl,
+  extractFirstImageUrl,
+  stripRichTextToPlain,
 } from '@/lib/richText'
 
 describe('richText utility tests', () => {
@@ -28,6 +30,12 @@ describe('richText utility tests', () => {
     it('extracts ID from embed and shorts URLs', () => {
       expect(extractYouTubeId('https://www.youtube.com/embed/Mh4f9AYRCZY')).toBe('Mh4f9AYRCZY')
       expect(extractYouTubeId('https://www.youtube.com/shorts/Mh4f9AYRCZY')).toBe('Mh4f9AYRCZY')
+    })
+
+    it('strips trailing query or playlist params from raw 11-char IDs', () => {
+      expect(extractYouTubeId('vlHpWvsW040&list')).toBe('vlHpWvsW040')
+      expect(extractYouTubeId('vlHpWvsW040&list=RDvlHpWvsW040')).toBe('vlHpWvsW040')
+      expect(extractYouTubeId('vlHpWvsW040?si=abc123')).toBe('vlHpWvsW040')
     })
 
     it('handles empty or invalid inputs gracefully', () => {
@@ -104,6 +112,12 @@ describe('richText utility tests', () => {
     it('resolves relative storage paths and portless localhost storage URLs via resolveMediaUrl', () => {
       expect(resolveMediaUrl('course-covers/test.png')).toContain('/storage/course-covers/test.png')
       expect(resolveMediaUrl('http://localhost/storage/editor-images/pic.jpg')).toContain(':8000/storage/editor-images/pic.jpg')
+    })
+
+    it('extracts first inline image URL and strips rich text to plain summary', () => {
+      const md = 'Intro paragraph\n\n![Guitar](http://localhost:8000/storage/editor-images/guitar.jpg)\n\nMore **bold** text.'
+      expect(extractFirstImageUrl(md)).toBe('http://localhost:8000/storage/editor-images/guitar.jpg')
+      expect(stripRichTextToPlain(md)).toBe('Intro paragraph More bold text.')
     })
   })
 })

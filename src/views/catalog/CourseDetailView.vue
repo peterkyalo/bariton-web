@@ -66,7 +66,7 @@
             </p>
             <div
               v-else-if="course.description"
-              class="prose prose-invert max-w-3xl text-sm sm:text-base text-slate-300"
+              class="prose prose-invert rich-text-content max-w-3xl text-sm sm:text-base text-slate-300"
               v-html="renderRichText(course.description, { dark: true })"
             ></div>
 
@@ -113,36 +113,58 @@
             </div>
           </div>
 
-          <!-- Hero Course Visual Preview Card -->
-          <div class="lg:col-span-4 hidden lg:block">
+          <!-- Hero Course Visual Preview Card (Visible on all screen sizes) -->
+          <div class="lg:col-span-4">
             <div class="rounded-2xl overflow-hidden shadow-2xl border border-slate-700/80 bg-slate-900 group relative">
               <div class="aspect-video relative overflow-hidden bg-slate-950">
-                <img
-                  :src="resolveMediaUrl(course.thumbnail_url || course.thumbnail_path) || 'https://images.unsplash.com/photo-1520523839898-507127b31130?auto=format&fit=crop&w=800&q=80'"
-                  :alt="course.title"
-                  class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                />
-                <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent"></div>
+                <!-- Inline Hero Video Player when active -->
+                <iframe
+                  v-if="playingHeroVideo && heroYoutubeId"
+                  :src="`https://www.youtube.com/embed/${heroYoutubeId}?autoplay=1&rel=0`"
+                  class="w-full h-full"
+                  frameborder="0"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen
+                ></iframe>
+                <template v-else>
+                  <img
+                    :src="courseOverviewImageUrl"
+                    :alt="course.title"
+                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent"></div>
 
-                <!-- Preview Floating Trigger if available -->
-                <button
-                  v-if="firstPreviewLesson"
-                  @click="watchPreview(firstPreviewLesson)"
-                  class="absolute inset-0 m-auto w-14 h-14 rounded-full bg-amber-500/90 text-slate-950 hover:bg-amber-400 hover:scale-110 flex items-center justify-center shadow-xl shadow-amber-500/40 transition-all cursor-pointer"
-                  title="Watch Free Preview"
-                >
-                  <svg class="w-6 h-6 ml-0.5 fill-current" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </button>
+                  <!-- Preview Floating Trigger if available -->
+                  <button
+                    v-if="firstPreviewLesson"
+                    type="button"
+                    @click="playHeroOrModalPreview"
+                    class="absolute inset-0 m-auto w-14 h-14 rounded-full bg-amber-500/90 text-slate-950 hover:bg-amber-400 hover:scale-110 flex items-center justify-center shadow-xl shadow-amber-500/40 transition-all cursor-pointer"
+                    title="Watch Free Preview"
+                    data-testid="hero-preview-play-btn"
+                  >
+                    <svg class="w-6 h-6 ml-0.5 fill-current" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </button>
+                </template>
               </div>
 
               <div class="p-4 bg-slate-900 border-t border-slate-800 flex items-center justify-between text-xs text-slate-300">
-                <span class="flex items-center gap-1.5 text-amber-400 font-medium">
+                <button
+                  v-if="firstPreviewLesson"
+                  type="button"
+                  @click="watchPreview(firstPreviewLesson)"
+                  class="flex items-center gap-1.5 text-amber-400 hover:text-amber-300 font-medium cursor-pointer"
+                >
                   <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
                   </svg>
-                  Free Sample Lesson Available
+                  <span>{{ firstPreviewLesson.title || 'Watch Free Course Preview' }}</span>
+                </button>
+                <span v-else class="flex items-center gap-1.5 text-amber-400 font-medium">
+                  Conservatory Curriculum
                 </span>
                 <span class="text-slate-400">Lifetime Online Access</span>
               </div>
@@ -158,13 +180,27 @@
         <!-- Left: Course Syllabus Breakdown & Overview (8 cols) -->
         <div class="lg:col-span-8 space-y-10">
           <!-- Quick Overview Card -->
-          <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200/80 space-y-4">
+          <div class="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200/80 space-y-5">
             <h2 class="text-xl sm:text-2xl font-serif font-bold text-slate-900 flex items-center gap-2">
               <span class="w-2.5 h-6 bg-amber-500 rounded-full inline-block"></span>
               Course Overview &amp; Performance Goals
             </h2>
+
+            <!-- Course Overview Cover Image when uploaded and not already inline in description -->
             <div
-              class="prose prose-slate max-w-none text-slate-600 text-sm sm:text-base leading-relaxed"
+              v-if="explicitCourseCoverUrl && !descriptionHasInlineImage"
+              class="rounded-xl overflow-hidden border border-slate-200 bg-slate-100 max-h-80"
+            >
+              <img
+                :src="explicitCourseCoverUrl"
+                :alt="`${course.title} overview image`"
+                class="w-full h-full max-h-80 object-cover"
+                data-testid="course-overview-image"
+              />
+            </div>
+
+            <div
+              class="prose prose-slate rich-text-content max-w-none text-slate-600 text-sm sm:text-base leading-relaxed"
               v-html="renderRichText(course.description || course.short_description, { dark: false })"
             ></div>
 
@@ -226,8 +262,8 @@
                 <div class="p-6 bg-slate-50/70 border-b border-slate-200/80 flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div class="flex items-start gap-4 max-w-xl">
                     <img
-                      v-if="module.image_url"
-                      :src="module.image_url"
+                      v-if="resolveModuleImageUrl(module)"
+                      :src="resolveModuleImageUrl(module)"
                       :alt="module.title"
                       class="w-24 h-16 rounded-xl object-cover border border-slate-200 shrink-0"
                     />
@@ -245,7 +281,7 @@
 
                       <div
                         v-if="module.description"
-                        class="prose prose-slate max-w-none text-xs text-slate-600 leading-relaxed"
+                        class="prose prose-slate rich-text-content max-w-none text-xs text-slate-600 leading-relaxed"
                         v-html="renderRichText(module.description, { dark: false })"
                       ></div>
                     </div>
@@ -508,13 +544,13 @@
 
     <!-- 3. Free Preview Lesson Modal -->
     <Modal :open="showPreviewModal" :show="showPreviewModal" @close="closePreviewModal" max-width="max-w-3xl">
-      <div v-if="previewLesson" class="p-6 space-y-4">
-        <div class="flex items-center justify-between pb-3 border-b border-slate-200">
+      <div v-if="previewLesson" class="space-y-4">
+        <div class="flex items-center justify-between pb-3 border-b border-white/10">
           <div>
-            <span class="text-xs font-bold text-amber-600 uppercase tracking-wider">Free Conservatory Preview</span>
-            <h3 class="text-xl font-serif font-bold text-slate-900">{{ previewLesson.title }}</h3>
+            <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">Free Conservatory Preview</span>
+            <h3 class="text-xl font-serif font-bold text-white">{{ previewLesson.title }}</h3>
           </div>
-          <button @click="closePreviewModal" class="text-slate-400 hover:text-slate-700 p-1">
+          <button @click="closePreviewModal" class="text-slate-400 hover:text-white p-1 cursor-pointer">
             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -524,46 +560,47 @@
         <!-- 1. YouTube Preview -->
         <div v-if="previewLesson.type === 'youtube'" class="aspect-video w-full rounded-xl overflow-hidden bg-black shadow-lg">
           <iframe
-            :src="`https://www.youtube.com/embed/${previewLesson.youtube_video_id}?autoplay=1&rel=0`"
+            :src="`https://www.youtube.com/embed/${extractYouTubeId(previewLesson.youtube_video_id)}?autoplay=1&rel=0`"
             class="w-full h-full"
             frameborder="0"
+            referrerpolicy="strict-origin-when-cross-origin"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowfullscreen
           ></iframe>
         </div>
 
         <!-- 2. Rich Text Guide Preview -->
-        <div v-else-if="previewLesson.type === 'richtext' || previewLesson.type === 'text'" class="p-6 rounded-xl bg-slate-50 border border-slate-200 max-h-96 overflow-y-auto">
-          <div class="prose prose-slate max-w-none text-sm" v-html="renderRichText(previewLesson.content)"></div>
+        <div v-else-if="previewLesson.type === 'richtext' || previewLesson.type === 'text'" class="p-6 rounded-xl bg-slate-900/90 border border-slate-700 max-h-96 overflow-y-auto">
+          <div class="prose prose-invert rich-text-content max-w-none text-sm" v-html="renderRichText(previewLesson.content, { dark: true })"></div>
         </div>
 
         <!-- 3. Audio Masterclass Preview -->
-        <div v-else-if="previewLesson.type === 'audio'" class="p-6 rounded-xl bg-amber-50 border border-amber-200 text-center space-y-4">
-          <p class="text-xs text-amber-800 font-medium">Free Audio Masterclass Preview</p>
-          <audio :src="previewLesson.stream_url" controls class="w-full"></audio>
+        <div v-else-if="previewLesson.type === 'audio'" class="p-6 rounded-xl bg-slate-900/90 border border-amber-500/30 text-center space-y-4">
+          <p class="text-xs text-amber-300 font-medium">Free Audio Masterclass Preview</p>
+          <audio :src="resolveMediaUrl(previewLesson.stream_url)" controls class="w-full"></audio>
         </div>
 
         <!-- 4. PDF Sheet Music Preview (Inline Scrollable PDF Reader) -->
         <div v-else-if="previewLesson.type === 'pdf'" class="space-y-3">
           <PdfViewer
             v-if="previewLesson.stream_url"
-            :src="previewLesson.stream_url"
+            :src="resolveMediaUrl(previewLesson.stream_url)"
             :title="previewLesson.file_name || previewLesson.title"
             :file-size-bytes="previewLesson.file_size_bytes"
-            :dark="false"
+            :dark="true"
             :default-open="true"
             height-class="h-[520px]"
           />
         </div>
 
-        <p class="text-sm text-slate-600 leading-relaxed">
+        <p v-if="previewLesson.summary" class="text-sm text-slate-300 leading-relaxed">
           {{ previewLesson.summary }}
         </p>
 
-        <div class="pt-3 border-t border-slate-200 flex justify-end">
+        <div class="pt-3 border-t border-white/10 flex justify-end">
           <button
             @click="closePreviewModal"
-            class="px-4 py-2 rounded-lg bg-slate-900 text-white font-bold text-xs hover:bg-slate-800 transition"
+            class="px-4 py-2 rounded-lg bg-amber-500 text-slate-950 font-bold text-xs hover:bg-amber-400 transition cursor-pointer"
           >
             Close Preview
           </button>
@@ -584,7 +621,13 @@ import EmptyState from '../../components/ui/EmptyState.vue';
 import Modal from '../../components/ui/Modal.vue';
 import MaterialList from '../../components/ui/MaterialList.vue';
 import PdfViewer from '../../components/ui/PdfViewer.vue';
-import { renderRichText, resolveMediaUrl } from '../../lib/richText';
+import {
+  renderRichText,
+  resolveMediaUrl,
+  extractYouTubeId,
+  extractFirstImageUrl,
+  getYouTubeThumbnail,
+} from '../../lib/richText';
 
 const route = useRoute();
 const router = useRouter();
@@ -595,17 +638,105 @@ const uiStore = useUiStore();
 const course = computed(() => coursesStore.currentCourse);
 const showPreviewModal = ref(false);
 const previewLesson = ref(null);
+const playingHeroVideo = ref(false);
 
 const firstPreviewLesson = computed(() => {
-  if (!course.value?.modules) return null;
-  for (const mod of course.value.modules) {
-    if (mod.lessons) {
-      const prev = mod.lessons.find(l => l.is_preview);
-      if (prev) return prev;
+  if (!course.value) return null;
+
+  // 1. Explicit preview lesson
+  if (course.value.modules) {
+    for (const mod of course.value.modules) {
+      if (mod.lessons) {
+        const prev = mod.lessons.find(l => l.is_preview);
+        if (prev) return prev;
+      }
     }
   }
+
+  // 2. Course-level YouTube attachment
+  const courseYt = (course.value.attachments || []).find(a => a.kind === 'youtube' && a.youtube_video_id);
+  if (courseYt) {
+    return {
+      id: `att-${courseYt.id}`,
+      title: courseYt.title || `${course.value.title} — Course Preview`,
+      type: 'youtube',
+      youtube_video_id: courseYt.youtube_video_id,
+      is_preview: true,
+    };
+  }
+
+  // 3. Module-level YouTube attachment or first YouTube lesson
+  if (course.value.modules) {
+    for (const mod of course.value.modules) {
+      const modYt = (mod.attachments || []).find(a => a.kind === 'youtube' && a.youtube_video_id);
+      if (modYt) {
+        return {
+          id: `mod-att-${modYt.id}`,
+          title: modYt.title || `${mod.title} — Preview`,
+          type: 'youtube',
+          youtube_video_id: modYt.youtube_video_id,
+          is_preview: true,
+        };
+      }
+      const ytLesson = (mod.lessons || []).find(l => l.type === 'youtube' && l.youtube_video_id);
+      if (ytLesson) return ytLesson;
+    }
+  }
+
   return null;
 });
+
+const heroYoutubeId = computed(() => {
+  if (firstPreviewLesson.value?.type === 'youtube' && firstPreviewLesson.value.youtube_video_id) {
+    return extractYouTubeId(firstPreviewLesson.value.youtube_video_id);
+  }
+  return '';
+});
+
+const explicitCourseCoverUrl = computed(() => {
+  if (!course.value) return '';
+  const direct = resolveMediaUrl(course.value.thumbnail_url || course.value.thumbnail_path);
+  if (direct) return direct;
+  const imgAtt = (course.value.attachments || []).find(a => a.kind === 'image' && a.url);
+  if (imgAtt) return resolveMediaUrl(imgAtt.url);
+  return '';
+});
+
+const descriptionHasInlineImage = computed(() => {
+  return Boolean(extractFirstImageUrl(course.value?.description));
+});
+
+const courseOverviewImageUrl = computed(() => {
+  if (explicitCourseCoverUrl.value) return explicitCourseCoverUrl.value;
+  const fromDesc = extractFirstImageUrl(course.value?.description);
+  if (fromDesc) return fromDesc;
+  if (course.value?.modules) {
+    for (const mod of course.value.modules) {
+      const modImg = resolveModuleImageUrl(mod);
+      if (modImg) return modImg;
+    }
+  }
+  if (heroYoutubeId.value) {
+    return getYouTubeThumbnail(heroYoutubeId.value, 'hqdefault');
+  }
+  return 'https://images.unsplash.com/photo-1520523839898-507127b31130?auto=format&fit=crop&w=800&q=80';
+});
+
+function resolveModuleImageUrl(module) {
+  if (!module) return '';
+  return (
+    resolveMediaUrl(module.image_url || module.image_path) ||
+    extractFirstImageUrl(module.description)
+  );
+}
+
+function playHeroOrModalPreview() {
+  if (heroYoutubeId.value) {
+    playingHeroVideo.value = true;
+  } else if (firstPreviewLesson.value) {
+    watchPreview(firstPreviewLesson.value);
+  }
+}
 
 const totalLessonsCount = computed(() => {
   if (!course.value?.modules) return 0;

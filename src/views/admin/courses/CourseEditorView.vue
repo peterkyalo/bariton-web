@@ -218,8 +218,8 @@
           <div class="flex items-start justify-between gap-4">
             <div class="flex items-start gap-3">
               <img
-                v-if="module.image_url"
-                :src="module.image_url"
+                v-if="resolveMediaUrl(module.image_url || module.image_path) || extractFirstImageUrl(module.description)"
+                :src="resolveMediaUrl(module.image_url || module.image_path) || extractFirstImageUrl(module.description)"
                 :alt="module.title"
                 class="w-20 h-14 rounded-lg object-cover border border-slate-700 shrink-0"
               />
@@ -233,7 +233,7 @@
                 </span>
                 <div
                   v-if="module.description"
-                  class="mt-2 prose prose-invert max-w-none text-xs text-slate-300"
+                  class="mt-2 prose prose-invert rich-text-content max-w-none text-xs text-slate-300"
                   v-html="renderRichText(module.description, { dark: true })"
                 ></div>
               </div>
@@ -286,17 +286,48 @@
                   </span>
                 </div>
 
-                <button
-                  @click="handleDeleteLesson(lesson.id)"
-                  class="text-red-400 hover:text-red-300 ml-3"
-                >
-                  Remove
-                </button>
+                <div class="flex items-center gap-3 ml-3 shrink-0">
+                  <button
+                    v-if="lesson.type === 'youtube' && lesson.youtube_video_id"
+                    type="button"
+                    class="px-2 py-0.5 rounded bg-rose-500/15 text-rose-300 hover:bg-rose-500/25 font-semibold text-[11px] cursor-pointer"
+                    @click="toggleAdminLessonPreview(lesson.id)"
+                  >
+                    {{ expandedAdminLessonIds[lesson.id] ? 'Hide Video' : 'Preview Video' }}
+                  </button>
+                  <button
+                    @click="handleDeleteLesson(lesson.id)"
+                    class="text-red-400 hover:text-red-300"
+                  >
+                    Remove
+                  </button>
+                </div>
               </div>
+
+              <div
+                v-if="lesson.type === 'youtube' && lesson.youtube_video_id && expandedAdminLessonIds[lesson.id]"
+                class="aspect-video w-full rounded-xl overflow-hidden bg-black border border-slate-800"
+              >
+                <iframe
+                  :src="`https://www.youtube.com/embed/${extractYouTubeId(lesson.youtube_video_id)}?rel=0`"
+                  class="w-full h-full"
+                  frameborder="0"
+                  referrerpolicy="strict-origin-when-cross-origin"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowfullscreen
+                ></iframe>
+              </div>
+
+              <audio
+                v-if="lesson.type === 'audio' && lesson.stream_url"
+                :src="resolveMediaUrl(lesson.stream_url)"
+                controls
+                class="w-full h-8"
+              ></audio>
 
               <PdfViewer
                 v-if="lesson.type === 'pdf' && lesson.stream_url"
-                :src="lesson.stream_url"
+                :src="resolveMediaUrl(lesson.stream_url)"
                 :title="lesson.file_name || lesson.title"
                 :file-size-bytes="lesson.file_size_bytes"
                 :dark="true"
@@ -486,12 +517,17 @@ import Modal from '../../../components/ui/Modal.vue';
 import RichTextEditor from '../../../components/ui/RichTextEditor.vue';
 import MediaPanel from '../../../components/ui/MediaPanel.vue';
 import PdfViewer from '../../../components/ui/PdfViewer.vue';
-import { extractYouTubeId, getYouTubeThumbnail, renderRichText } from '../../../lib/richText';
+import { extractYouTubeId, getYouTubeThumbnail, renderRichText, resolveMediaUrl, extractFirstImageUrl } from '../../../lib/richText';
 import { useAuthStore } from '../../../stores/auth';
 import http from '../../../lib/http';
 
 const auth = useAuthStore();
 const instructorOptions = ref([]);
+const expandedAdminLessonIds = reactive({});
+
+function toggleAdminLessonPreview(id) {
+  expandedAdminLessonIds[id] = !expandedAdminLessonIds[id];
+}
 
 const route = useRoute();
 const router = useRouter();
