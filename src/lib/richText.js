@@ -57,7 +57,44 @@ export function extractYouTubeId(input) {
     return match[1];
   }
 
+  // Raw 11-char ID with trailing query/playlist params (e.g. "vlHpWvsW040&list=..." or "vlHpWvsW040?si=...")
+  const rawMatch = trimmed.match(/^([a-zA-Z0-9_-]{11})(?:[?&/#].*)$/);
+  if (rawMatch && rawMatch[1]) {
+    return rawMatch[1];
+  }
+
   return trimmed;
+}
+
+/**
+ * Extract the first image URL from Markdown `![alt](url)` or HTML `<img src="url">` inside rich text content.
+ * Useful as a fallback course/module overview image when an instructor embedded an image in the description.
+ */
+export function extractFirstImageUrl(content) {
+  if (!content || typeof content !== 'string') return '';
+  const mdMatch = content.match(/!\[[^\]]*\]\(([^)\s]+)\)/);
+  if (mdMatch && mdMatch[1]) {
+    return resolveMediaUrl(mdMatch[1]);
+  }
+  const htmlMatch = content.match(/<img[^>]+src=["']([^"']+)["']/i);
+  if (htmlMatch && htmlMatch[1]) {
+    return resolveMediaUrl(htmlMatch[1]);
+  }
+  return '';
+}
+
+/**
+ * Strip Markdown images, HTML tags, and formatting syntax to produce a clean plain-text summary.
+ */
+export function stripRichTextToPlain(content) {
+  if (!content || typeof content !== 'string') return '';
+  return content
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/[#*~`>]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 /**

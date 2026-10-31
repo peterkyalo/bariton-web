@@ -23,25 +23,27 @@ defineEmits(['close'])
       leave-from-class="opacity-100"
       leave-to-class="opacity-0"
     >
-      <div v-if="isOpen" class="fixed inset-0 z-50 overflow-y-auto bg-ink-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div v-if="isOpen" class="fixed inset-0 z-50 overflow-y-auto bg-ink-950/80 backdrop-blur-sm flex items-start justify-center p-4 sm:p-6">
         <div class="fixed inset-0" @click="$emit('close')"></div>
 
         <div
-          class="relative glass w-full p-6 sm:p-7 border-white/10 shadow-2xl z-10 transition-all transform"
+          class="relative glass w-full my-auto max-h-[calc(100vh-2rem)] sm:max-h-[calc(100vh-3rem)] flex flex-col overflow-hidden p-6 sm:p-7 border-white/10 shadow-2xl z-10 transition-all transform"
           :class="maxWidth"
         >
-          <div class="flex items-center justify-between pb-4 mb-4 border-b border-white/10">
+          <div v-if="title" class="flex items-center justify-between pb-4 mb-4 border-b border-white/10 shrink-0">
             <h3 class="text-lg font-semibold text-white">{{ title }}</h3>
             <button
               type="button"
-              class="w-8 h-8 rounded-lg flex items-center justify-center text-ink-400 hover:text-white hover:bg-white/5 transition"
+              class="w-8 h-8 rounded-lg flex items-center justify-center text-ink-400 hover:text-white hover:bg-white/5 transition cursor-pointer"
               @click="$emit('close')"
             >
               ✕
             </button>
           </div>
 
-          <slot></slot>
+          <div class="overflow-y-auto flex-1 pr-1 overscroll-contain">
+            <slot></slot>
+          </div>
         </div>
       </div>
     </Transition>

@@ -215,7 +215,7 @@
           :value="modelValue"
           :placeholder="placeholder"
           :rows="rows"
-          class="w-full p-4 bg-navy-950 text-slate-100 text-xs sm:text-sm font-mono leading-relaxed resize-y focus:outline-none focus:ring-1 focus:ring-gold-500/50"
+          class="w-full max-h-[280px] overflow-y-auto p-4 bg-navy-950 text-slate-100 text-xs sm:text-sm font-mono leading-relaxed resize-y focus:outline-none focus:ring-1 focus:ring-gold-500/50"
           @input="handleInput"
           @keydown="handleKeydown"
         ></textarea>
@@ -226,8 +226,8 @@
         v-show="mode !== 'write' || (modelValue && modelValue.trim().length > 0)"
         :class="[
           'p-5 overflow-y-auto bg-navy-900/30',
-          mode === 'write' ? 'border-t border-slate-800 max-h-[380px]' : '',
-          mode === 'preview' ? 'min-h-[260px]' : 'max-h-[420px]'
+          mode === 'write' ? 'border-t border-slate-800 max-h-[260px]' : '',
+          mode === 'preview' ? 'min-h-[260px] max-h-[420px]' : 'max-h-[420px]'
         ]"
         data-testid="rte-live-preview"
       >
