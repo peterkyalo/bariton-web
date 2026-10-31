@@ -252,126 +252,266 @@
             </div>
 
             <!-- Module Cards -->
-            <div class="space-y-6">
+            <div class="space-y-8">
               <div
-                v-for="module in course.modules"
+                v-for="(module, mIdx) in course.modules"
                 :key="module.id"
-                class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden hover:border-amber-400/50 transition-all duration-300"
+                class="bg-white rounded-2xl border border-slate-200/90 shadow-sm overflow-hidden hover:shadow-md hover:border-amber-400/60 transition-all duration-300"
               >
-                <!-- Module Header -->
-                <div class="p-6 bg-slate-50/70 border-b border-slate-200/80 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div class="flex items-start gap-4 max-w-xl">
+                <!-- 1. Module Top Header & Single-Module Purchase Bar -->
+                <div class="p-5 sm:p-6 bg-gradient-to-r from-slate-50 via-white to-amber-50/30 border-b border-slate-200/80 flex flex-col md:flex-row md:items-center justify-between gap-5">
+                  <!-- Left: Module Thumbnail / Index & Identity -->
+                  <div class="flex items-start sm:items-center gap-4 flex-1 min-w-0">
                     <img
-                      v-if="resolveModuleImageUrl(module)"
-                      :src="resolveModuleImageUrl(module)"
+                      v-if="resolveExplicitModuleCoverUrl(module)"
+                      :src="resolveExplicitModuleCoverUrl(module)"
                       :alt="module.title"
-                      class="w-24 h-16 rounded-xl object-cover border border-slate-200 shrink-0"
+                      class="w-20 h-20 sm:w-24 sm:h-20 rounded-2xl object-cover border border-slate-200 shadow-sm shrink-0"
                     />
-                    <div class="space-y-1.5">
-                      <div class="flex items-center gap-2">
+                    <div
+                      v-else
+                      class="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-slate-900 text-amber-400 border border-slate-800 shadow-sm flex flex-col items-center justify-center shrink-0"
+                    >
+                      <span class="text-[9px] font-bold uppercase tracking-widest text-slate-400">Level</span>
+                      <span class="text-lg sm:text-xl font-serif font-extrabold leading-none">{{ String(module.order || mIdx + 1).padStart(2, '0') }}</span>
+                    </div>
+
+                    <div class="space-y-2 min-w-0 flex-1">
+                      <div class="flex flex-wrap items-center gap-2">
                         <span :class="['px-2.5 py-0.5 rounded-full text-[11px] font-extrabold uppercase tracking-wider', levelBadgeClass(module.level)]">
-                          Level {{ module.order }}: {{ module.level }}
+                          Level {{ module.order || mIdx + 1 }} • {{ module.level }}
                         </span>
-                        <span class="text-xs text-slate-400 font-medium">• {{ module.lessons?.length || 0 }} Lessons</span>
+                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                          <svg class="w-3 h-3 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          {{ module.lessons?.length || 0 }} {{ (module.lessons?.length || 0) === 1 ? 'Lesson' : 'Lessons' }}
+                        </span>
+                        <span
+                          v-if="formatModuleDuration(module)"
+                          class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-100 text-slate-600 border border-slate-200"
+                        >
+                          <svg class="w-3 h-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          {{ formatModuleDuration(module) }}
+                        </span>
+                        <span
+                          v-if="module.attachments?.length"
+                          class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-200"
+                        >
+                          {{ module.attachments.length }} Study {{ module.attachments.length === 1 ? 'Resource' : 'Resources' }}
+                        </span>
                       </div>
 
-                      <h3 class="text-xl font-serif font-bold text-slate-900">
+                      <h3 class="text-xl sm:text-2xl font-serif font-bold text-slate-900 leading-snug">
                         {{ module.title }}
                       </h3>
-
-                      <div
-                        v-if="module.description"
-                        class="prose prose-slate rich-text-content max-w-none text-xs text-slate-600 leading-relaxed"
-                        v-html="renderRichText(module.description, { dark: false })"
-                      ></div>
                     </div>
                   </div>
 
-                  <!-- Individual Module Pricing Card -->
-                  <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-right shrink-0 min-w-[200px]">
-                    <span class="text-[11px] uppercase tracking-wider font-semibold text-slate-400 block">Single Level Price</span>
-                    <div class="text-2xl font-serif font-bold text-slate-900">
-                      KES {{ module.price_formatted }}
+                  <!-- Right: Intuitive Single-Module Purchase Card -->
+                  <div class="w-full md:w-auto shrink-0">
+                    <div class="bg-gradient-to-br from-slate-950 via-slate-900 to-navy-950 text-white p-4 sm:px-5 sm:py-4 rounded-2xl border border-slate-800 shadow-lg flex flex-col sm:flex-row md:flex-col items-stretch sm:items-center md:items-end justify-between gap-3 md:min-w-[245px]">
+                      <div class="flex items-baseline justify-between sm:block md:text-right">
+                        <span class="text-[10px] uppercase tracking-widest font-bold text-amber-400/90 block">
+                          Single Module Access
+                        </span>
+                        <div class="flex items-baseline gap-2 md:justify-end mt-0.5">
+                          <span class="text-xl sm:text-2xl font-serif font-extrabold text-white tracking-tight">
+                            KES {{ module.price_formatted }}
+                          </span>
+                          <span class="text-xs font-semibold text-slate-400">
+                            (${{ module.price_usd_formatted }})
+                          </span>
+                        </div>
+                      </div>
+
+                      <div class="w-full sm:w-auto md:w-full space-y-1.5">
+                        <button
+                          type="button"
+                          @click="enrollInModule(module)"
+                          data-testid="buy-single-module-btn"
+                          class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-extrabold text-xs uppercase tracking-wider shadow-md shadow-amber-500/20 hover:shadow-lg hover:shadow-amber-500/30 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer group/buy"
+                        >
+                          <svg class="w-4 h-4 text-slate-950 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                          </svg>
+                          <span>Buy Single Module</span>
+                          <svg class="w-3.5 h-3.5 text-slate-950 transform group-hover/buy:translate-x-0.5 transition-transform shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                          </svg>
+                        </button>
+                        <p class="text-[10px] text-slate-400 text-center md:text-right leading-tight">
+                          ✓ 100% credited toward full course bundle
+                        </p>
+                      </div>
                     </div>
-                    <div class="text-xs font-medium text-slate-500">
-                      ${{ module.price_usd_formatted }} USD
-                    </div>
-                    <button
-                      @click="enrollInModule(module)"
-                      class="mt-3 w-full py-2 px-3 rounded-lg bg-slate-900 hover:bg-amber-500 hover:text-slate-950 text-white font-bold text-xs transition-colors cursor-pointer"
-                    >
-                      Enroll in Level Only
-                    </button>
                   </div>
                 </div>
 
-                <!-- Lessons & Media in this module -->
-                <div class="p-6 space-y-4">
-                  <div v-if="module.attachments?.length" class="space-y-2 pb-3 border-b border-slate-100">
-                    <div class="text-xs font-bold uppercase tracking-wider text-slate-400">
-                      Module Preview Media &amp; Materials
+                <!-- 2. Full-Width Aligned Module Overview & Rich Text Syllabus -->
+                <div
+                  v-if="module.description"
+                  class="px-6 py-5 bg-white border-b border-slate-100"
+                >
+                  <div class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                    <span>Module Syllabus &amp; Learning Objectives</span>
+                  </div>
+
+                  <div
+                    :class="[
+                      'relative overflow-hidden transition-all duration-300',
+                      isModuleDescriptionLong(module.description) && !expandedModuleDescriptions[module.id]
+                        ? 'max-h-56'
+                        : ''
+                    ]"
+                  >
+                    <div
+                      class="prose prose-slate rich-text-content max-w-none text-sm text-slate-600 leading-relaxed"
+                      v-html="renderRichText(module.description, { dark: false })"
+                    ></div>
+
+                    <!-- Subtle Fade Overlay when collapsed -->
+                    <div
+                      v-if="isModuleDescriptionLong(module.description) && !expandedModuleDescriptions[module.id]"
+                      class="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-white via-white/90 to-transparent pointer-events-none"
+                    ></div>
+                  </div>
+
+                  <button
+                    v-if="isModuleDescriptionLong(module.description)"
+                    type="button"
+                    @click="toggleModuleDescription(module.id)"
+                    class="mt-2 inline-flex items-center gap-1.5 text-xs font-bold text-amber-600 hover:text-amber-700 cursor-pointer"
+                  >
+                    <span>{{ expandedModuleDescriptions[module.id] ? 'Show Compact Syllabus' : 'Read Full Module Syllabus' }}</span>
+                    <svg
+                      :class="['w-3.5 h-3.5 transition-transform duration-200', expandedModuleDescriptions[module.id] ? 'rotate-180' : '']"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- 3. Module Learning Materials & Lessons List -->
+                <div class="p-6 space-y-5 bg-slate-50/40">
+                  <div v-if="module.attachments?.length" class="p-4 rounded-xl bg-white border border-slate-200/80 space-y-3 shadow-2xs">
+                    <div class="flex items-center justify-between">
+                      <div class="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
+                        <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                        </svg>
+                        <span>Module Preview Media &amp; Study Materials</span>
+                      </div>
+                      <span class="text-[11px] font-semibold text-slate-400">{{ module.attachments.length }} attached</span>
                     </div>
                     <MaterialList :attachments="module.attachments" :dark="false" />
                   </div>
 
-                  <div class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-                    Lessons in this Level ({{ module.lessons?.length || 0 }})
-                  </div>
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                      <div class="text-xs font-bold uppercase tracking-wider text-slate-500">
+                        Lessons in Level {{ module.order || mIdx + 1 }} ({{ module.lessons?.length || 0 }})
+                      </div>
+                      <span class="text-[11px] text-slate-400">Progressive Conservatory Sequence</span>
+                    </div>
 
-                  <div
-                    v-for="lesson in module.lessons"
-                    :key="lesson.id"
-                    class="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-200/60 hover:bg-amber-50/30 hover:border-amber-300/40 transition-colors"
-                  >
-                    <div class="flex items-center gap-3.5">
-                      <!-- Format Icon -->
-                      <span :class="['w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-sm', typeIconClass(lesson.type)]">
-                        <svg v-if="lesson.type === 'youtube'" class="w-5 h-5 fill-current" viewBox="0 0 24 24">
-                          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                        </svg>
-                        <svg v-else-if="lesson.type === 'audio'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-                        </svg>
-                        <svg v-else-if="lesson.type === 'richtext' || lesson.type === 'text'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-                        </svg>
-                        <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                        </svg>
-                      </span>
+                    <div
+                      v-if="!module.lessons?.length"
+                      class="p-4 rounded-xl bg-white border border-dashed border-slate-200 text-xs text-slate-400 text-center italic"
+                    >
+                      Lessons for this module are being finalized by the faculty.
+                    </div>
 
-                      <div>
-                        <div class="text-sm font-semibold text-slate-800 flex items-center gap-2">
-                          <span>{{ lesson.title }}</span>
-                          <span v-if="lesson.is_preview" class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
-                            Free Preview
+                    <div v-else class="space-y-2.5">
+                      <div
+                        v-for="(lesson, lIdx) in module.lessons"
+                        :key="lesson.id"
+                        class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-xl bg-white border border-slate-200/80 hover:border-amber-400/60 hover:shadow-xs transition-all"
+                      >
+                        <div class="flex items-center gap-3.5 min-w-0">
+                          <!-- Step Index -->
+                          <span class="text-xs font-mono font-bold text-slate-400 w-6 text-center shrink-0">
+                            {{ String(lIdx + 1).padStart(2, '0') }}
                           </span>
+
+                          <!-- Format Icon -->
+                          <span :class="['w-10 h-10 rounded-xl flex items-center justify-center shrink-0 text-sm', typeIconClass(lesson.type)]">
+                            <svg v-if="lesson.type === 'youtube'" class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+                              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                            </svg>
+                            <svg v-else-if="lesson.type === 'audio'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                            </svg>
+                            <svg v-else-if="lesson.type === 'richtext' || lesson.type === 'text'" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            </svg>
+                            <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                            </svg>
+                          </span>
+
+                          <div class="min-w-0">
+                            <div class="text-sm font-semibold text-slate-800 flex flex-wrap items-center gap-2">
+                              <span class="truncate">{{ lesson.title }}</span>
+                              <span v-if="lesson.is_preview" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                                Free Preview
+                              </span>
+                            </div>
+                            <div class="text-xs text-slate-500 mt-0.5">
+                              {{ formatDuration(lesson.duration_seconds) }} • {{ capitalize(lesson.type) }} Instruction
+                            </div>
+                          </div>
                         </div>
-                        <div class="text-xs text-slate-500 mt-0.5">
-                          {{ formatDuration(lesson.duration_seconds) }} • {{ capitalize(lesson.type) }} Instruction
+
+                        <!-- Watch Preview / Lock Status -->
+                        <div class="flex items-center justify-end shrink-0 pl-9 sm:pl-0">
+                          <button
+                            v-if="lesson.is_preview"
+                            type="button"
+                            @click="watchPreview(lesson)"
+                            class="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+                          >
+                            <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                              <path d="M8 5v14l11-7z" />
+                            </svg>
+                            Watch Sample
+                          </button>
+                          <span v-else class="text-xs font-medium text-slate-400 bg-slate-100 px-3 py-1 rounded-lg border border-slate-200/70 flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                            Included in Module
+                          </span>
                         </div>
                       </div>
                     </div>
+                  </div>
 
-                    <!-- Watch Preview / Lock Status -->
-                    <div>
-                      <button
-                        v-if="lesson.is_preview"
-                        @click="watchPreview(lesson)"
-                        class="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
-                      >
-                        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
-                          <path d="M8 5v14l11-7z" />
-                        </svg>
-                        Watch Sample
-                      </button>
-                      <span v-else class="text-xs font-medium text-slate-400 flex items-center gap-1">
-                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                        </svg>
-                        Enrolled Access
+                  <!-- 4. Module Footer Quick Action Strip -->
+                  <div class="pt-4 border-t border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="text-xs text-slate-500 flex items-center gap-2">
+                      <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+                      <span>
+                        Want to start with <strong class="text-slate-700">{{ module.title }}</strong> before committing to the full course?
                       </span>
                     </div>
+                    <button
+                      type="button"
+                      @click="enrollInModule(module)"
+                      class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-slate-900 hover:bg-amber-500 text-white hover:text-slate-950 font-bold text-xs transition-all cursor-pointer shrink-0 shadow-xs"
+                    >
+                      <span>Enroll in Level {{ module.order || mIdx + 1 }} Only — KES {{ module.price_formatted }}</span>
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -611,7 +751,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue';
+import { computed, reactive, ref, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useCoursesStore } from '../../stores/courses';
 import { useAuthStore } from '../../stores/auth';
@@ -639,6 +779,7 @@ const course = computed(() => coursesStore.currentCourse);
 const showPreviewModal = ref(false);
 const previewLesson = ref(null);
 const playingHeroVideo = ref(false);
+const expandedModuleDescriptions = reactive({});
 
 const firstPreviewLesson = computed(() => {
   if (!course.value) return null;
@@ -728,6 +869,37 @@ function resolveModuleImageUrl(module) {
     resolveMediaUrl(module.image_url || module.image_path) ||
     extractFirstImageUrl(module.description)
   );
+}
+
+/**
+ * Resolve module header thumbnail without duplicating an image that is already rendered
+ * inside the full-width module rich-text description right below the header.
+ */
+function resolveExplicitModuleCoverUrl(module) {
+  if (!module) return '';
+  return resolveMediaUrl(module.image_url || module.image_path);
+}
+
+function isModuleDescriptionLong(desc) {
+  if (!desc || typeof desc !== 'string') return false;
+  return desc.length > 420 || /!\[[^\]]*\]\([^)]+\)|<img\s/i.test(desc);
+}
+
+function toggleModuleDescription(moduleId) {
+  expandedModuleDescriptions[moduleId] = !expandedModuleDescriptions[moduleId];
+}
+
+function formatModuleDuration(module) {
+  if (!module?.lessons?.length) return '';
+  const totalSecs = module.lessons.reduce((sum, l) => sum + Number(l.duration_seconds || 0), 0);
+  if (totalSecs <= 0) return 'Self-paced';
+  const mins = Math.max(1, Math.round(totalSecs / 60));
+  if (mins >= 60) {
+    const hrs = Math.floor(mins / 60);
+    const rem = mins % 60;
+    return rem > 0 ? `${hrs}h ${rem}m` : `${hrs}h`;
+  }
+  return `${mins} mins`;
 }
 
 function playHeroOrModalPreview() {
