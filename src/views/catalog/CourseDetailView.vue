@@ -301,31 +301,47 @@
 
                   <!-- Right: Compact Price & Sleek Single-Module Button -->
                   <div class="flex items-center justify-between sm:justify-end gap-3.5 pt-3 sm:pt-0 border-t sm:border-t-0 border-slate-200/60 shrink-0">
-                    <div class="text-left sm:text-right">
-                      <div class="flex items-baseline gap-1.5 sm:justify-end">
-                        <span class="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
-                          KES {{ module.price_formatted }}
-                        </span>
-                        <span class="text-[11px] font-medium text-slate-400">
-                          (${{ module.price_usd_formatted }})
+                    <template v-if="isModuleOwned(module.id) && course.upgrade_pricing?.enrollment_uuid">
+                      <span class="px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold uppercase tracking-wider">
+                        ✓ Unlocked
+                      </span>
+                      <RouterLink
+                        :to="`/student/courses/${course.upgrade_pricing.enrollment_uuid}/player?module=${module.id}`"
+                        class="px-3.5 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-semibold text-xs transition-all duration-150 inline-flex items-center gap-1.5 shadow-2xs shrink-0"
+                      >
+                        <span>Study Module</span>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                      </RouterLink>
+                    </template>
+                    <template v-else>
+                      <div class="text-left sm:text-right">
+                        <div class="flex items-baseline gap-1.5 sm:justify-end">
+                          <span class="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
+                            KES {{ module.price_formatted }}
+                          </span>
+                          <span class="text-[11px] font-medium text-slate-400">
+                            (${{ module.price_usd_formatted }})
+                          </span>
+                        </div>
+                        <span class="text-[10px] text-slate-400 block leading-tight">
+                          Single module • Credited to bundle
                         </span>
                       </div>
-                      <span class="text-[10px] text-slate-400 block leading-tight">
-                        Single module • Credited to bundle
-                      </span>
-                    </div>
 
-                    <button
-                      type="button"
-                      @click="enrollInModule(module)"
-                      data-testid="buy-single-module-btn"
-                      class="px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-amber-500 text-white hover:text-slate-950 font-semibold text-xs transition-all duration-150 inline-flex items-center gap-1.5 shadow-2xs cursor-pointer shrink-0 group/buy"
-                    >
-                      <span>Buy Module</span>
-                      <svg class="w-3.5 h-3.5 opacity-80 group-hover/buy:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                      </svg>
-                    </button>
+                      <button
+                        type="button"
+                        @click="enrollInModule(module)"
+                        data-testid="buy-single-module-btn"
+                        class="px-3.5 py-2 rounded-lg bg-slate-900 hover:bg-amber-500 text-white hover:text-slate-950 font-semibold text-xs transition-all duration-150 inline-flex items-center gap-1.5 shadow-2xs cursor-pointer shrink-0 group/buy"
+                      >
+                        <span>Buy Module</span>
+                        <svg class="w-3.5 h-3.5 opacity-80 group-hover/buy:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+                    </template>
                   </div>
                 </div>
 
@@ -438,8 +454,18 @@
 
                         <!-- Compact Watch Preview / Lock Status -->
                         <div class="shrink-0">
+                          <RouterLink
+                            v-if="isModuleOwned(module.id) && course.upgrade_pricing?.enrollment_uuid"
+                            :to="`/student/courses/${course.upgrade_pricing.enrollment_uuid}/player?lesson=${lesson.uuid}`"
+                            class="px-2.5 py-1 rounded-md bg-emerald-500/15 hover:bg-emerald-500 text-emerald-800 hover:text-white font-semibold text-[11px] inline-flex items-center gap-1 transition-colors"
+                          >
+                            <svg class="w-3 h-3 fill-current" viewBox="0 0 24 24">
+                              <path d="M8 5v14l11-7z" />
+                            </svg>
+                            <span>Open Lesson</span>
+                          </RouterLink>
                           <button
-                            v-if="lesson.is_preview"
+                            v-else-if="lesson.is_preview"
                             type="button"
                             @click="watchPreview(lesson)"
                             class="px-2.5 py-1 rounded-md bg-amber-500/15 hover:bg-amber-500 text-amber-800 hover:text-slate-950 font-semibold text-[11px] inline-flex items-center gap-1 transition-colors cursor-pointer"
@@ -482,17 +508,17 @@
             </div>
 
             <!-- Price Display -->
-            <div class="py-5 space-y-1">
-              <div class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Tuition Fee</div>
-              <div class="text-4xl font-serif font-extrabold text-amber-400">
+            <div class="py-4 space-y-1">
+              <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Tuition Fee</div>
+              <div class="text-3xl font-serif font-extrabold text-amber-400">
                 KES {{ course.pricing?.bundle_price_formatted }}
               </div>
-              <div class="text-sm font-medium text-slate-300">
+              <div class="text-xs font-medium text-slate-300">
                 ${{ course.pricing?.bundle_price_usd_formatted }} USD
               </div>
 
               <!-- Price Breakdown -->
-              <div class="pt-4 mt-2 border-t border-slate-800/80 text-xs space-y-1.5 text-slate-400">
+              <div class="pt-3 mt-2 border-t border-slate-800/80 text-xs space-y-1.5 text-slate-400">
                 <div class="flex justify-between">
                   <span>Individual levels sum:</span>
                   <span class="line-through text-slate-500">
@@ -506,10 +532,31 @@
               </div>
             </div>
 
+            <!-- Active Enrollment & Progress Banner if Student is Enrolled -->
+            <div
+              v-if="course.upgrade_pricing?.is_enrolled && course.upgrade_pricing?.enrollment_uuid"
+              class="p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 space-y-2 mb-4"
+            >
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-bold text-emerald-300 uppercase tracking-wide">
+                  ✓ Enrolled in Course
+                </span>
+                <span class="font-bold text-amber-400">
+                  {{ Math.round(Number(course.upgrade_pricing.progress_percent || 0)) }}% Complete
+                </span>
+              </div>
+              <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div
+                  class="h-full bg-gradient-to-r from-emerald-400 to-amber-400 transition-all duration-500"
+                  :style="{ width: `${course.upgrade_pricing.progress_percent || 0}%` }"
+                ></div>
+              </div>
+            </div>
+
             <!-- Upgrade Credit Applied if Student Owns Modules -->
             <div
               v-if="course.upgrade_pricing?.is_validation_path"
-              class="p-4 rounded-xl bg-amber-500/15 border border-amber-500/40 space-y-2 mb-4"
+              class="p-3.5 rounded-xl bg-amber-500/15 border border-amber-500/40 space-y-1.5 mb-4"
             >
               <div class="text-xs font-bold text-amber-300 uppercase tracking-wide flex items-center gap-1.5">
                 <span>⭐</span> Skills Track Credit Available
@@ -519,13 +566,13 @@
               </p>
               <div class="flex justify-between items-baseline pt-2 border-t border-amber-500/20 text-xs">
                 <span class="text-slate-300 font-medium">Upgrade Balance:</span>
-                <span class="text-lg font-bold text-white">KES {{ course.upgrade_pricing.upgrade_price_formatted }}</span>
+                <span class="text-base font-bold text-white">KES {{ course.upgrade_pricing.upgrade_price_formatted }}</span>
               </div>
             </div>
 
             <div
-              v-else-if="course.upgrade_pricing?.has_owned_modules"
-              class="p-4 rounded-xl bg-amber-500/15 border border-amber-500/40 space-y-2 mb-4"
+              v-else-if="course.upgrade_pricing?.has_owned_modules && !isFullyEnrolled"
+              class="p-3.5 rounded-xl bg-amber-500/15 border border-amber-500/40 space-y-1.5 mb-4"
             >
               <div class="text-xs font-bold text-amber-300 uppercase tracking-wide flex items-center gap-1.5">
                 <span>⭐</span> Module Credit Applied
@@ -535,16 +582,32 @@
               </p>
               <div class="flex justify-between items-baseline pt-2 border-t border-amber-500/20 text-xs">
                 <span class="text-slate-300 font-medium">Upgrade Balance:</span>
-                <span class="text-lg font-bold text-white">KES {{ course.upgrade_pricing.upgrade_price_formatted }}</span>
+                <span class="text-base font-bold text-white">KES {{ course.upgrade_pricing.upgrade_price_formatted }}</span>
               </div>
             </div>
 
             <!-- Enrollment CTA -->
-            <div class="space-y-3 pt-2">
+            <div class="space-y-3 pt-1">
+              <RouterLink
+                v-if="course.upgrade_pricing?.is_enrolled && course.upgrade_pricing?.enrollment_uuid"
+                :to="`/student/courses/${course.upgrade_pricing.enrollment_uuid}/player`"
+                class="w-full py-2.5 px-5 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2"
+              >
+                <span>Continue Learning in Player</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </RouterLink>
+
               <button
-                v-if="authStore.isAuthenticated"
+                v-if="authStore.isAuthenticated && !isFullyEnrolled"
                 @click="openPurchaseModal"
-                class="w-full py-3.5 px-6 rounded-xl font-extrabold text-sm bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 shadow-xl shadow-amber-500/25 transition-all cursor-pointer flex items-center justify-center gap-2"
+                :class="[
+                  'w-full py-2.5 px-5 rounded-xl font-bold text-xs sm:text-sm transition-all cursor-pointer flex items-center justify-center gap-2',
+                  course.upgrade_pricing?.is_enrolled
+                    ? 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700'
+                    : 'bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 shadow-lg shadow-amber-500/20'
+                ]"
               >
                 <span>{{ course.upgrade_pricing?.has_owned_modules || course.upgrade_pricing?.is_validation_path ? 'Upgrade to Full Course' : 'Enroll in Full Course' }}</span>
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -553,9 +616,9 @@
               </button>
 
               <RouterLink
-                v-else
+                v-else-if="!authStore.isAuthenticated"
                 to="/register"
-                class="w-full py-3.5 px-6 rounded-xl font-extrabold text-sm bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 shadow-xl shadow-amber-500/25 transition-all text-center block"
+                class="w-full py-2.5 px-5 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 shadow-lg shadow-amber-500/20 transition-all text-center block"
               >
                 Register to Enroll
               </RouterLink>
@@ -861,6 +924,20 @@ const totalLessonsCount = computed(() => {
   return course.value.modules.reduce((acc, m) => acc + (m.lessons?.length || 0), 0);
 });
 
+const ownedModuleIdSet = computed(() => {
+  return new Set(course.value?.upgrade_pricing?.owned_module_ids || []);
+});
+
+function isModuleOwned(moduleId) {
+  return ownedModuleIdSet.value.has(moduleId);
+}
+
+const isFullyEnrolled = computed(() => {
+  const mods = course.value?.modules || [];
+  if (!mods.length || !course.value?.upgrade_pricing?.has_owned_modules) return false;
+  return mods.every(m => ownedModuleIdSet.value.has(m.id));
+});
+
 function levelBadgeClass(level) {
   if (level === 'beginner') return 'bg-emerald-100 text-emerald-800 border border-emerald-300';
   if (level === 'intermediate') return 'bg-amber-100 text-amber-800 border border-amber-300';
@@ -933,3 +1010,12 @@ onMounted(async () => {
   }
 });
 </script>
+
+<style scoped>
+.module-rich-text :deep(img) {
+  max-height: 240px;
+  width: auto;
+  object-fit: cover;
+  border-radius: 0.75rem;
+}
+</style>

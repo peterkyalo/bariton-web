@@ -21,20 +21,20 @@
               </span>
             </span>
             <h1 class="text-lg font-serif font-bold text-white truncate max-w-xl">
-              {{ enrollment?.path_type === 'validation' ? 'Skills Assessment Studio' : (currentLesson?.title || 'Select a lesson to begin') }}
+              {{ enrollment?.path_type === 'validation' ? 'Skills Assessment Studio' : (currentLesson?.title || currentModule?.title || 'Select a lesson to begin') }}
             </h1>
           </div>
         </div>
 
         <!-- Overall Course Progress Badge -->
-        <div class="flex items-center gap-3">
-          <div class="text-right hidden sm:block">
-            <span class="text-xs text-slate-400">Course Progress</span>
-            <span class="block text-sm font-bold text-gold-400">{{ courseProgressPercent }}%</span>
+        <div class="flex items-center gap-4">
+          <div class="text-right">
+            <span class="text-[11px] text-slate-400 block">Course Progress ({{ completedLessonsCount }}/{{ totalAccessibleLessonsCount }} Lessons)</span>
+            <span class="block text-sm font-bold text-gold-400" data-testid="course-progress-percent">{{ courseProgressPercent }}% Complete</span>
           </div>
-          <div class="w-16 h-2 bg-slate-800 rounded-full overflow-hidden hidden sm:block">
+          <div class="w-20 sm:w-28 h-2.5 bg-slate-800 rounded-full overflow-hidden">
             <div
-              class="h-full bg-gradient-to-r from-gold-500 to-amber-300 transition-all duration-500"
+              class="h-full bg-gradient-to-r from-gold-500 to-emerald-400 transition-all duration-500"
               :style="{ width: `${courseProgressPercent}%` }"
             ></div>
           </div>
@@ -42,8 +42,12 @@
       </div>
 
       <!-- Player Area -->
-      <div class="flex-1 p-6 flex flex-col items-center justify-center bg-navy-950/90 relative">
-        <div v-if="loadingLesson" class="py-20 text-center">
+      <div class="flex-1 p-6 flex flex-col items-center justify-start bg-navy-950/90 relative">
+        <div v-if="coursesStore.loading && !enrollment" class="py-20 text-center my-auto">
+          <LoadingSpinner text="Loading your enrolled course curriculum..." />
+        </div>
+
+        <div v-else-if="loadingLesson" class="py-20 text-center my-auto">
           <LoadingSpinner text="Loading lesson material..." />
         </div>
 
@@ -85,7 +89,53 @@
           </div>
         </div>
 
-        <div v-else-if="!currentLesson" class="py-20 text-center">
+        <!-- Module Overview Stage (when a module has no lessons or Module Overview is selected) -->
+        <div
+          v-else-if="!currentLesson && currentModule"
+          class="w-full max-w-4xl p-6 sm:p-8 rounded-2xl bg-navy-900/90 border border-slate-800 shadow-2xl space-y-6"
+          data-testid="module-overview-stage"
+        >
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+            <div class="flex items-center gap-3.5">
+              <img
+                v-if="resolveModuleCover(currentModule)"
+                :src="resolveModuleCover(currentModule)"
+                :alt="currentModule.title"
+                class="w-16 h-12 rounded-xl object-cover border border-slate-700 shrink-0"
+              />
+              <div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-gold-400">
+                  Level {{ currentModule.order || 1 }} • {{ currentModule.level }} Module Overview
+                </span>
+                <h2 class="text-xl sm:text-2xl font-serif font-bold text-white">
+                  {{ currentModule.title }}
+                </h2>
+              </div>
+            </div>
+            <button
+              v-if="firstAccessibleLessonInModule(currentModule)"
+              type="button"
+              @click="selectLesson(firstAccessibleLessonInModule(currentModule))"
+              class="btn btn-primary text-xs py-2 px-4 font-bold flex items-center gap-2 self-start sm:self-auto"
+            >
+              <span>Start Module Lessons</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </button>
+          </div>
+
+          <div
+            v-if="currentModule.description"
+            class="rounded-xl bg-navy-950/80 border border-slate-800 p-6 sm:p-8 prose prose-invert rich-text-content max-w-none text-slate-200"
+            v-html="renderedCurrentModuleDescription"
+          ></div>
+          <p v-else class="text-sm text-slate-400 italic">
+            Select a lesson or resource below to begin studying this module.
+          </p>
+        </div>
+
+        <div v-else-if="!currentLesson" class="py-20 text-center my-auto">
           <EmptyState
             title="Ready to Learn"
             description="Select an unlocked lesson from the curriculum sidebar to begin."
@@ -216,7 +266,7 @@
 
           <!-- Rich Text Article Body -->
           <div class="rounded-xl bg-navy-950/80 border border-slate-800 p-6 sm:p-8 max-h-[550px] overflow-y-auto">
-            <div class="prose prose-invert max-w-none text-slate-200" v-html="renderedCurrentLessonContent"></div>
+            <div class="prose prose-invert rich-text-content max-w-none text-slate-200" v-html="renderedCurrentLessonContent"></div>
           </div>
 
           <!-- Mark Complete Trigger -->
@@ -237,8 +287,64 @@
           </div>
         </div>
 
+        <!-- Unified Lesson Progress & Prev/Next Navigation Bar -->
+        <div
+          v-if="currentLesson"
+          class="w-full max-w-4xl mt-5 px-5 py-3.5 rounded-xl bg-navy-900/80 border border-slate-800 flex flex-wrap items-center justify-between gap-3"
+        >
+          <div class="flex items-center gap-2">
+            <button
+              type="button"
+              :disabled="!prevAccessibleLesson"
+              @click="prevAccessibleLesson && selectLesson(prevAccessibleLesson)"
+              class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-semibold text-slate-200 flex items-center gap-1.5 transition"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+              </svg>
+              <span>Previous Lesson</span>
+            </button>
+
+            <button
+              type="button"
+              :disabled="!nextAccessibleLesson"
+              @click="nextAccessibleLesson && selectLesson(nextAccessibleLesson)"
+              class="px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-xs font-semibold text-slate-200 flex items-center gap-1.5 transition"
+            >
+              <span>Next Lesson</span>
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <span
+              v-if="isLessonCompleted(currentLesson.id)"
+              class="px-3 py-1.5 rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-xs font-bold flex items-center gap-1.5"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>Lesson Completed</span>
+            </span>
+            <button
+              v-else
+              type="button"
+              @click="markCurrentLessonComplete"
+              data-testid="mark-lesson-complete-btn"
+              class="px-4 py-1.5 rounded-lg bg-gold-500 hover:bg-gold-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition cursor-pointer"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+              </svg>
+              <span>Mark Lesson Complete</span>
+            </button>
+          </div>
+        </div>
+
         <!-- Lesson Description & Supplemental Notes Footer -->
-        <div v-if="currentLesson" class="w-full max-w-4xl mt-6 p-5 rounded-xl bg-navy-900/40 border border-slate-800 text-sm text-slate-300 space-y-3">
+        <div v-if="currentLesson && (currentLesson.summary || (currentLesson.content && currentLesson.type !== 'richtext' && currentLesson.type !== 'text') || currentLesson.duration_seconds)" class="w-full max-w-4xl mt-6 p-5 rounded-xl bg-navy-900/40 border border-slate-800 text-sm text-slate-300 space-y-3">
           <div class="flex items-center justify-between border-b border-slate-800/80 pb-2">
             <h4 class="font-bold text-white text-xs uppercase tracking-wider flex items-center gap-1.5">
               <span>📖</span>
@@ -253,8 +359,41 @@
           </p>
           <div
             v-if="currentLesson.content && currentLesson.type !== 'richtext' && currentLesson.type !== 'text'"
-            class="pt-3 border-t border-slate-800/80 prose prose-invert max-w-none text-xs sm:text-sm text-slate-300"
+            class="pt-3 border-t border-slate-800/80 prose prose-invert rich-text-content max-w-none text-xs sm:text-sm text-slate-300"
             v-html="renderedCurrentLessonContent"
+          ></div>
+        </div>
+
+        <!-- Active Module Syllabus & Rich Text Overview (Displays Module Description & Cover Image) -->
+        <div
+          v-if="currentLesson && currentModule && (currentModule.description || resolveModuleCover(currentModule))"
+          class="w-full max-w-4xl mt-6 p-5 sm:p-6 rounded-xl bg-navy-900/50 border border-slate-800/90 space-y-4"
+          data-testid="active-module-syllabus"
+        >
+          <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+            <div class="flex items-center gap-3">
+              <img
+                v-if="resolveModuleCover(currentModule)"
+                :src="resolveModuleCover(currentModule)"
+                :alt="currentModule.title"
+                class="w-12 h-9 rounded-lg object-cover border border-slate-700 shrink-0"
+              />
+              <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-gold-400 block">
+                  Level {{ currentModule.order || 1 }} • {{ currentModule.level }} Module Syllabus
+                </span>
+                <h4 class="font-serif font-bold text-white text-sm sm:text-base">
+                  {{ currentModule.title }}
+                </h4>
+              </div>
+            </div>
+            <span class="text-xs font-bold text-gold-400">{{ getModuleProgress(currentModule) }}% Module Progress</span>
+          </div>
+
+          <div
+            v-if="currentModule.description"
+            class="prose prose-invert rich-text-content max-w-none text-xs sm:text-sm text-slate-300 leading-relaxed"
+            v-html="renderedCurrentModuleDescription"
           ></div>
         </div>
 
@@ -298,20 +437,36 @@
           class="rounded-xl border border-slate-800/80 bg-navy-950/60 overflow-hidden"
         >
           <!-- Module Header -->
-          <div class="p-3 bg-navy-900/80 border-b border-slate-800/60 flex items-center justify-between">
-            <div>
-              <span class="text-[10px] font-bold text-gold-400 uppercase tracking-wider block">
-                Level {{ module.level }}
-              </span>
-              <span class="text-xs font-bold text-white block truncate max-w-[200px]">
-                {{ module.title }}
-              </span>
+          <div
+            @click="selectModuleOverview(module)"
+            :class="[
+              'p-3 bg-navy-900/80 border-b border-slate-800/60 space-y-2 transition-colors',
+              module.is_unlocked ? 'cursor-pointer hover:bg-navy-900' : ''
+            ]"
+          >
+            <div class="flex items-center justify-between">
+              <div class="min-w-0 pr-2">
+                <span class="text-[10px] font-bold text-gold-400 uppercase tracking-wider block">
+                  Level {{ module.level }}
+                </span>
+                <span class="text-xs font-bold text-white block truncate max-w-[210px]">
+                  {{ module.title }}
+                </span>
+              </div>
+              <div class="text-right shrink-0">
+                <span v-if="enrollment?.path_type === 'validation'" class="text-[9px] font-bold text-amber-400 uppercase tracking-wider bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
+                  Assessments
+                </span>
+                <span v-else class="text-[11px] font-bold text-gold-400">{{ getModuleProgress(module) }}%</span>
+              </div>
             </div>
-            <div class="text-right">
-              <span v-if="enrollment?.path_type === 'validation'" class="text-[9px] font-bold text-amber-400 uppercase tracking-wider bg-amber-500/10 px-1.5 py-0.5 rounded border border-amber-500/20">
-                Assessments
-              </span>
-              <span v-else class="text-[11px] font-bold text-slate-400">{{ module.progress_percent }}%</span>
+
+            <!-- Module Progress Bar -->
+            <div v-if="enrollment?.path_type !== 'validation'" class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+              <div
+                class="h-full bg-gradient-to-r from-gold-500 to-emerald-400 transition-all duration-300"
+                :style="{ width: `${getModuleProgress(module)}%` }"
+              ></div>
             </div>
           </div>
 
@@ -321,7 +476,7 @@
               v-for="lesson in module.lessons"
               :key="lesson.id"
               :disabled="!lesson.is_accessible"
-              @click="selectLesson(lesson)"
+              @click="selectLesson(lesson, module)"
               :class="[
                 'w-full text-left p-2.5 rounded-lg text-xs flex items-center justify-between transition-all',
                 currentLesson?.id === lesson.id
@@ -360,6 +515,23 @@
           </div>
           <div v-else-if="enrollment?.path_type === 'validation'" class="p-2 text-[11px] text-slate-500 italic text-center">
             Lessons excluded (Direct Assessment Track)
+          </div>
+          <div v-else-if="module.is_unlocked && (module.description || module.attachments?.length)" class="p-1">
+            <button
+              type="button"
+              @click="selectModuleOverview(module)"
+              :class="[
+                'w-full text-left p-2.5 rounded-lg text-xs flex items-center justify-between transition-all',
+                !currentLesson && currentModule?.id === module.id
+                  ? 'bg-gold-500/20 text-gold-300 font-bold border border-gold-500/40'
+                  : 'text-slate-300 hover:bg-slate-800/50 hover:text-white'
+              ]"
+            >
+              <span class="truncate">Module Overview &amp; Materials</span>
+              <span class="text-[9px] uppercase font-mono px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
+                Overview
+              </span>
+            </button>
           </div>
           <!-- Module Assignment Assessment -->
           <div v-if="module.is_unlocked && module.assignments?.length" class="p-1 pt-0">
@@ -409,21 +581,68 @@ import LoadingSpinner from '../../components/ui/LoadingSpinner.vue';
 import EmptyState from '../../components/ui/EmptyState.vue';
 import MaterialList from '../../components/ui/MaterialList.vue';
 import PdfViewer from '../../components/ui/PdfViewer.vue';
-import { renderRichText, estimateReadingTime, extractYouTubeId } from '../../lib/richText';
+import { renderRichText, estimateReadingTime, extractYouTubeId, resolveMediaUrl } from '../../lib/richText';
 
 const route = useRoute();
 const coursesStore = useCoursesStore();
 const uiStore = useUiStore();
 
+const selectedModuleId = ref(null);
 const enrollment = computed(() => coursesStore.currentEnrollment);
 const currentLesson = computed(() => coursesStore.currentLesson);
 const currentModule = computed(() => {
-  if (!enrollment.value?.modules || !currentLesson.value) return null;
-  return enrollment.value.modules.find(m => m.lessons?.some(l => l.id === currentLesson.value.id)) || null;
+  if (!enrollment.value?.modules?.length) return null;
+  if (currentLesson.value) {
+    const lessonMod = enrollment.value.modules.find(m => m.lessons?.some(l => l.id === currentLesson.value.id));
+    if (lessonMod) return lessonMod;
+  }
+  if (selectedModuleId.value) {
+    const byId = enrollment.value.modules.find(m => m.id === selectedModuleId.value);
+    if (byId) return byId;
+  }
+  return enrollment.value.modules.find(m => m.is_unlocked) || enrollment.value.modules[0] || null;
 });
-const courseProgressPercent = computed(() => enrollment.value?.progress_percent || 0);
+const courseProgressPercent = computed(() => {
+  if (typeof enrollment.value?.progress_percent === 'number') {
+    return Math.round(enrollment.value.progress_percent);
+  }
+  return Number(enrollment.value?.progress_percent || 0);
+});
+
+const allAccessibleLessons = computed(() => {
+  if (!enrollment.value?.modules?.length) return [];
+  const list = [];
+  for (const mod of enrollment.value.modules) {
+    if (Array.isArray(mod.lessons)) {
+      for (const les of mod.lessons) {
+        if (les.is_accessible) list.push(les);
+      }
+    }
+  }
+  return list;
+});
+
+const totalAccessibleLessonsCount = computed(() => allAccessibleLessons.value.length);
+const completedLessonsCount = computed(() => {
+  return allAccessibleLessons.value.filter(l => isLessonCompleted(l.id)).length;
+});
+
+const prevAccessibleLesson = computed(() => {
+  if (!currentLesson.value) return null;
+  const idx = allAccessibleLessons.value.findIndex(l => l.id === currentLesson.value.id);
+  return idx > 0 ? allAccessibleLessons.value[idx - 1] : null;
+});
+
+const nextAccessibleLesson = computed(() => {
+  if (!currentLesson.value) return null;
+  const idx = allAccessibleLessons.value.findIndex(l => l.id === currentLesson.value.id);
+  return idx !== -1 && idx < allAccessibleLessons.value.length - 1
+    ? allAccessibleLessons.value[idx + 1]
+    : null;
+});
 
 const renderedCurrentLessonContent = computed(() => renderRichText(currentLesson.value?.content || '', { dark: true }));
+const renderedCurrentModuleDescription = computed(() => renderRichText(currentModule.value?.description || '', { dark: true }));
 const readingStats = computed(() => estimateReadingTime(currentLesson.value?.content || ''));
 
 const loadingLesson = ref(false);
@@ -437,6 +656,34 @@ function isLessonCompleted(lessonId) {
   return enrollment.value?.progress_map?.[lessonId]?.status === 'completed';
 }
 
+function getModuleProgress(module) {
+  if (!module) return 0;
+  if (Array.isArray(module.lessons) && module.lessons.length > 0) {
+    const done = module.lessons.filter(l => isLessonCompleted(l.id)).length;
+    return Math.round((done / module.lessons.length) * 100);
+  }
+  return Number(module.progress_percent || 0);
+}
+
+function resolveModuleCover(module) {
+  if (!module) return '';
+  return resolveMediaUrl(module.image_url || module.image_path || '');
+}
+
+function firstAccessibleLessonInModule(module) {
+  if (!module?.lessons?.length) return null;
+  return module.lessons.find(l => l.is_accessible) || null;
+}
+
+function selectModuleOverview(module) {
+  if (!module?.is_unlocked) return;
+  selectedModuleId.value = module.id;
+  if (!module.lessons?.length) {
+    cleanupYtPlayer();
+    coursesStore.currentLesson = null;
+  }
+}
+
 function formatTypeBadge(type) {
   switch (type) {
     case 'youtube': return 'bg-rose-500/20 text-rose-300';
@@ -447,8 +694,13 @@ function formatTypeBadge(type) {
   }
 }
 
-async function selectLesson(lesson) {
+async function selectLesson(lesson, mod = null) {
   if (!lesson.is_accessible) return;
+  if (mod?.id) {
+    selectedModuleId.value = mod.id;
+  } else if (lesson.module_id) {
+    selectedModuleId.value = lesson.module_id;
+  }
   loadingLesson.value = true;
   cleanupYtPlayer();
 
@@ -463,6 +715,19 @@ async function selectLesson(lesson) {
     uiStore.notify({ type: 'error', title: 'Error', message: 'Failed to load lesson.' });
   } finally {
     loadingLesson.value = false;
+  }
+}
+
+async function markCurrentLessonComplete() {
+  if (!currentLesson.value || isLessonCompleted(currentLesson.value.id)) return;
+  try {
+    await coursesStore.recordLessonProgress(currentLesson.value.uuid, {
+      progress_percent: 100,
+      mark_complete: true,
+    });
+    uiStore.notify({ type: 'success', title: 'Lesson Completed', message: 'Lesson marked as completed!' });
+  } catch (err) {
+    uiStore.notify({ type: 'error', title: 'Error', message: 'Could not update lesson progress.' });
   }
 }
 
@@ -587,12 +852,49 @@ onMounted(async () => {
   if (uuid) {
     await coursesStore.fetchEnrollment(uuid);
 
-    // Auto-select first accessible lesson
     if (enrollment.value?.modules?.length) {
+      const firstUnlockedMod = enrollment.value.modules.find(m => m.is_unlocked) || enrollment.value.modules[0];
+      if (firstUnlockedMod) {
+        selectedModuleId.value = firstUnlockedMod.id;
+      }
+
+      const targetModuleId = route.query.module ? Number(route.query.module) : null;
+      const targetLessonUuid = route.query.lesson ? String(route.query.lesson) : null;
+
+      if (targetLessonUuid) {
+        for (const m of enrollment.value.modules) {
+          const found = m.lessons?.find(l => l.uuid === targetLessonUuid && l.is_accessible);
+          if (found) {
+            await selectLesson(found, m);
+            return;
+          }
+        }
+      }
+
+      if (targetModuleId) {
+        const mod = enrollment.value.modules.find(m => m.id === targetModuleId && m.is_unlocked);
+        if (mod) {
+          selectedModuleId.value = mod.id;
+          const accessible = mod.lessons?.find(l => l.is_accessible);
+          if (accessible) {
+            await selectLesson(accessible, mod);
+          }
+          return;
+        }
+      }
+
+      // Auto-select first incomplete or first accessible lesson
+      for (const m of enrollment.value.modules) {
+        const incompleteAccessible = m.lessons?.find(l => l.is_accessible && !isLessonCompleted(l.id));
+        if (incompleteAccessible) {
+          await selectLesson(incompleteAccessible, m);
+          return;
+        }
+      }
       for (const m of enrollment.value.modules) {
         const accessible = m.lessons?.find(l => l.is_accessible);
         if (accessible) {
-          selectLesson(accessible);
+          await selectLesson(accessible, m);
           break;
         }
       }

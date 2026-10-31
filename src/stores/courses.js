@@ -69,10 +69,15 @@ export const useCoursesStore = defineStore('courses', () => {
 
   async function fetchEnrollment(uuid) {
     loading.value = true;
+    error.value = null;
+    currentLesson.value = null;
     try {
       const res = await http.get(`/api/v1/student/enrollments/${uuid}`);
       currentEnrollment.value = res.data.enrollment || null;
       return currentEnrollment.value;
+    } catch (err) {
+      error.value = err.response?.data?.message || 'Failed to load course enrollment.';
+      throw err;
     } finally {
       loading.value = false;
     }
@@ -97,14 +102,45 @@ export const useCoursesStore = defineStore('courses', () => {
       // Update current enrollment progress state locally
       if (currentEnrollment.value) {
         currentEnrollment.value.progress_percent = data.course_progress_percent;
+        if (data.course_status) {
+          currentEnrollment.value.status = data.course_status;
+        }
         if (!currentEnrollment.value.progress_map) {
           currentEnrollment.value.progress_map = {};
         }
-        currentEnrollment.value.progress_map[data.lesson_id] = {
+        const updatedProg = {
           status: data.lesson_status,
           progress_percent: data.lesson_progress_percent,
           completed_at: data.completed_at,
         };
+        currentEnrollment.value.progress_map[data.lesson_id] = updatedProg;
+
+        // Also update lesson.progress and module.progress_percent in the sidebar modules
+        if (Array.isArray(currentEnrollment.value.modules)) {
+          currentEnrollment.value.modules.forEach((mod) => {
+            if (Array.isArray(mod.lessons) && mod.lessons.length > 0) {
+              mod.lessons.forEach((les) => {
+                if (les.id === data.lesson_id) {
+                  les.progress = updatedProg;
+                }
+              });
+              const total = mod.lessons.length;
+              const done = mod.lessons.filter(
+                (l) => (currentEnrollment.value.progress_map[l.id]?.status || l.progress?.status) === 'completed'
+              ).length;
+              mod.progress_percent = Math.round((done / total) * 100);
+            }
+          });
+        }
+
+        // Sync with studentEnrollments list if loaded
+        const idx = studentEnrollments.value.findIndex((e) => e.id === currentEnrollment.value.id || e.uuid === currentEnrollment.value.uuid);
+        if (idx !== -1) {
+          studentEnrollments.value[idx].progress_percent = data.course_progress_percent;
+          if (data.course_status) {
+            studentEnrollments.value[idx].status = data.course_status;
+          }
+        }
       }
 
       return data;
