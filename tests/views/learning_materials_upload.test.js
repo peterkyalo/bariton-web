@@ -4,6 +4,7 @@ import { createPinia, setActivePinia } from 'pinia'
 import RichTextEditor from '@/components/ui/RichTextEditor.vue'
 import MediaPanel from '@/components/ui/MediaPanel.vue'
 import MaterialList from '@/components/ui/MaterialList.vue'
+import PdfViewer from '@/components/ui/PdfViewer.vue'
 import { useCoursesStore } from '@/stores/courses'
 
 describe('Course & Module Rich Media + Learning Materials Frontend', () => {
@@ -96,7 +97,7 @@ describe('Course & Module Rich Media + Learning Materials Frontend', () => {
   })
 
   describe('MaterialList.vue', () => {
-    it('renders YouTube videos, images, audio tracks, and PDF downloads', () => {
+    it('renders YouTube videos, images, audio tracks, and inline scrollable PDF reader', async () => {
       const attachments = [
         {
           id: 1,
@@ -144,6 +145,44 @@ describe('Course & Module Rich Media + Learning Materials Frontend', () => {
       expect(wrapper.text()).toContain('Backing Track in A Minor')
       expect(wrapper.find('audio').attributes('src')).toBe('https://api.test/media/attachments/att-aud')
       expect(wrapper.text()).toContain('Complete Syllabus Score PDF')
+
+      // Click "Open & Read PDF" inside MaterialList to open inline scrollable PDF reader
+      const toggleBtn = wrapper.find('[data-testid="pdf-toggle-btn"]')
+      expect(toggleBtn.exists()).toBe(true)
+      await toggleBtn.trigger('click')
+
+      const pdfIframe = wrapper.find('[data-testid="pdf-iframe"]')
+      expect(pdfIframe.exists()).toBe(true)
+      expect(pdfIframe.attributes('src')).toContain('https://api.test/media/attachments/att-pdf#toolbar=1&navpanes=1&scrollbar=1&view=FitH')
+    })
+  })
+
+  describe('PdfViewer.vue', () => {
+    it('supports defaultOpen inline reading and fullscreen modal reader', async () => {
+      const wrapper = mount(PdfViewer, {
+        props: {
+          src: 'https://api.test/media/lessons/lesson-pdf-1',
+          title: 'Bach Cello Suite No. 1 Score.pdf',
+          fileSizeBytes: 512000,
+          defaultOpen: true,
+        },
+        global: {
+          stubs: {
+            teleport: true,
+          },
+        },
+      })
+
+      // Inline iframe is immediately rendered when defaultOpen is true
+      const inlineIframe = wrapper.find('[data-testid="pdf-iframe"]')
+      expect(inlineIframe.exists()).toBe(true)
+      expect(inlineIframe.attributes('src')).toContain('https://api.test/media/lessons/lesson-pdf-1#toolbar=1&navpanes=1&scrollbar=1&view=FitH')
+      expect(wrapper.text()).toContain('500 KB')
+
+      // Clicking Expand opens the fullscreen modal reader
+      await wrapper.find('[data-testid="pdf-expand-btn"]').trigger('click')
+      const fullscreenIframe = wrapper.find('[data-testid="pdf-fullscreen-iframe"]')
+      expect(fullscreenIframe.exists()).toBe(true)
     })
   })
 
