@@ -2,6 +2,38 @@
 import { computed, ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import Modal from './Modal.vue'
 
+// Ensure ES2024/ES2025 helpers used by PDF.js exist in all browser versions
+if (typeof Uint8Array !== 'undefined' && typeof Uint8Array.prototype.toHex !== 'function') {
+  Uint8Array.prototype.toHex = function () {
+    let hex = ''
+    for (let i = 0; i < this.length; i++) {
+      hex += this[i].toString(16).padStart(2, '0')
+    }
+    return hex
+  }
+}
+
+if (typeof Promise !== 'undefined' && typeof Promise.withResolvers !== 'function') {
+  Promise.withResolvers = function () {
+    let resolve, reject
+    const promise = new this((res, rej) => {
+      resolve = res
+      reject = rej
+    })
+    return { promise, resolve, reject }
+  }
+}
+
+if (typeof URL !== 'undefined' && typeof URL.parse !== 'function') {
+  URL.parse = function (url, base) {
+    try {
+      return base !== undefined ? new URL(url, base) : new URL(url)
+    } catch (_) {
+      return null
+    }
+  }
+}
+
 const props = defineProps({
   src: { type: String, required: true },
   title: { type: String, default: 'PDF Course Material' },
@@ -21,30 +53,17 @@ const isFullscreen = ref(false)
 const loadingPdf = ref(false)
 const pdfError = ref('')
 const pageCount = ref(0)
+const pageTexts = ref({})
+const viewMode = ref('canvas') // 'canvas' | 'text'
 const zoomPercent = ref(115)
 const useFallbackIframe = ref(isJsdom)
 const localBlobUrl = ref('')
 
 const inlineCanvasMap = new Map()
 const fullscreenCanvasMap = new Map()
+const activeCanvasTasks = new WeakMap()
 let pdfDocInstance = null
-let renderGeneration = 0
-
-function setInlineCanvasRef(pageNum, el) {
-  if (el) {
-    inlineCanvasMap.set(pageNum, el)
-  } else {
-    inlineCanvasMap.delete(pageNum)
-  }
-}
-
-function setFullscreenCanvasRef(pageNum, el) {
-  if (el) {
-    fullscreenCanvasMap.set(pageNum, el)
-  } else {
-    fullscreenCanvasMap.delete(pageNum)
-  }
-}
+let loadGeneration = 0
 
 const formattedSize = computed(() => {
   if (!props.fileSizeBytes) return ''
@@ -61,45 +80,134 @@ const viewerSrc = computed(() => {
   return `${base}#toolbar=1&navpanes=1&scrollbar=1&view=FitH`
 })
 
-async function renderAllPages(targetMap, baseScale) {
-  if (!pdfDocInstance) return
-  const currentGen = ++renderGeneration
-  const dpr = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1
+function getBaseScale(isFull = false) {
+  const scale = (zoomPercent.value / 100) * 1.15
+  return isFull ? scale * 1.1 : scale
+}
 
-  for (let pageNum = 1; pageNum <= pdfDocInstance.numPages; pageNum++) {
-    if (currentGen !== renderGeneration) return
-    const canvas = targetMap.get(pageNum)
-    if (!canvas) continue
+async function renderSinglePageToCanvas(pageNum, canvas, baseScale) {
+  if (!pdfDocInstance || !canvas) return
 
+  const renderKey = `${loadGeneration}-${pageNum}-${baseScale.toFixed(3)}`
+  if (canvas.dataset.renderedKey === renderKey && canvas.width > 0) {
+    return
+  }
+
+  // Cancel any in-flight render task on this same canvas
+  const existingTask = activeCanvasTasks.get(canvas)
+  if (existingTask) {
     try {
-      const page = await pdfDocInstance.getPage(pageNum)
-      const viewport = page.getViewport({ scale: baseScale * dpr })
-      const context = canvas.getContext('2d')
-      if (!context) continue
-
-      canvas.width = Math.floor(viewport.width)
-      canvas.height = Math.floor(viewport.height)
-      canvas.style.width = `${Math.floor(viewport.width / dpr)}px`
-      canvas.style.height = `${Math.floor(viewport.height / dpr)}px`
-
-      await page.render({
-        canvasContext: context,
-        viewport,
-      }).promise
+      existingTask.cancel()
     } catch (_) {
-      // Ignore individual page render cancellation
+      // ignore
     }
+    activeCanvasTasks.delete(canvas)
+  }
+
+  try {
+    const page = await pdfDocInstance.getPage(pageNum)
+    const dpr = typeof window !== 'undefined' ? Math.min(window.devicePixelRatio || 1, 2) : 1
+    const viewport = page.getViewport({ scale: baseScale * dpr })
+    const context = canvas.getContext('2d')
+    if (!context) return
+
+    canvas.width = Math.max(1, Math.floor(viewport.width))
+    canvas.height = Math.max(1, Math.floor(viewport.height))
+    canvas.style.width = `${Math.max(1, Math.floor(viewport.width / dpr))}px`
+    canvas.style.height = `${Math.max(1, Math.floor(viewport.height / dpr))}px`
+
+    // Fill white page background first so transparent PDFs are always legible
+    context.save()
+    context.fillStyle = '#ffffff'
+    context.fillRect(0, 0, canvas.width, canvas.height)
+    context.restore()
+
+    const renderTask = page.render({
+      canvasContext: context,
+      viewport,
+    })
+    activeCanvasTasks.set(canvas, renderTask)
+    await renderTask.promise
+    activeCanvasTasks.delete(canvas)
+    canvas.dataset.renderedKey = renderKey
+  } catch (err) {
+    if (err?.name !== 'RenderingCancelledException') {
+      // Keep any fallback text available
+    }
+  }
+}
+
+function setInlineCanvasRef(pageNum, el) {
+  if (el) {
+    const prev = inlineCanvasMap.get(pageNum)
+    inlineCanvasMap.set(pageNum, el)
+    if (pdfDocInstance && (prev !== el || !el.dataset.renderedKey)) {
+      renderSinglePageToCanvas(pageNum, el, getBaseScale(false))
+    }
+  } else {
+    inlineCanvasMap.delete(pageNum)
+  }
+}
+
+function setFullscreenCanvasRef(pageNum, el) {
+  if (el) {
+    const prev = fullscreenCanvasMap.get(pageNum)
+    fullscreenCanvasMap.set(pageNum, el)
+    if (pdfDocInstance && (prev !== el || !el.dataset.renderedKey)) {
+      renderSinglePageToCanvas(pageNum, el, getBaseScale(true))
+    }
+  } else {
+    fullscreenCanvasMap.delete(pageNum)
   }
 }
 
 async function refreshCanvases() {
   await nextTick()
-  const scale = (zoomPercent.value / 100) * 1.15
-  if (isOpen.value && inlineCanvasMap.size > 0) {
-    await renderAllPages(inlineCanvasMap, scale)
+  if (!pdfDocInstance) return
+
+  if (isOpen.value && viewMode.value === 'canvas') {
+    const inlineScale = getBaseScale(false)
+    for (const [pageNum, canvas] of inlineCanvasMap.entries()) {
+      await renderSinglePageToCanvas(pageNum, canvas, inlineScale)
+    }
   }
-  if (isFullscreen.value && fullscreenCanvasMap.size > 0) {
-    await renderAllPages(fullscreenCanvasMap, scale * 1.1)
+
+  if (isFullscreen.value && viewMode.value === 'canvas') {
+    const fullScale = getBaseScale(true)
+    for (const [pageNum, canvas] of fullscreenCanvasMap.entries()) {
+      await renderSinglePageToCanvas(pageNum, canvas, fullScale)
+    }
+  }
+}
+
+async function extractPageLines(page) {
+  try {
+    const textContent = await page.getTextContent()
+    const rows = []
+    let currentY = null
+    let currentLine = []
+
+    for (const item of textContent.items || []) {
+      const str = (item.str || '').trim()
+      if (!str) continue
+      const y = Array.isArray(item.transform) ? Math.round(item.transform[5] / 4) * 4 : 0
+      if (currentY === null || Math.abs(y - currentY) <= 4) {
+        currentLine.push(str)
+        if (currentY === null) currentY = y
+      } else {
+        if (currentLine.length > 0) {
+          rows.push(currentLine.join(' '))
+        }
+        currentLine = [str]
+        currentY = y
+      }
+    }
+    if (currentLine.length > 0) {
+      rows.push(currentLine.join(' '))
+    }
+    return rows
+  } catch (_) {
+    return []
   }
 }
 
@@ -109,18 +217,27 @@ async function loadPdfDocument() {
     return
   }
 
+  const currentLoadGen = ++loadGeneration
   loadingPdf.value = true
   pdfError.value = ''
   useFallbackIframe.value = false
 
   try {
-    const pdfjsLib = await import('pdfjs-dist')
+    const [pdfjsLib, pdfjsWorker] = await Promise.all([
+      import('pdfjs-dist/legacy/build/pdf.mjs'),
+      import('pdfjs-dist/legacy/build/pdf.worker.mjs'),
+    ])
 
+    if (pdfjsWorker?.WorkerMessageHandler) {
+      globalThis.pdfjsWorker = pdfjsWorker
+    }
     if (pdfjsLib?.GlobalWorkerOptions) {
       pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdfjs/pdf.worker.min.mjs'
     }
 
     const response = await fetch(props.src, {
+      cache: 'no-store',
+      credentials: 'omit',
       headers: { Accept: 'application/pdf' },
     })
 
@@ -129,6 +246,8 @@ async function loadPdfDocument() {
     }
 
     const arrayBuffer = await response.arrayBuffer()
+    if (currentLoadGen !== loadGeneration) return
+
     if (localBlobUrl.value) {
       URL.revokeObjectURL(localBlobUrl.value)
     }
@@ -144,15 +263,30 @@ async function loadPdfDocument() {
       useSystemFonts: true,
       standardFontDataUrl: '/pdfjs/standard_fonts/',
     })
-    pdfDocInstance = await loadingTask.promise
-    pageCount.value = pdfDocInstance.numPages || 0
+
+    const doc = await loadingTask.promise
+    if (currentLoadGen !== loadGeneration) {
+      await doc.destroy()
+      return
+    }
+
+    pdfDocInstance = doc
+    pageCount.value = doc.numPages || 0
+
+    // Pre-extract text lines for each page so text view & accessibility are instant
+    const extracted = {}
+    for (let i = 1; i <= doc.numPages; i++) {
+      const p = await doc.getPage(i)
+      extracted[i] = await extractPageLines(p)
+    }
+    pageTexts.value = extracted
 
     loadingPdf.value = false
     await nextTick()
     await refreshCanvases()
   } catch (err) {
-    pdfError.value = 'Unable to render PDF pages inline.'
-    useFallbackIframe.value = true
+    if (currentLoadGen !== loadGeneration) return
+    pdfError.value = err?.message || 'Unable to load PDF document.'
     loadingPdf.value = false
   }
 }
@@ -177,7 +311,7 @@ async function downloadPdf() {
   try {
     let href = localBlobUrl.value
     if (!href) {
-      const response = await fetch(props.src)
+      const response = await fetch(props.src, { cache: 'no-store', credentials: 'omit' })
       const blob = await response.blob()
       href = URL.createObjectURL(blob)
       localBlobUrl.value = href
@@ -198,7 +332,10 @@ watch(
   () => props.src,
   async () => {
     pageCount.value = 0
+    pageTexts.value = {}
     pdfDocInstance = null
+    inlineCanvasMap.clear()
+    fullscreenCanvasMap.clear()
     if (props.defaultOpen) {
       isOpen.value = true
     }
@@ -225,6 +362,12 @@ watch(isFullscreen, async (full) => {
     } else {
       await refreshCanvases()
     }
+  }
+})
+
+watch(viewMode, async (mode) => {
+  if (mode === 'canvas') {
+    await refreshCanvases()
   }
 })
 
@@ -278,9 +421,33 @@ onBeforeUnmount(() => {
       </div>
 
       <div class="flex flex-wrap items-center gap-2 shrink-0">
-        <!-- Zoom Controls when open and rendered -->
+        <!-- View Mode Toggle (Visual Pages vs Text Mode) -->
         <div
           v-if="isOpen && pageCount > 0"
+          class="flex items-center rounded-lg border p-0.5 text-[11px]"
+          :class="dark ? 'bg-navy-950 border-slate-700 text-slate-300' : 'bg-white border-slate-300 text-slate-700'"
+        >
+          <button
+            type="button"
+            class="px-2 py-0.5 rounded-md font-semibold transition cursor-pointer"
+            :class="viewMode === 'canvas' ? 'bg-sky-500 text-slate-950' : 'hover:text-white'"
+            @click="viewMode = 'canvas'"
+          >
+            Page View
+          </button>
+          <button
+            type="button"
+            class="px-2 py-0.5 rounded-md font-semibold transition cursor-pointer"
+            :class="viewMode === 'text' ? 'bg-sky-500 text-slate-950' : 'hover:text-white'"
+            @click="viewMode = 'text'"
+          >
+            Text View
+          </button>
+        </div>
+
+        <!-- Zoom Controls when open and rendered -->
+        <div
+          v-if="isOpen && pageCount > 0 && viewMode === 'canvas'"
           class="flex items-center gap-1 px-1.5 py-0.5 rounded-lg border"
           :class="dark ? 'bg-navy-950 border-slate-700 text-slate-300' : 'bg-white border-slate-300 text-slate-700'"
         >
@@ -378,7 +545,7 @@ onBeforeUnmount(() => {
 
       <!-- Canvas-rendered Scrollable PDF Pages (Primary In-App Reader) -->
       <div
-        v-else-if="pageCount > 0 && !useFallbackIframe"
+        v-else-if="pageCount > 0 && !useFallbackIframe && viewMode === 'canvas'"
         :class="['w-full overflow-y-auto overflow-x-auto bg-slate-800/95 p-4 sm:p-6 space-y-6 flex flex-col items-center', heightClass]"
         data-testid="pdf-canvas-reader"
       >
@@ -397,7 +564,60 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
-      <!-- Fallback Iframe (Used in unit tests or if canvas rendering is unavailable) -->
+      <!-- Extracted Text Reader Mode -->
+      <div
+        v-else-if="pageCount > 0 && !useFallbackIframe && viewMode === 'text'"
+        :class="['w-full overflow-y-auto bg-slate-800/95 p-4 sm:p-6 space-y-6 flex flex-col items-center', heightClass]"
+        data-testid="pdf-text-reader"
+      >
+        <div
+          v-for="pageNum in pageCount"
+          :key="`inline-text-page-${pageNum}`"
+          class="w-full max-w-3xl bg-white text-slate-900 shadow-2xl rounded-lg overflow-hidden border border-slate-300"
+        >
+          <div class="p-6 sm:p-8 space-y-2.5 font-sans text-sm leading-relaxed select-text">
+            <p
+              v-for="(line, idx) in (pageTexts[pageNum] || [])"
+              :key="`line-${pageNum}-${idx}`"
+              class="text-slate-800"
+            >
+              {{ line }}
+            </p>
+            <p v-if="!pageTexts[pageNum] || pageTexts[pageNum].length === 0" class="text-slate-400 italic text-xs">
+              This page contains scanned graphics only. Switch to Page View to inspect visuals.
+            </p>
+          </div>
+          <div class="w-full py-1.5 px-3 bg-slate-100 border-t border-slate-200 text-[11px] font-medium text-slate-500 text-center">
+            Page {{ pageNum }} of {{ pageCount }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Error / Retry State in Real Browsers -->
+      <div
+        v-else-if="pdfError && !isJsdom"
+        :class="['w-full flex flex-col items-center justify-center gap-3 p-6 text-center bg-slate-900 text-slate-300', heightClass]"
+      >
+        <p class="text-sm font-semibold text-amber-300">Could not render PDF inline ({{ pdfError }})</p>
+        <div class="flex items-center gap-3">
+          <button
+            type="button"
+            @click="loadPdfDocument"
+            class="px-3.5 py-1.5 rounded-lg bg-sky-500 text-slate-950 text-xs font-bold hover:bg-sky-400 transition cursor-pointer"
+          >
+            Retry Reader
+          </button>
+          <button
+            type="button"
+            @click="downloadPdf"
+            class="px-3.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-slate-200 text-xs font-semibold hover:bg-slate-700 transition cursor-pointer"
+          >
+            Download PDF
+          </button>
+        </div>
+      </div>
+
+      <!-- Fallback Iframe (Used in JSDOM unit tests) -->
       <iframe
         v-else
         :src="viewerSrc"
@@ -426,6 +646,28 @@ onBeforeUnmount(() => {
           <div class="flex items-center gap-2 shrink-0">
             <div
               v-if="pageCount > 0"
+              class="flex items-center rounded-lg border border-slate-700 bg-slate-900 p-0.5 text-xs text-slate-300"
+            >
+              <button
+                type="button"
+                class="px-2.5 py-1 rounded-md font-semibold transition cursor-pointer"
+                :class="viewMode === 'canvas' ? 'bg-sky-500 text-slate-950' : 'hover:text-white'"
+                @click="viewMode = 'canvas'"
+              >
+                Page View
+              </button>
+              <button
+                type="button"
+                class="px-2.5 py-1 rounded-md font-semibold transition cursor-pointer"
+                :class="viewMode === 'text' ? 'bg-sky-500 text-slate-950' : 'hover:text-white'"
+                @click="viewMode = 'text'"
+              >
+                Text View
+              </button>
+            </div>
+
+            <div
+              v-if="pageCount > 0 && viewMode === 'canvas'"
               class="flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-900 border border-slate-700 text-slate-200"
             >
               <button type="button" @click="zoomOut" class="px-1.5 text-xs font-bold hover:text-amber-400 cursor-pointer">−</button>
@@ -452,7 +694,7 @@ onBeforeUnmount(() => {
 
         <div class="w-full rounded-xl overflow-hidden border border-slate-700 bg-slate-800/95">
           <div
-            v-if="pageCount > 0 && !useFallbackIframe"
+            v-if="pageCount > 0 && !useFallbackIframe && viewMode === 'canvas'"
             class="w-full h-[78vh] overflow-y-auto overflow-x-auto p-4 sm:p-6 space-y-6 flex flex-col items-center"
             data-testid="pdf-fullscreen-canvas-reader"
           >
@@ -465,6 +707,31 @@ onBeforeUnmount(() => {
                 :ref="(el) => setFullscreenCanvasRef(pageNum, el)"
                 class="block max-w-full h-auto"
               ></canvas>
+              <div class="w-full py-1.5 px-3 bg-slate-100 border-t border-slate-200 text-xs font-medium text-slate-500 text-center">
+                Page {{ pageNum }} of {{ pageCount }}
+              </div>
+            </div>
+          </div>
+
+          <div
+            v-else-if="pageCount > 0 && !useFallbackIframe && viewMode === 'text'"
+            class="w-full h-[78vh] overflow-y-auto p-4 sm:p-6 space-y-6 flex flex-col items-center"
+            data-testid="pdf-fullscreen-text-reader"
+          >
+            <div
+              v-for="pageNum in pageCount"
+              :key="`full-text-page-${pageNum}`"
+              class="w-full max-w-4xl bg-white text-slate-900 shadow-2xl rounded-lg overflow-hidden border border-slate-300"
+            >
+              <div class="p-6 sm:p-10 space-y-3 font-sans text-sm sm:text-base leading-relaxed select-text">
+                <p
+                  v-for="(line, idx) in (pageTexts[pageNum] || [])"
+                  :key="`full-line-${pageNum}-${idx}`"
+                  class="text-slate-800"
+                >
+                  {{ line }}
+                </p>
+              </div>
               <div class="w-full py-1.5 px-3 bg-slate-100 border-t border-slate-200 text-xs font-medium text-slate-500 text-center">
                 Page {{ pageNum }} of {{ pageCount }}
               </div>
